@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XmlLuaProjectDocument xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Documents>
+    <DocumentRef FileName=".\main.lua" />
+  </Documents>
+  <DocumentGroups />
+  <DocumentFolders />
+  <ProjectProperties>
+    <ExternalProgram />
+    <CmdLineArgs />
+    <StartupFileName />
+    <WorkingDir />
+    <UseRemoteMachine>false</UseRemoteMachine>
+    <RemoteMachineName />
+    <BuildOutputDir />
+    <PreBuildEventCmdLine />
+    <PostBuildEventCmdLine />
+  </ProjectProperties>
+</XmlLuaProjectDocument>
