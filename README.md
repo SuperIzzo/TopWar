@@ -1,4 +1,4 @@
-TopWar
+TÖP WAR
 ======
 
-A LOVE2D game with spinning tops, the actual name is TÖP WAR
+A LÖVE2D game with spinning tops
