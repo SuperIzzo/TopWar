@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XmlLuaProjectDocument xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Documents>
+    <DocumentRef FileName=".\main.lua" />
+  </Documents>
+  <DocumentGroups />
+  <DocumentFolders>
+    <XmlDocumentFolder>
+      <Documents />
+      <DocumentGroups />
+      <DocumentFolders>
+        <XmlDocumentFolder>
+          <Documents />
+          <DocumentGroups />
+          <DocumentFolders>
+            <XmlDocumentFolder>
+              <Documents>
+                <DocumentRef FileName=".\lunatest.lua" />
+              </Documents>
+              <DocumentGroups />
+              <DocumentFolders />
+              <RelativePath>.\lunatest\</RelativePath>
+            </XmlDocumentFolder>
+          </DocumentFolders>
+          <RelativePath>.\lib\</RelativePath>
+        </XmlDocumentFolder>
+      </DocumentFolders>
+      <RelativePath>.\test\</RelativePath>
+    </XmlDocumentFolder>
+    <XmlDocumentFolder>
+      <Documents />
+      <DocumentGroups />
+      <DocumentFolders />
+      <RelativePath>.\src\</RelativePath>
+    </XmlDocumentFolder>
+  </DocumentFolders>
+  <ProjectProperties>
+    <ExternalProgram />
+    <CmdLineArgs />
+    <StartupFileName />
+    <WorkingDir />
+    <UseRemoteMachine>false</UseRemoteMachine>
+    <RemoteMachineName />
+    <BuildOutputDir />
+    <PreBuildEventCmdLine />
+    <PostBuildEventCmdLine />
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </ProjectProperties>
+</XmlLuaProjectDocument>

@@ -1,0 +1,37 @@
+<NotepadPlus>
+    <Project name="TopWar">
+        <File name="main.lua" />
+        <Folder name="src">
+            <Folder name="math">
+                <File name="src\math\Vector.lua" />
+            </Folder>
+            <Folder name="game" />
+            <File name="src\strict.lua" />
+        </Folder>
+        <Folder name="test">
+            <Folder name="lib">
+                <Folder name="lunatest">
+                    <Folder name="files">
+                        <File name="test\lib\lunatest\files\lunatest.html" />
+                    </Folder>
+                    <Folder name="modules">
+                        <File name="test\lib\lunatest\modules\lunatest.html" />
+                    </Folder>
+                    <File name="test\lib\lunatest\index.html" />
+                    <File name="test\lib\lunatest\luadoc.css" />
+                    <File name="test\lib\lunatest\lunatest-0.9.1-0.rockspec" />
+                    <File name="test\lib\lunatest\lunatest.lua" />
+                    <File name="test\lib\lunatest\README.md" />
+                    <File name="test\lib\lunatest\suite-hooks-fail.lua" />
+                    <File name="test\lib\lunatest\suite-hooks.lua" />
+                    <File name="test\lib\lunatest\suite-with-random-tests.lua" />
+                    <File name="test\lib\lunatest\test-error_handler.lua" />
+                    <File name="test\lib\lunatest\test-teardown_fail.lua" />
+                    <File name="test\lib\lunatest\test.lua" />
+                </Folder>
+            </Folder>
+            <File name="test\TestMain.lua" />
+            <File name="test\TestVector.lua" />
+        </Folder>
+    </Project>
+</NotepadPlus>

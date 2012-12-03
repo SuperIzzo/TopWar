@@ -1,0 +1,12 @@
+Rules
+-------------------
+
+2 PLAYER DUEL
+
+Before the game starts each player can see the other player's
+6 tops pool.
+Each player selects 3 of their 6 tops
+the first two tops battle, when one of them is defeated the player who lost selects
+another top and the duel restarts with that top and the other player's top that won.
+
+FREE-FOR-ALL 
