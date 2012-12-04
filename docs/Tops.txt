@@ -1,0 +1,113 @@
+Tops are circular discs (that fit in a 256x256 px square).
+The only thing that a user needs to do to add a new top to the game is to
+add an image to the tops folder and it will automatically be loaded and its
+properties and parameters will be calculated programatically. Here is a list
+of parameters each top has:
+
+WEIGHT
+	The weight affects the movability and the movement speed of
+	the top. The heavier a top is the harder it will be for forces
+	to move it. This includes players' control and push-backs by
+	other tops.
+	
+JAGGEDNESS
+	The more jagged the top is at its edges the more of its angular
+	velocity will be turned into a push-back force on collision.
+
+RADIUS
+	Smaller tops spin faster and as such will have higher initial RPM,
+	but because all pixels have equal mass the top will also have less mass.
+	Radius also affects balance... a larger top will be easier to balance.
+	
+BALANCE
+	An off-balance top will start to lose its angular momentum faster
+	hence it will be losing RPM more rapidly. With high RPM there will 
+	be little side effect when it loses enough RPM it starts moving on
+	a tangent and becomes harder to control, but also higher push-back,
+	especially if its mass and radius are high.
+	Though balance is generally a good thing to have.
+	
+RPM
+	The initial RPM (revolutions per minute) are a function of the kinetic 
+	energy applied to spin the top its radius and its mass. Bigger heavier
+	tops have less initial RPM. Tops will lose gradually lose RPM until they
+	stop rotating, unbalanced tops will lose RPM faster.
+	Collisions will cause tops to lose RPM and turn it into a push-back force
+	
+SPIN
+	Spin is the direction of the rotation of a top, it maybe either 
+	clockwise or anti-clockwise. If two tops with the same spin collide the
+	push-back force will be in a direction opposite to the collision normal
+	If thy have different spins then the resulting force will be perpendicular
+	to that nomal and in the direction of the spin (think of the gear effect)
+
+PUSH-BACK
+	Push back occurs when a top collides with an object, it is a force
+	in a direction explained above (in spin). It turns a percentage of the 
+	angular kinetic energy (RPM) into linear kinetic energy; It causes motion
+	and special graphics and sound effects. Heavier objects respond less to
+	push-back (and any force for that matter). The collision between perfecly 
+	round disks will cause less friction which means less push-back, the more 
+	jagged the top is the more force it will generate. Tops will try to preserve
+	their innertia, faster moving tops will affect the collision resolutions more.
+
+
+Special amendments:
+
+To make thing more fun and to give some objectives to the game I am inventing some of the
+physics, it is not guaranteed that all of the stated above will be true (though it would
+be nice if it really were :D). But what follows are entirelly unresearched inventions that
+are more likely to be fiction than facts.
+
+PUSH-BACK
+	When a top collides with another top and its linear motion direction
+	is in the direction of the collision point it will preserve more of its
+	energy, so receive less velocity in the opposite direction and will lose
+	less RPM. In contrast a top hit from a side (collision direction 
+	perpendicular to its velocity vector) will move more and will lose more 
+	RPM. A top hit from the back will lose the most RPM, however it will again
+	have less velocity change (this is because with each push it becomes easier
+	and easier to push it again wich isn't fair - first to push wins). In short
+	players try to hit other players' tops from the side and the back with 
+	their front, while avoiding side and back collisions themselves.
+
+ENERGY
+	Used for "magic". Tops will have special abilities and will be able
+	to "do" stuff that defy physics, some actions will be require an amount
+	of this special enenrgy and can only be performed when there is enought
+	of it to spend (think of it like mana).
+
+LAYERS
+	A top may be composed of one or more layers (up to 3). Each layer
+	contributes to the over weigth and balance of the top, the top layer 
+	can be rotated by 90 deg while the top battles, this can be used to change
+	its balance mode and special abilities.
+
+
+
+APPENDIX:
+
+Resources	
+	
+http://hyperphysics.phy-astr.gsu.edu/hbase/rke.html
+http://hyperphysics.phy-astr.gsu.edu/hbase/tdisc.html
+
+Ke = 1/2 I w^2
+w^2 = 2Ke/I
+w = sqrt( 2Ke/I )
+I = 1/2 M R^2
+
+=>
+
+w = sqrt( 4 Ke/(MR^2)
+
+Conclusion: angular velocity depends on mass and radius, the highr the mass is and the bigger
+the radius, the more kinetic energy is required to compensate, the kinetic energy will be 
+defined at the begining.
+
+
+http://hyperphysics.phy-astr.gsu.edu/hbase/top.html
+http://en.wikipedia.org/wiki/Balancing_of_rotating_masses
+
+Precession and imbalance cause a top to lose inertia and create
+vibrations.
