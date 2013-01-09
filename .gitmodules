@@ -1,0 +1,3 @@
+[submodule "test/lib/lunatest"]
+	path = test/lib/lunatest
+	url = https://github.com/silentbicycle/lunatest
