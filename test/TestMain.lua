@@ -33,12 +33,18 @@ local TestMain =
 function TestMain:GetSuiteList()
 	local list = 
 	{
-		'test.TestVector'
+		'test.TestVector',
+		'test.TestPolarVector',
+		'test.TestTop'
 	}
 	
 	return list;
 end
 
+
+-----------------------------------------------------------------------------------------
+--  TestMain:Run : Runs all test suits
+-----------------------------------------------------------------------------------------
 function TestMain:Run()
 	local suiteList = self:GetSuiteList();
 	
@@ -50,6 +56,7 @@ function TestMain:Run()
 	lunatest.run();
 	print("====== T e s t ======");
 end;
+
 
 
 

@@ -13,6 +13,12 @@ WEIGHT
 JAGGEDNESS
 	The more jagged the top is at its edges the more of its angular
 	velocity will be turned into a push-back force on collision.
+	It is a value equal or greather than 0, where 0 means perfectly 
+	round and a high number means very jagged disk (no two neightouring 
+	points have the same radius). Also jaggedness factor intesifies with
+	radius - the further a point is from the maximal radius the less
+	effect it has. E.g. formula for jaggedness factor of a single pixel:
+			log2( MaxRad - CurRad +1 )
 
 RADIUS
 	Smaller tops spin faster and as such will have higher initial RPM,
