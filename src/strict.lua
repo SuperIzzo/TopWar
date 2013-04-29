@@ -34,7 +34,6 @@ end
 mt.__newindex = function (t, n, v)
   if not mt.__declared[n] then
     local w = what()
-	print( w, n, v );
     if w ~= "C" then
       error("assign to undeclared variable '"..n.."'", 2)
     end
