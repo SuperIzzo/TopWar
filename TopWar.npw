@@ -1,12 +1,21 @@
 <NotepadPlus>
     <Project name="TopWar">
-        <File name="main.lua" />
+        <Folder name="docs">
+            <File name="docs\Rules.txt" />
+            <File name="docs\Tops.txt" />
+            <File name="docs\Colors.txt" />
+            <File name="docs\Spirit.txt" />
+        </Folder>
         <Folder name="src">
             <Folder name="math">
                 <File name="src\math\Vector.lua" />
+                <File name="src\math\PolarVector.lua" />
             </Folder>
-            <Folder name="game" />
+            <Folder name="game">
+                <File name="src\game\Top.lua" />
+            </Folder>
             <File name="src\strict.lua" />
+            <File name="main.lua" />
         </Folder>
         <Folder name="test">
             <Folder name="lib">
@@ -21,7 +30,6 @@
                     <File name="test\lib\lunatest\luadoc.css" />
                     <File name="test\lib\lunatest\lunatest-0.9.1-0.rockspec" />
                     <File name="test\lib\lunatest\lunatest.lua" />
-                    <File name="test\lib\lunatest\README.md" />
                     <File name="test\lib\lunatest\suite-hooks-fail.lua" />
                     <File name="test\lib\lunatest\suite-hooks.lua" />
                     <File name="test\lib\lunatest\suite-with-random-tests.lua" />
@@ -31,7 +39,13 @@
                 </Folder>
             </Folder>
             <File name="test\TestMain.lua" />
-            <File name="test\TestVector.lua" />
+            <Folder name="game">
+                <File name="test\game\TestTop.lua" />
+            </Folder>
+            <Folder name="math">
+                <File name="test\math\TestPolarVector.lua" />
+                <File name="test\math\TestVector.lua" />
+            </Folder>
         </Folder>
     </Project>
 </NotepadPlus>
