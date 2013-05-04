@@ -131,9 +131,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  Top:SetImage : Sets the properties of a tpp from an image
+--  Top:SetFromImageData : Sets the properties of a top from an image
 -------------------------------------------------------------------------------
-function Top:SetImage( imgData )
+function Top:SetFromImageData( imgData )
 	local imgSize	= Vector:new( imgData:getWidth(), imgData:getHeight() );	
 	local halfSize	= imgSize/2;
 	local radSpan	= halfSize:Length();

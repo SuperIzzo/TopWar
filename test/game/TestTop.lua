@@ -19,7 +19,8 @@ local function LoadTop( topFileName )
 	if not loadedTops[ topFileName ] then
 		local top = Top:new();
 		local topImg = love.image.newImageData( topFileName );
-		top:SetImage( topImg );
+		
+		top:SetFromImageData( topImg );
 		
 		loadedTops[ topFileName ] = top;
 	end;
