@@ -1,11 +1,5 @@
 <NotepadPlus>
     <Project name="TopWar">
-        <Folder name="docs">
-            <File name="docs\Rules.txt" />
-            <File name="docs\Tops.txt" />
-            <File name="docs\Colors.txt" />
-            <File name="docs\Spirit.txt" />
-        </Folder>
         <Folder name="src">
             <Folder name="math">
                 <File name="src\math\Vector.lua" />
@@ -14,8 +8,16 @@
             <Folder name="game">
                 <File name="src\game\Top.lua" />
             </Folder>
+            <Folder name="gui" />
             <File name="src\strict.lua" />
             <File name="main.lua" />
+            <File name="conf.lua" />
+        </Folder>
+        <Folder name="docs">
+            <File name="docs\Rules.txt" />
+            <File name="docs\Tops.txt" />
+            <File name="docs\Colors.txt" />
+            <File name="docs\Spirit.txt" />
         </Folder>
         <Folder name="test">
             <Folder name="lib">
