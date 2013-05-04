@@ -15,13 +15,31 @@ local log2			= log(2);
 
 
 
+-------------------------------------------------------------------------------
+--  clamp : clamps a value in range
+-------------------------------------------------------------------------------
+local function clamp( x, bot, top )
+	if x < bot then
+		x = bot
+	elseif x > top then
+		x = top
+	end
+	
+	return x;
+end
+
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class Top : A spinning top object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local Top =
-{
-}
+local Top = {}
+Top.__index = Top;
+
+
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--  Local donstants
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+local EFFECTIVE_ALPHA_THRESHOLD = 125
 
 
 -------------------------------------------------------------------------------
@@ -33,6 +51,7 @@ function Top:new()
 	obj._weigth 	= 0;
 	obj._jaggedness = 0;
 	obj._radius 	= 0;
+	obj._balance	= 0;
 	
 	return setmetatable(obj, self);
 end
@@ -63,6 +82,14 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Top:GetRadius : Returns the radius of the top
+-------------------------------------------------------------------------------
+function Top:GetBalance()
+	return self._balance;
+end
+
+
+-------------------------------------------------------------------------------
 --  Top:SetWeight : Sets the weight of the top
 -------------------------------------------------------------------------------
 function Top:SetWeight( weigth )
@@ -76,19 +103,29 @@ end
 --  Top:SetJaggedness : Sets the jaggedness of the top
 -------------------------------------------------------------------------------
 function Top:SetJaggedness( jag )
-	assert( jag >= 0 )
+	assert( jag >= 0 and jag <= 1 )
 	
 	self._jaggedness = jag;
 end
 
 
 -------------------------------------------------------------------------------
---  Top:SetRadius : Sets the radius of the top
+--  Top:SetBalance : Sets the balance of the top
 -------------------------------------------------------------------------------
 function Top:SetRadius( rad )
 	assert( rad >= 0 )
 	
 	self._radius = rad;
+end
+
+
+-------------------------------------------------------------------------------
+--  Top:SetBalance : Sets the balance of the top
+-------------------------------------------------------------------------------
+function Top:SetBalance( balance )
+	assert( balance >= 0 and balance <= 1)
+	
+	self._balance = balance;
 end
 
 
@@ -104,19 +141,30 @@ function Top:SetImage( imgData )
 	local radSpan = sqrt( halfWidth*halfWidth + halfHeight*halfHeight );
 	
 	-- Limit the angle loop to 1 pixel from a specific circle of precision 
-	-- angSpan is an integer number that maps angles to a new range based on the
-	-- radius of precision, because interger 0..360 may leave a lot of holes
+	-- angSpan is an integer number that maps angles to a new range based on
+	-- the radius of precision, as interger 0..360 may leave a lot of holes
 	local radiusOfPrecision = max(halfWidth, halfHeight);
 	local angSpan = pi*2 / asin( 1/radiusOfPrecision );
 	
 	local maxRad = 0;
 	local allRads = {};
+	local weight = 0;
+	local balanceX = 0;
+	local balanceY = 0;
 	
 	for pxX = 0, imgWidth-1 do
 		for pxY = 0, imgHeight-1 do
-			local _, _, _, a = imgData:getPixel( pxX, pxY );
+			local _, _, _, a = imgData:getPixel( pxX, pxY );			
 			
-			if a > 125 then
+			if a > EFFECTIVE_ALPHA_THRESHOLD then				
+				-- Accumulate weight, each non-transparent pixels adds 1 unit
+				weight = weight + 1;
+				
+				-- Accumulate coordinates
+				balanceX = balanceX + pxX;
+				balanceY = balanceY + pxY;
+			
+				-- Turn into polar coordinates, so that we can collect radiuses
 				local polCoord = PolarVector:new();
 				polCoord:FromCartesian( pxX - halfWidth, pxY - halfHeight );
 			
@@ -133,30 +181,37 @@ function Top:SetImage( imgData )
 			end
 		end
 	end
-	
-	local jag = 0;
-	local rad = maxRad;
-	
+
 	-- Sum up jaggedness from all angles
+	-- Logarithms ensure that jagedness is only effetive at the contour	
+	local jag = 0;
 	for ang =0, angSpan do
-		rad = allRads[ang] or 0;
+		local rad = allRads[ang] or 0;
 		jag = jag + log( maxRad - rad + 1);
 	end
 	
+	-- Normalize balance
+	balanceX = balanceX/weight;
+	balanceY = balanceY/weight;
+	local balance  = sqrt( (balanceX-halfWidth)^2 + (balanceY-halfHeight)^2 );
+	balance = 1 - balance/maxRad;
+	
 	-- Normalize
 	jag = jag / (angSpan * log(128))
+	jag = clamp( jag, 0, 1 );	
+	
+	-- Normalize ( base unit will be grams, each 1px = 1mg )
+	weight = weight/1000; 	
 	
 	self:SetRadius( maxRad );
 	self:SetJaggedness( jag );
+	self:SetWeight( weight );
+	self:SetBalance( balance );
 end
-
-
 
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-Top.__index = Top;
-
 return Top

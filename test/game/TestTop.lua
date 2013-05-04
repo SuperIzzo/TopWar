@@ -2,6 +2,7 @@
 --  Dependencies
 --===========================================================================--
 local Top 			= require 'src.game.Top'
+local ipairs		= ipairs
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -57,9 +58,9 @@ end
 function T: TEST_setting_and_retreiving_the_jaggedness_of_a_top()
 	local top = Top:new()
 	
-	top:SetJaggedness( 5.6 );
+	top:SetJaggedness( 0.6 );
 	
-	assert_equal( 5.6,		top:GetJaggedness(), 0.001 );
+	assert_equal( 0.6,		top:GetJaggedness(), 0.001 );
 end
 
 
@@ -76,16 +77,36 @@ end
 
 
 -------------------------------------------------------------------------------
---  TEST_error_when_setting_negative_weight
+--  TEST_setting_and_retreiving_the_balance_of_a_top
 -------------------------------------------------------------------------------
-function T: TEST_error_when_setting_negative_weight()
+function T: TEST_setting_and_retreiving_the_balance_of_a_top()
 	local top = Top:new()
 	
-	local function f() 
-		top:SetWeight( -1 );
-	end;
+	top:SetBalance( 0.6 );
 	
-	assert_error( f );
+	assert_equal( 0.6,		top:GetBalance(), 0.001 );
+end
+
+
+-------------------------------------------------------------------------------
+--  TEST_error_when_setting_parameters_in_incorrect_range
+-------------------------------------------------------------------------------
+function T: TEST_error_when_setting_parameters_in_incorrect_range()
+	local top = Top:new()
+	
+	-- Weight cannot be negative
+	assert_error(	function() top:SetWeight( -1 );	end				);
+	
+	-- Radius cannot be negative
+	assert_error(	function() top:SetRadius( -1 );	end				);
+	
+	-- Jaggedness can only be between 0 and 1	
+	assert_error(	function() top:SetJaggedness( -1 ); end			);
+	assert_error(	function() top:SetJaggedness( 2 ); end			);
+	
+	-- Balance can only be between 0 and 1
+	assert_error(	function() top:SetBalance( -1 ); end			);
+	assert_error(	function() top:SetBalance( 2 ); end				);
 end
 
 
@@ -93,17 +114,26 @@ end
 --  TEST_error_when_setting_weigth_to_anything_other_than_a_number
 -------------------------------------------------------------------------------
 function T: TEST_error_when_setting_weigth_to_anything_other_than_a_number()
+	local setters = 
+	{
+		"SetWeight",
+		"SetRadius",
+		"SetJaggedness",
+		"SetBalance",
+	}
 	local top = Top:new()
 	
 	-- Create a coroutine or testing
 	local co = coroutine.create( function() end )
 	
-	assert_error( 	function() top:SetWeight( 'a' ); end			);
-	assert_error( 	function() top:SetWeight( true ); end			);
-	assert_error( 	function() top:SetWeight( nil ); end			);
-	assert_error( 	function() top:SetWeight( {} ); end				);
-	assert_error( 	function() top:SetWeight( function() end ); end	);
-	assert_error( 	function() top:SetWeight( co ); end				);
+	for i, setter in ipairs( setters ) do
+		assert_error( 	function() top[setter]( top, 'a' ); end				);
+		assert_error( 	function() top[setter]( top, true ); end			);
+		assert_error( 	function() top[setter]( top, nil ); end				);
+		assert_error( 	function() top[setter]( top, {} ); end				);
+		assert_error( 	function() top[setter]( top, function() end ); end	);
+		assert_error( 	function() top[setter]( top, co ); end				);
+	end
 end
 
 
@@ -171,6 +201,60 @@ function T: TEST_loaded_top_has_correct_jaggedness()
 	assert_equal( 1, top0026:GetJaggedness(), 		0.2 );
 end
 
+
+-------------------------------------------------------------------------------
+--  TEST_loaded_top_has_correct_weight
+-------------------------------------------------------------------------------
+function T: TEST_loaded_top_has_correct_weight()
+	local weightTests = 
+	{
+		--[[--  test image				|  weight  |  tolerance  --]]--
+		{ 	"test/img/top0000.png",			51.1,		0.05		  },
+		{ 	"test/img/top0010.png",			28.8,		0.05		  },
+		{ 	"test/img/top0020.png",			12.8,		0.05		  },
+		{ 	"test/img/top0001.png",			48.8,		0.05		  },
+		{ 	"test/img/top0004.png",			55.9,		0.05		  },
+	}
+	
+	for i= 1, #weightTests do
+		local imgFile 		=  weightTests[i][1];
+		local expWeight 	=  weightTests[i][2];
+		local tolerance 	=  weightTests[i][3];
+		
+		local top = LoadTop( imgFile );
+	
+		assert_equal( expWeight,  	top:GetWeight(), 	tolerance );
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  TEST_loaded_top_has_correct_balance
+-------------------------------------------------------------------------------
+function T: TEST_loaded_top_has_correct_balance()
+	local balanceTests = 
+	{
+		--[[--  test image				| balance  |  tolerance  --]]--
+		{ 	"test/img/top0000.png",			1,			0.05		  },
+		{ 	"test/img/top0010.png",			1,			0.05		  },
+		{ 	"test/img/top0020.png",			1,			0.05		  },
+		{ 	"test/img/top0001.png",			1,			0.05		  },
+		{ 	"test/img/top0004.png",			1,			0.05		  },
+		{ 	"test/img/top0006.png",			0.5,		0.05		  },
+		{ 	"test/img/top0026.png",			0.5,		0.05		  },
+		{ 	"test/img/top0005.png",			0.83,		0.05		  },
+	}
+	
+	for i= 1, #balanceTests do
+		local imgFile 		=  balanceTests[i][1];
+		local expBalance 	=  balanceTests[i][2];
+		local tolerance 	=  balanceTests[i][3];
+		
+		local top = LoadTop( imgFile );
+	
+		assert_equal( expBalance,  	top:GetBalance(), 	tolerance );
+	end
+end
 
 --===========================================================================--
 --  Initialization
