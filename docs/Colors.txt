@@ -15,13 +15,16 @@ REPULSE - push away near tops.
 
 SWAP - swap self with another top, physically switching positions
 
-LEAP - the top "teleports" to a nearby location
+LEAP - the top "teleports" to a nearby location, using direction keys
 
 PHANTOM - the top can "teleport" back in time as if nothing happened (restoring RPM, 
 speed and its previous position, but not energy)
 
 MIRRAGE/ILLUSION - create multiple copies of self, to confuse the other players
 (only one is real)
+
+INVISABILITY - makes the top invisible for time, until the next clash 
+(not usable in single PC multiplayer)
 
 DIRECT DAMAGE - causes nearby tops to lose RPM
 
