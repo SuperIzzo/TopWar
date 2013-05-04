@@ -2,6 +2,7 @@
 --  Dependencies
 --===========================================================================--
 local PolarVector	= require 'src.math.PolarVector'
+local Vector		= require 'src.math.Vector'
 
 local assert 		= _G.assert
 local sqrt			= _G.math.sqrt
@@ -133,40 +134,37 @@ end
 --  Top:SetImage : Sets the properties of a tpp from an image
 -------------------------------------------------------------------------------
 function Top:SetImage( imgData )
-	local imgWidth  = imgData:getWidth();
-	local imgHeight = imgData:getHeight();
-	
-	local halfWidth  = imgWidth/2;
-	local halfHeight = imgHeight/2;
-	local radSpan = sqrt( halfWidth*halfWidth + halfHeight*halfHeight );
+	local imgSize	= Vector:new( imgData:getWidth(), imgData:getHeight() );	
+	local halfSize	= imgSize/2;
+	local radSpan	= halfSize:Length();
 	
 	-- Limit the angle loop to 1 pixel from a specific circle of precision 
 	-- angSpan is an integer number that maps angles to a new range based on
 	-- the radius of precision, as interger 0..360 may leave a lot of holes
-	local radiusOfPrecision = max(halfWidth, halfHeight);
+	local radiusOfPrecision = max( halfSize.x, halfSize.y );
 	local angSpan = pi*2 / asin( 1/radiusOfPrecision );
 	
 	local maxRad = 0;
 	local allRads = {};
-	local weight = 0;
-	local balanceX = 0;
+	local numPixels = 0;
+	local centerOfMass = Vector:new(0,0);
 	local balanceY = 0;
 	
-	for pxX = 0, imgWidth-1 do
-		for pxY = 0, imgHeight-1 do
+	for pxX = 0, imgSize.x-1 do
+		for pxY = 0, imgSize.y-1 do
 			local _, _, _, a = imgData:getPixel( pxX, pxY );			
 			
 			if a > EFFECTIVE_ALPHA_THRESHOLD then				
-				-- Accumulate weight, each non-transparent pixels adds 1 unit
-				weight = weight + 1;
+				-- Count the number of non-transparent pixels
+				numPixels = numPixels + 1;
 				
 				-- Accumulate coordinates
-				balanceX = balanceX + pxX;
-				balanceY = balanceY + pxY;
+				centerOfMass.x = centerOfMass.x + pxX;
+				centerOfMass.y = centerOfMass.y + pxY;
 			
 				-- Turn into polar coordinates, so that we can collect radiuses
 				local polCoord = PolarVector:new();
-				polCoord:FromCartesian( pxX - halfWidth, pxY - halfHeight );
+				polCoord:FromCartesian( pxX - halfSize.x, pxY - halfSize.y );
 			
 				-- Compare the max radius
 				if polCoord.r > maxRad then
@@ -190,18 +188,19 @@ function Top:SetImage( imgData )
 		jag = jag + log( maxRad - rad + 1);
 	end
 	
-	-- Normalize balance
-	balanceX = balanceX/weight;
-	balanceY = balanceY/weight;
-	local balance  = sqrt( (balanceX-halfWidth)^2 + (balanceY-halfHeight)^2 );
-	balance = 1 - balance/maxRad;
-	
 	-- Normalize
 	jag = jag / (angSpan * log(128))
 	jag = clamp( jag, 0, 1 );	
 	
+	-- Calculate center of mass
+	centerOfMass = centerOfMass/numPixels;
+	
+	-- Calculate balance as 1 - the normalized offset of the center of the mass
+	local balance = 1 - (centerOfMass - halfSize):Length()/maxRad;
+	balance = clamp( balance, 0, 1 );
+	
 	-- Normalize ( base unit will be grams, each 1px = 1mg )
-	weight = weight/1000; 	
+	local weight = numPixels/1000; 	
 	
 	self:SetRadius( maxRad );
 	self:SetJaggedness( jag );
