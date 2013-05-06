@@ -43,14 +43,14 @@ if love.graphics.isSupported( "pixeleffect" ) then
 		
 		for( int i=0; i<NUM_ROTATIONS; i++ )
 		{
-			float fract = float(i)/float(NUM_ROTATIONS);
-			float cs = cos( -angle*fract );
-			float sn = sin( -angle*fract );
+			float angleFract = -angle*float(i)/float(NUM_ROTATIONS);
+			float cs = cos( angleFract );
+			float sn = sin( angleFract );
 			vec2 newPos = vec2( relPos.x*cs - relPos.y*sn, relPos.x*sn + relPos.y*cs );
 			newPos += center;
 			
 			vec4 tex = texture2D( texture, newPos );
-			float rate = pow(i,1.2) * (tex.a +0.6);
+			float rate = pow(float(i),1.2) * (tex.a +0.4);
 			progression = progression + rate;
 			finalColor += tex * rate;
 		}
@@ -73,8 +73,11 @@ function Top:new()
 	local obj = {}	
 	
 	obj.topPhysics = TopPhysics:new();
-	obj.x = 400;
-	obj.y = 400;
+	obj.topPhysics.x = 100;
+	obj.topPhysics.y = 400;
+	obj.topPhysics.angle 		= 0;
+	obj.topPhysics.angleDelta 	= 0;
+	obj.topPhysics.angleVel 	= 0;
 	
 	return setmetatable(obj, self);
 end
@@ -87,36 +90,24 @@ function Top:Load( file )
 end
 
 
-local angle = 0;
-local angleSpeed = 0/180 * math.pi;
-local angleDelta = 0;
-
-function love.update(dt)
-	angleSpeed = angleSpeed + 1*dt;
-	angleDelta = angleSpeed*dt;
-	angle = angle + angleDelta;
-end
-
 function Top:Draw()
-	local scaleX = 0.3
-	local scaleY = 0.3
+	local scaleX = 0.3;
+	local scaleY = 0.3;
 	
-	--angle = angle + angleSpeed;
-	--angleSpeed = angleSpeed + 0.001;
+
+	local phTop = self.topPhysics;
 	
-	love.graphics.setCaption( "RPM: " .. angleSpeed*9.5493 )	
+	love.graphics.setCaption( "RPM: " .. phTop.angleVel * 9.5493 )	
 	
 	if spinBlur then
 		love.graphics.setPixelEffect( spinBlur );
-		spinBlur:send("angle", angleDelta );
-		--print( angleDelta );
+		spinBlur:send("angle", phTop.angleDelta );
 	end
-	
-	
+		
 	love.graphics.draw( 
 		self.image, 
-		self.x, self.y,
-		angle, 
+		phTop.x, phTop.y,
+		phTop.angle, 
 		scaleX, scaleY,
 		self.image:getWidth()/2,
 		self.image:getHeight()/2 
@@ -124,15 +115,161 @@ function Top:Draw()
 end
 
 
+function Top:Update(dt)
+	local phTop = self.topPhysics;
+	
+	local angleAcc = 1*dt;
+	phTop.angleVel = phTop.angleVel + angleAcc;
+	
+	phTop.angleDelta = phTop.angleVel * dt;
+	phTop.angle = phTop.angle + phTop.angleDelta;
+end
+
+
+local sqrt = math.sqrt;
+--[[
+local function MakeNormalMap( imgData, outData )
+	local w,h = imgData:getWidth(), imgData:getHeight();
+	local hr = {}
+	local vt = {}
+	
+	local prevXCol = imgData:getPixel( 0, 0 );
+	
+	local prevCol = {}
+	
+	for pxX = 0, w-1 do
+		vt[pxX] = {}
+		hr[pxX] = {}
+		
+		local prevYCol = imgData:getPixel( pxX, 0 );
+		
+		for pxY = 0, h-1 do
+			local col = imgData:getPixel( pxX, pxY );			
+			local prevXCol = prevCol[pxY] or col;			
+			
+			vt[pxX][pxY] = col - prevYCol
+			hr[pxX][pxY] = col - prevXCol;
+			
+			prevCol[pxY] = col;
+			prevYCol = col;
+		end
+	end
+	
+		
+	for pxX = 0, w-2 do
+		for pxY = 0, h-2 do			
+			local dz = hr[pxX][pxY] + hr[pxX+1][pxY];
+			
+			local length = sqrt((dz/2)^2 +1);
+			local nx = -dz/length;
+			local nz = 1/length;
+			
+				  dz = vt[pxX][pxY] + vt[pxX][pxY+1];
+			
+				  length = sqrt((dz/2)^2 +1);
+			local ny = -dz/length;
+				  nz = nz + 1/length;
+			
+			
+			outData:setPixel( pxX, pxY, 127 + nx*127, 127 + ny*127, nz*127, 255 );
+		end
+	end
+	
+end
+--]]
+
+---[[
+local function MakeNormalMap( imgData, outData )
+	local w,h = imgData:getWidth(), imgData:getHeight();
+	
+
+	local function saveGetPX( x, y )
+		if x< 0 then 
+			x = 0;
+		elseif x>= w then
+			x = w-1;
+		end
+		
+		if y< 0 then 
+			y = 0;
+		elseif y>= h then
+			y = h-1;
+		end
+		
+		return imgData:getPixel( x, y );
+	end
+	
+	local abs = math.abs
+	local function kernel(x, y)
+		local dz =imgData:getPixel( x, y );
+		
+		local nx, ny, nz = 0, 0, 0;
+		for xx= -2, 2 do
+			for yy= -2, 2 do
+				if xx ~=0 or yy ~= 0 then
+					local dzz = saveGetPX( x+xx, y+yy );
+									
+					nx = nx + xx*(dzz - dz);
+					ny = ny + yy*(dzz - dz);
+					nz = nz + sqrt(xx^2 + yy^2);
+				end
+			end			
+		end
+		
+		local len = sqrt(nx^2 + ny^2 + nz^2);
+		return nx/len*127+127, ny/len*127+127, nz/len*255;
+	end
+	
+	for pxX = 0, w-1 do
+		for pxY = 0, h-1 do
+			local r, g, b = kernel(pxX, pxY);
+			outData:setPixel( pxX, pxY, r, g, b, 255 );
+		end
+	end
+end
+--]]
+
+
 local top1, top2;
+local arenaImg = nil;
+local arenaNMap = nil
 function love.load()
 	top1 = Top:new();
 	
 	top1:Load( "test/img/spinner1.png" );
+	
+	local arenaMap = love.image.newImageData( "test/img/arena_mask2.png" );
+	arenaNMap = love.image.newImageData( arenaMap:getWidth(), arenaMap:getHeight() );
+	MakeNormalMap( arenaMap, arenaNMap );
+	arenaImg = love.graphics.newImage(arenaNMap);
+end
+
+local vx = 0;
+local vy = 0;
+local fst = 5;
+function love.update(dt)
+	top1:Update(dt);
+	
+	if fst > 0 then
+		dt = 0;
+		fst = fst-1;
+	end
+	
+	local xd, yd = arenaNMap:getPixel( top1.topPhysics.x/4, top1.topPhysics.y/4 );
+	
+	vx = vx - vx*(0.0007*dt) + (xd/127 - 1)*dt*7;
+	vy = vy - vy*(0.0007*dt) + (yd/127 - 1)*dt*7;
+	
+	top1.topPhysics.x = top1.topPhysics.x - vx*dt*4;
+	top1.topPhysics.y = top1.topPhysics.y - vy*dt*4;
+	
 end
 
 function love.draw()
-	top1:Draw();
+	love.graphics.translate( -top1.topPhysics.x +love.graphics.getWidth()/2, -top1.topPhysics.y +love.graphics.getHeight()/2 );
+	love.graphics.setPixelEffect( nil );
+	love.graphics.draw( arenaImg, 0, 0, 0, 4, 4 );
+	top1:Draw();	
 end
 
 
