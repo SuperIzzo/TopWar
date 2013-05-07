@@ -161,12 +161,13 @@ local function MakeNormalMap( imgData, outData )
 	
 	for x = 0, height-2 do		
 		local C1 = imgData:getPixel( x, 0 );
+		local C0 = C1;
 		columnB[-1] = columnB[0];
 		
 		grad[x] = {};
 		
 		for y = 0, height-2 do
-			local nextColor = imgData:getPixel( x+1, y+1 );
+			local C2 = imgData:getPixel( x+1, y+1 );
 			
 			local hr = ( columnA[y] - C1 )/2;
 			local vr = ( columnB[y-1] - columnB[y+1] )/2;
@@ -177,9 +178,10 @@ local function MakeNormalMap( imgData, outData )
 			grad[x][y] = { hr, vr}
 			
 			-- Update colors
-			C1 = nextColor;
-			columnA[y] = columnB[y];
-			columnB[y] = C1;
+			columnA[y-1] = columnB[y-1];			
+			columnB[y-1] = C0;
+			C0 = C1;
+			C1 = C2;						
 		end
 	end
 	
