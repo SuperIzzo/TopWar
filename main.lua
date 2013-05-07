@@ -97,7 +97,7 @@ function Top:Draw()
 
 	local phTop = self.topPhysics;
 	
-	love.graphics.setCaption( "RPM: " .. phTop.angleVel * 9.5493 )	
+	love.graphics.setCaption( "TopWar - RPM: " .. math.floor(phTop.angleVel * 9.5493) )	
 	
 	if spinBlur then
 		love.graphics.setPixelEffect( spinBlur );
@@ -154,71 +154,50 @@ local function MakeNormalMap( imgData, outData )
 	for y = 0, height-1 do
 		columnA[y] = imgData:getPixel( 0, y );
 		columnB[y] = columnA[y];
-	end
+	end	
+	columnA[-1] = columnA[0]
+	columnB[-1] = columnB[0]
 	
-	-- Store the gradients for later
-	local grad = {};
+	local diagonalLength = sqrt(2);
 	
 	for x = 0, height-2 do		
 		local C1 = imgData:getPixel( x, 0 );
 		local C0 = C1;
 		columnB[-1] = columnB[0];
 		
-		grad[x] = {};
-		
 		for y = 0, height-2 do
 			local C2 = imgData:getPixel( x+1, y+1 );
 			
-			local hr = ( columnA[y] - C1 )/2;
-			local vr = ( columnB[y-1] - columnB[y+1] )/2;
+			-- Diagonals have less weight, when using gausian distribution
+			local dg1 = ( columnA[y-1] - C2 ) * diagonalLength;
+			local dg2 = ( columnA[y+1] - C0 ) * diagonalLength;
 			
-			-- It is a 3D vector showing the direction of the normal
-			-- x and y are in the oposite direction of the gradients
-			-- while zet is implicitly 2
-			grad[x][y] = { hr, vr}
+			local hr = (columnA[y] - C1  + dg1 + dg2)/2;
+			local vr = (columnB[y-1] - columnB[y+1]  + dg1 - dg2)/2;
 			
 			-- Update colors
 			columnA[y-1] = columnB[y-1];			
 			columnB[y-1] = C0;
 			C0 = C1;
-			C1 = C2;						
-		end
-	end
-	
-	-- Aplly blur and compute and store as color
-	for x1=1, width-3 do
-		local x0 = x1-1;
-		local x2 = x1+1;
-		
-		for y1=1, height-3 do
-			local y0 = y1-1;
-			local y2 = y1+1;
-			
-			local nx = --grad[x1][y1][1] * 18
-			---[[
-				grad[x0][y0][1]   + grad[x1][y0][1]*2 + grad[x2][y0][1]   +
-				grad[x0][y1][1]*2 + grad[x1][y1][1]*4 + grad[x2][y1][1]*2 +
-				grad[x0][y2][1]   + grad[x1][y2][1]*2 + grad[x2][y2][1];
-			--]]
-			
-			local ny = --grad[x1][y1][2] * 18
-			---[[
-				grad[x0][y0][2]   + grad[x1][y0][2]*2 + grad[x2][y0][2] +
-				grad[x0][y1][2]*2 + grad[x1][y1][2]*4 + grad[x2][y1][2]*2 +
-				grad[x0][y2][2]   + grad[x1][y2][2]*2 + grad[x2][y2][2];
-			--]]
-							
-			-- after summing up the two vectors z becomes 2
-			-- nz^2 = (9 * 2*2)^2 = 36^2 = 1296
-			-- the first *2 is because of the gausian distribution
-			-- the second *2 because there is `nx' and `ny'
-			local len = sqrt(nx^2 + ny^2 + 1296)
-			
-			-- Compute the gradient vector and store in
-			outData:setPixel( x1, y1, 
-				nx/len * 127+127,
-				ny/len * 127+127,
-				36/len*255,
+			C1 = C2;
+
+			-- There are a few magic numbers, used as optimisation 
+			-- (we're in a big loop) which take advantage of z being easy to
+			-- calculate staticaly based on the kernel shape.
+			-- z = 1 from hr + 1 from vr + 1.414 from the two diagonals
+			-- z = 3.4142
+			-- z^2 = 11.657
+			-- z * the full blue range = 3.4142 * 255 = 870.624
+			local len = sqrt(hr^2 + vr^2 + 11.657 )
+				
+			-- hr and vr need to be divided by len and multiplied by 127
+			-- to turn into color space
+			local term = 127/len;
+						
+			outData:setPixel( x, y, 
+				hr*term + 127,
+				vr*term + 127,
+				870.624/len,	
 				255);
 		end
 	end
@@ -251,7 +230,23 @@ function love.update(dt)
 		fst = fst-1;
 	end
 	
-	local xd, yd = arenaNMap:getPixel( top1.topPhysics.x, top1.topPhysics.y );
+	local tx, ty = top1.topPhysics.x, top1.topPhysics.y;
+	local ftx, fty = math.floor(tx), math.floor(ty);
+	local dtx, dty = tx-ftx, ty-fty
+	
+	-- bilinear interpolation
+	local xd00, yd00 = arenaNMap:getPixel( ftx, fty );
+	local xd10, yd10 = arenaNMap:getPixel( ftx+1, fty );
+	local xd01, yd01 = arenaNMap:getPixel( ftx, fty+1 );
+	local xd11, yd11 = arenaNMap:getPixel( ftx+1, fty+1 );	
+	
+	local xd0 = xd00*(1-dtx) + xd10*dtx;	
+	local yd0 = yd00*(1-dtx) + yd10*dtx;
+	local xd1 = xd01*(1-dtx) + xd11*dtx;
+	local yd1 = yd01*(1-dtx) + yd11*dtx;
+	local xd = xd0*(1-dty) + xd1*dty;
+	local yd = yd0*(1-dty) + yd1*dty;
+	
 	
 	vx = vx - vx*(0.007*dt) + (xd/127 - 1)*dt*50;
 	vy = vy - vy*(0.007*dt) + (yd/127 - 1)*dt*50;
