@@ -1,5 +1,9 @@
-local ImageUtils 		= require 'src.game.graphics.ImageUtils'
-local GradientTestImage = require 'test.testutils.GradientTestImage'
+--===========================================================================--
+--  Dependencies
+--===========================================================================--
+local ImageUtils 			= require 'src.game.graphics.ImageUtils'
+local GradientTestImage 	= require 'test.testutils.GradientTestImage'
+local random 				= math.random
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -29,38 +33,60 @@ end
 
 
 -------------------------------------------------------------------------------
---  TEST_horizontal_gradients_normals_are_calculated_properly
+--  TEST_linear_gradient_normals_are_calculated_properly
 -------------------------------------------------------------------------------
 function T:  TEST_gradients_normals_are_calculated_properly()
-	local depthMask  = GradientTestImage:new( 32, 32, 1, 0 );
-	local normalMask = CreateEmptyImage( 32, 32 );
+	-- Gradient configuration and expected results
+	local gradients = 
+	{
+		--[[--  xstep, ystep, start	 |  expected vector  |  tolerance  --]]--
+		{       1,   0,  0,			-0.7,   0.0,   0.7,			0.02       },
+		{      -1,   0, 32,			 0.7,   0.0,   0.7,			0.02       },
+		{       0,   1,  0,		     0.0,  -0.7,   0.7,			0.02       },
+		{       0,  -1, 32,		     0.0,   0.7,   0.7,			0.02       },
+		{	    0,   0,  0,		     0.0,   0.0,   1.0,			0.02       },
+		{       1,   1,  0,			-0.58, -0.58,  0.58,		0.02       },
+		{      -1,  -1, 32,			 0.58,  0.58,  0.58,		0.02       },
+		{     0.5, 0.5,  0,			-0.40, -0.40,  0.82,		0.02       },
+		{     0.3, 0.3,  0,			-0.32, -0.32,  0.89,		0.02       },
+	};
+		
+	for i= 1, #gradients do
+		local xstep 		= gradients[i][1];
+		local ystep 		= gradients[i][2];
+		local start 		= gradients[i][3];
+		local expectedX		= gradients[i][4];
+		local expectedY		= gradients[i][5];
+		local expectedZ		= gradients[i][6];
+		local tolerance		= gradients[i][7];
+		
+		local depthMask  = GradientTestImage:new( 32, 32, xstep, ystep );
+		local normalMask = CreateEmptyImage( 32, 32 );
 	
-	ImageUtils.MakeNormalMap( depthMask, normalMask );
+		ImageUtils.DepthToNormalMap( depthMask, normalMask );
 	
-	local x,y,z = 
-		Color2NormalVector( normalMask:getPixel( 16, 16 ) );
+		for j= 1, 8 do
+			-- We leave a 2 pixels margin on each side,
+			-- the middle is what is really interesting
+			local pixX = random(2,28);
+			local pixY = random(2,28);
+			
+			local x,y,z = 
+				Color2NormalVector( normalMask:getPixel( pixX, pixY ) );
 	
-	assert_equal( -0.7071, 		x,  0.02 );
-	assert_equal(  0,			y,  0.02 );
-	assert_equal(  0.7071, 		z,  0.02 );
+			local msg = "Gradient #" .. i .. 
+						" failed to produce the expected output at (" ..
+						pixX .. ", " .. pixY .. ") - ";
+	
+			assert_equal( expectedX,	x,  tolerance, msg .. "x");
+			assert_equal( expectedY,	y,  tolerance, msg .. "y");
+			assert_equal( expectedZ, 	z,  tolerance, msg .. "z");
+		end
+	end
 end
 
 
--------------------------------------------------------------------------------
---  TEST_vertical_gradients_normals_are_calculated_properly
--------------------------------------------------------------------------------
-function T:  TEST_gradients_normals_are_calculated_properly()
-	local depthMask  = GradientTestImage:new( 32, 32, 0, 1 );
-	local normalMask = CreateEmptyImage( 32, 32 );
-	
-	ImageUtils.MakeNormalMap( depthMask, normalMask );
-	
-	local x,y,z = 
-		Color2NormalVector( normalMask:getPixel( 16, 16 ) );
-	
-	assert_equal(  0, 		    x,  0.02 );
-	assert_equal( -0.7071,		y,  0.02 );
-	assert_equal(  0.7071, 		z,  0.02 );
-end
-
-return T
+--===========================================================================--
+--  Initialization
+--===========================================================================--
+return T;

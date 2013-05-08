@@ -34,7 +34,7 @@ end
 -------------------------------------------------------------------------------
 --  PhArena:SetDepthMask : Sets the depth mask of the arena
 -------------------------------------------------------------------------------
-function PhArena:GetNormal( x, y )
+function PhArena:GetDepth( x, y )
 	local result = {};
 	
 	result.x = 0;

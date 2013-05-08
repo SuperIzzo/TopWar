@@ -39,7 +39,7 @@ ImageUtils.__index = ImageUtils;
 --   and 128-255 (for positive); Z can only ever be positive and is mapped to 
 --   the full 0-255 range.
 -------------------------------------------------------------------------------
-function ImageUtils.MakeNormalMap( imgData, outData )
+function ImageUtils.DepthToNormalMap( imgData, outData )
 	local width, height = imgData:getWidth(), imgData:getHeight();
 
 	-- We need to store 2 columns of the original image
@@ -53,9 +53,15 @@ function ImageUtils.MakeNormalMap( imgData, outData )
 	end	
 	columnA[-1] = columnA[0]
 	columnB[-1] = columnB[0]
-
+	
+	-- A few constants to help speed up the loop that's comming
 	local diagonalWeight = 1/sqrt(2);
+	local z = 1 + sqrt(2);
+	local z_squared = z^2;
+	local z_mul_255 = z*255;
 
+	-- Process every pixel from the input image
+	-- We poduce an image that is 4 rows and 4 colums smaller
 	for x = 0, height-2 do	
 		local C1 = imgData:getPixel( x, 0 );
 		local C0 = C1;
@@ -64,10 +70,11 @@ function ImageUtils.MakeNormalMap( imgData, outData )
 		for y = 0, height-2 do
 			local C2 = imgData:getPixel( x+1, y+1 );
 
-			-- Diagonals have less weight, when using gausian distribution
+			-- Diagonals have less weight
 			local dg1 = ( columnA[y-1] - C2 ) * diagonalWeight;
 			local dg2 = ( columnA[y+1] - C0 ) * diagonalWeight;
 
+			-- We divide by 2 because of the symetry (8 neighbours, 4 pairs)
 			local hr = (columnA[y] - C1 + dg1 + dg2)/2;
 			local vr = (columnB[y-1] - columnB[y+1] + dg1 - dg2)/2;
 
@@ -77,28 +84,17 @@ function ImageUtils.MakeNormalMap( imgData, outData )
 			C0 = C1;
 			C1 = C2;
 
-			
-			--//--\\--//--\\--//--\\--//--\\--//--\\--//--\\--//--\\--//--\\--
-			-- ATTENTION:  Magic numbers!
-			-- - - - - - - - - - - - - - - - - -
-			-- We're in a big loop, a few magic numbers have been used to
-			-- increase performance, which take advantage of z being easy
-			-- to calculate staticaly based on the kernel shape.
-			--
-			--  z   ~ 2.414 ~ 0.5 for hr + 0.5 for vr + 1.414 for diagonals
-			--  z^2 ~ 5.8284
-			--  z * the full blue range ~ 2.414 * 255 ~ 615.624
-			--//--\\--//--\\--//--\\--//--\\--//--\\--//--\\--//--\\--//--\\--
-			local len = sqrt(hr^2 + vr^2 + 5.8284 )
+			-- Length of the normal vector, needed for normalization
+			local len = sqrt(hr^2 + vr^2 + z_squared )
 			
 			-- hr and vr need to be divided by len and multiplied by 127
 			-- to turn into color space
 			local term = 127/len;
 
 			outData:setPixel( x, y,
-			hr*term + 127,
+			hr*term + 127, 
 			vr*term + 127,
-			615.624/len,	
+			z_mul_255/len,	
 			255);
 		end
 	end

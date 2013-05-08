@@ -27,7 +27,7 @@ end
 --  TEST_arena_normal_map_is_generated_properly
 -------------------------------------------------------------------------------
 function T: TEST_arena_normal_map_is()
-	local hrGradient = LoadImage( "test/img/hr_asc1_gradient.png" );
+	
 end
 
 --===========================================================================--

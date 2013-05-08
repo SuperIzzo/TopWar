@@ -1,7 +1,9 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local setmetatable = setmetatable
+local setmetatable 		= setmetatable
+local floor				= math.floor
+
 
 
 
@@ -56,7 +58,12 @@ end
 --  GradientTestImage:getPixel : return a gradient pixel based on ccords
 -------------------------------------------------------------------------------
 function GradientTestImage:getPixel( x, y )
-	local value = self.startVal + x*self.xstep + y*self.ystep;
+	local value = 
+			self.startVal
+			+ floor(x)*self.xstep 
+			+ floor(y)*self.ystep;
+	
+	value = floor( value );
 	
 	return value, value, value, 255;
 end
