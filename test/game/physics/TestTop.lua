@@ -1,8 +1,9 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local Top 			= require 'src.game.Top'
-local ipairs		= ipairs
+local Top 				= require 'src.game.physics.Top'
+local ipairs			= ipairs
+local coroutine			= coroutine
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -19,7 +20,7 @@ local function LoadTop( topFileName )
 	if not loadedTops[ topFileName ] then
 		local top = Top:new();
 		local topImg = love.image.newImageData( topFileName );
-		top:SetImage( topImg );
+		top:SetFromImageData( topImg );
 		
 		loadedTops[ topFileName ] = top;
 	end;
@@ -255,6 +256,7 @@ function T: TEST_loaded_top_has_correct_balance()
 		assert_equal( expBalance,  	top:GetBalance(), 	tolerance );
 	end
 end
+
 
 --===========================================================================--
 --  Initialization

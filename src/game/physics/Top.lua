@@ -12,9 +12,6 @@ local floor			= _G.math.floor
 local asin			= _G.math.asin
 local pi			= _G.math.pi
 
-local log2			= log(2);
-
-
 
 -------------------------------------------------------------------------------
 --  clamp : clamps a value in range
@@ -31,10 +28,10 @@ end
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class Top : A spinning top object
+--	Class PhTop : The physical data and logic of a spinning top object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local Top = {}
-Top.__index = Top;
+local PhTop = {}
+PhTop.__index = PhTop;
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -46,7 +43,7 @@ local EFFECTIVE_ALPHA_THRESHOLD = 125
 -------------------------------------------------------------------------------
 --  Top:new : Creates a new top instance
 -------------------------------------------------------------------------------
-function Top:new()
+function PhTop:new()
 	local obj = {}
 	
 	obj._weigth 	= 0;
@@ -61,7 +58,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetWeight : Returns the weight of the top
 -------------------------------------------------------------------------------
-function Top:GetWeight()
+function PhTop:GetWeight()
 	return self._weigth;
 end
 
@@ -69,7 +66,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetJaggedness : Returns the jaggedness of the top
 -------------------------------------------------------------------------------
-function Top:GetJaggedness()
+function PhTop:GetJaggedness()
 	return self._jaggedness;
 end
 
@@ -77,7 +74,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetRadius : Returns the radius of the top
 -------------------------------------------------------------------------------
-function Top:GetRadius()
+function PhTop:GetRadius()
 	return self._radius;
 end
 
@@ -85,7 +82,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetRadius : Returns the radius of the top
 -------------------------------------------------------------------------------
-function Top:GetBalance()
+function PhTop:GetBalance()
 	return self._balance;
 end
 
@@ -93,7 +90,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetWeight : Sets the weight of the top
 -------------------------------------------------------------------------------
-function Top:SetWeight( weigth )
+function PhTop:SetWeight( weigth )
 	assert( weigth >= 0 )
 	
 	self._weigth = weigth;
@@ -103,7 +100,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetJaggedness : Sets the jaggedness of the top
 -------------------------------------------------------------------------------
-function Top:SetJaggedness( jag )
+function PhTop:SetJaggedness( jag )
 	assert( jag >= 0 and jag <= 1 )
 	
 	self._jaggedness = jag;
@@ -113,7 +110,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetBalance : Sets the balance of the top
 -------------------------------------------------------------------------------
-function Top:SetRadius( rad )
+function PhTop:SetRadius( rad )
 	assert( rad >= 0 )
 	
 	self._radius = rad;
@@ -123,7 +120,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetBalance : Sets the balance of the top
 -------------------------------------------------------------------------------
-function Top:SetBalance( balance )
+function PhTop:SetBalance( balance )
 	assert( balance >= 0 and balance <= 1)
 	
 	self._balance = balance;
@@ -131,9 +128,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  Top:SetImage : Sets the properties of a tpp from an image
+-- Top:SetFromImageData : Sets the properties of a top from an image
 -------------------------------------------------------------------------------
-function Top:SetImage( imgData )
+function PhTop:SetFromImageData( imgData )
 	local imgSize	= Vector:new( imgData:getWidth(), imgData:getHeight() );	
 	local halfSize	= imgSize/2;
 	local radSpan	= halfSize:Length();
@@ -209,8 +206,7 @@ function Top:SetImage( imgData )
 end
 
 
-
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return Top
+return PhTop
