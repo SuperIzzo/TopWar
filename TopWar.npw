@@ -6,7 +6,13 @@
                 <File name="src\math\PolarVector.lua" />
             </Folder>
             <Folder name="game">
-                <File name="src\game\Top.lua" />
+                <Folder name="phisics">
+                    <File name="src\game\physics\Top.lua" />
+                    <File name="src\game\physics\Arena.lua" />
+                </Folder>
+                <Folder name="graphics">
+                    <File name="src\game\graphics\ImageUtils.lua" />
+                </Folder>
             </Folder>
             <Folder name="gui" />
             <File name="src\strict.lua" />
@@ -42,7 +48,11 @@
             </Folder>
             <File name="test\TestMain.lua" />
             <Folder name="game">
-                <File name="test\game\TestTop.lua" />
+                <Folder name="physics">
+                    <File name="test\game\physics\TestTop.lua" />
+                    <File name="test\game\physics\TestArena.lua" />
+                </Folder>
+                <Folder name="graphics" />
             </Folder>
             <Folder name="math">
                 <File name="test\math\TestPolarVector.lua" />
