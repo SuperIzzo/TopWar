@@ -6,25 +6,17 @@
             <Folder name="math">
                 <File name="src\math\Vector.lua" />
                 <File name="src\math\PolarVector.lua" />
-                <File name="src\math\Utils.lua" />
+                <File name="src\math\ImageUtils.lua" />
             </Folder>
             <Folder name="game">
                 <Folder name="phisics">
                     <File name="src\game\physics\Top.lua" />
                     <File name="src\game\physics\Arena.lua" />
                 </Folder>
-                <Folder name="graphics">
-                    <File name="src\game\graphics\ImageUtils.lua" />
-                </Folder>
+                <Folder name="graphics" />
             </Folder>
             <Folder name="gui" />
             <File name="src\strict.lua" />
-        </Folder>
-        <Folder name="docs">
-            <File name="docs\Rules.txt" />
-            <File name="docs\Tops.txt" />
-            <File name="docs\Colors.txt" />
-            <File name="docs\Spirit.txt" />
         </Folder>
         <Folder name="test">
             <Folder name="lib">
@@ -55,15 +47,20 @@
                     <File name="test\game\physics\TestTop.lua" />
                     <File name="test\game\physics\TestArena.lua" />
                 </Folder>
-                <Folder name="graphics">
-                    <File name="test\game\graphics\TestImageUtils.lua" />
-                </Folder>
+                <Folder name="graphics" />
             </Folder>
             <Folder name="math">
                 <File name="test\math\TestPolarVector.lua" />
                 <File name="test\math\TestVector.lua" />
+                <File name="test\math\TestImageUtils.lua" />
             </Folder>
             <File name="test\TestMain.lua" />
+        </Folder>
+        <Folder name="docs">
+            <File name="docs\Rules.txt" />
+            <File name="docs\Tops.txt" />
+            <File name="docs\Colors.txt" />
+            <File name="docs\Spirit.txt" />
         </Folder>
     </Project>
 </NotepadPlus>

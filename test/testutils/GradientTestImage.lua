@@ -19,13 +19,13 @@ GradientTestImage.__index = GradientTestImage
 -------------------------------------------------------------------------------
 function GradientTestImage:new( w, h, xstep, ystep, value )
 	local obj = {};
-	
+
 	obj.width  = w;
 	obj.height = h;
 	obj.xstep = xstep;
 	obj.ystep = ystep;
 	obj.startVal = value or 0;
-	
+
 	return setmetatable( obj, self )
 end 
 
@@ -62,9 +62,9 @@ function GradientTestImage:getPixel( x, y )
 			self.startVal
 			+ floor(x)*self.xstep 
 			+ floor(y)*self.ystep;
-	
+
 	value = floor( value );
-	
+
 	return value, value, value, 255;
 end
 

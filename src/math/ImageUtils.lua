@@ -14,6 +14,24 @@ ImageUtils.__index = ImageUtils;
 
 
 -------------------------------------------------------------------------------
+--  ImageUtils.Lerp : Linearly interpolates between two values
+-------------------------------------------------------------------------------
+function ImageUtils.Lerp( a, b, weight )
+	return a*(1-weight) + b*weight;
+end
+
+
+-------------------------------------------------------------------------------
+--  ImageUtils.Bilerp : Bilinear interpolation between four values
+-------------------------------------------------------------------------------
+function ImageUtils.Bilerp( a0, b0, a1, b1, weight1, weight2 )
+	local a = ImageUtils.Lerp( a0, b0, weight1 );
+	local b = ImageUtils.Lerp( a1, b1, weight1 );
+	return ImageUtils.Lerp( a, b, weight2 );
+end
+
+
+-------------------------------------------------------------------------------
 --  ImageUtils.MakeNormalMap : Creates a new vector instance
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --   This algorithm tries to be as efficient as possible,  because the getPixel
