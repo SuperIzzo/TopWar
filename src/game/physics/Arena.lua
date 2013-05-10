@@ -51,6 +51,30 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Arena:AddTop : Adds a top to the arena
+-------------------------------------------------------------------------------
+function Arena:AddTop( top )
+	self._tops[ #self._tops+1 ] = top;
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:Update : Updates the arena and all tops in it
+-------------------------------------------------------------------------------
+function Arena:Update( dt )
+	for i = 1, #self._tops do
+		local top = self._tops[i];
+		
+		local nx, ny, nz = self:GetNormal( top.x, top.y );
+		top.xVelocity = top.xVelocity + nx;
+		top.yVelocity = top.yVelocity + ny;
+		
+		top:Update( dt );
+	end
+end
+
+
+-------------------------------------------------------------------------------
 --  Arena:SetDepthMask : Sets the depth mask of the arena
 -------------------------------------------------------------------------------
 function Arena:SetDepthMask( mask )

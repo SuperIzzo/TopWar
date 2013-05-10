@@ -37,7 +37,13 @@ local EFFECTIVE_ALPHA_THRESHOLD = 125
 --  Top:new : Creates a new top instance
 -------------------------------------------------------------------------------
 function Top:new()
-	local obj = {}	
+	local obj = {}
+	
+	-- Physics
+	obj.x = 0;
+	obj.y = 0;
+	obj.xVelocity = 0;
+	obj.yVelocity = 0;	
 	
 	-- Statistics
 	obj._weigth 	= 0;
@@ -46,6 +52,15 @@ function Top:new()
 	obj._balance	= 0;
 	
 	return setmetatable(obj, self);
+end
+
+
+-------------------------------------------------------------------------------
+--  Top:Update : Updates the top position
+-------------------------------------------------------------------------------
+function Top:Update( dt )
+	self.x = self.x + self.xVelocity*dt;
+	self.y = self.y + self.yVelocity*dt;
 end
 
 
