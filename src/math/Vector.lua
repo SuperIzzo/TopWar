@@ -1,8 +1,9 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local setmetatable 		= _G.setmetatable
-local sqrt				= _G.math.sqrt
+-- Aliases
+local setmetatable 		= setmetatable
+local sqrt				= math.sqrt
 
 
 

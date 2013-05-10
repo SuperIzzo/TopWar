@@ -1,7 +1,10 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+-- Modules
 local Top 				= require 'src.game.physics.Top'
+
+-- Aliases
 local ipairs			= ipairs
 local coroutine			= coroutine
 

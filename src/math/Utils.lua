@@ -4,35 +4,71 @@
 local sqrt 				= math.sqrt
 
 
-
-
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class ImageUtils : general image processing routines 
+--	Class Utils : general math utility functions
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local ImageUtils = {}
-ImageUtils.__index = ImageUtils;
+local Utils = {}
+Utils.__index = Utils;
 
 
 -------------------------------------------------------------------------------
---  ImageUtils.Lerp : Linearly interpolates between two values
+--  Utils.Clamp : clamps a value in range
 -------------------------------------------------------------------------------
-function ImageUtils.Lerp( a, b, weight )
+function Utils.Clamp( x, bot, top )
+	if x < bot then
+		x = bot
+	elseif x > top then
+		x = top
+	end
+	
+	return x;
+end
+
+
+-------------------------------------------------------------------------------
+--  Utils.Lerp : Linearly interpolates between two values
+-------------------------------------------------------------------------------
+function Utils.Lerp( a, b, weight )
 	return a*(1-weight) + b*weight;
 end
 
 
 -------------------------------------------------------------------------------
---  ImageUtils.Bilerp : Bilinear interpolation between four values
+--  Utils.Bilerp : Bilinear interpolation between four values
 -------------------------------------------------------------------------------
-function ImageUtils.Bilerp( a0, b0, a1, b1, weight1, weight2 )
-	local a = ImageUtils.Lerp( a0, b0, weight1 );
-	local b = ImageUtils.Lerp( a1, b1, weight1 );
-	return ImageUtils.Lerp( a, b, weight2 );
+function Utils.Bilerp( a0, b0, a1, b1, weight1, weight2 )
+	local a = Utils.Lerp( a0, b0, weight1 );
+	local b = Utils.Lerp( a1, b1, weight1 );
+	return Utils.Lerp( a, b, weight2 );
 end
 
 
 -------------------------------------------------------------------------------
---  ImageUtils.MakeNormalMap : Creates a new vector instance
+--  ColorToNormal : an utility function to conver color to unit normal vector
+-------------------------------------------------------------------------------
+function Utils.ColorToNormal(r,g,b)
+	local x = (r-127)/127;
+	local y = (g-127)/127;
+	local z =  b/255;
+	
+	return x,y,z;
+end
+
+
+-------------------------------------------------------------------------------
+--  NormalToColor : an utility function to convert normal to color vector
+-------------------------------------------------------------------------------
+function Utils.NormalToColor(x,y,z)
+	local r = Utils.Clamp(x*127 + 127, 0, 255);
+	local g = Utils.Clamp(y*127 + 127, 0, 255);
+	local b = Utils.Clamp(z*255, 0, 255);
+	
+	return r,g,b;
+end
+
+
+-------------------------------------------------------------------------------
+--  Utils.MakeNormalMap : Creates a new vector instance
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --   This algorithm tries to be as efficient as possible,  because the getPixel
 --   and  setPixel routines  seem to be quite expensive.  First  we compute the 
@@ -57,7 +93,7 @@ end
 --   and 128-255 (for positive); Z can only ever be positive and is mapped to 
 --   the full 0-255 range.
 -------------------------------------------------------------------------------
-function ImageUtils.DepthToNormalMap( imgData, outData )
+function Utils.DepthToNormalMap( imgData, outData )
 	local width, height = imgData:getWidth(), imgData:getHeight();
 
 	-- We need to store 2 columns of the original image
@@ -124,4 +160,4 @@ end
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return ImageUtils
+return Utils

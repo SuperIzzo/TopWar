@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local ImageUtils 			= require 'src.math.ImageUtils'
+local Utils		 			= require 'src.math.Utils'
 local GradientTestImage 	= require 'test.testutils.GradientTestImage'
 local random 				= math.random
 
@@ -17,18 +17,6 @@ local T = {}
 -------------------------------------------------------------------------------
 local function CreateEmptyImage( w, h )
 	return love.image.newImageData( w, h );
-end
-
-
--------------------------------------------------------------------------------
---  Color2NormalVector : an utility function to conver color to unit normal
--------------------------------------------------------------------------------
-local function Color2NormalVector(r,g,b)
-	local x = (r-127)/127;
-	local y = (g-127)/127;
-	local z =  b/255;
-	
-	return x,y,z;
 end
 
 
@@ -63,7 +51,7 @@ function T:  TEST_gradients_normals_are_calculated_properly()
 		local depthMask  = GradientTestImage:new( 32, 32, xstep, ystep );
 		local normalMask = CreateEmptyImage( 32, 32 );
 	
-		ImageUtils.DepthToNormalMap( depthMask, normalMask );
+		Utils.DepthToNormalMap( depthMask, normalMask );
 	
 		for j= 1, 8 do
 			-- We leave a 2 pixels margin on each side,
@@ -72,7 +60,7 @@ function T:  TEST_gradients_normals_are_calculated_properly()
 			local pixY = random(2,28);
 			
 			local x,y,z = 
-				Color2NormalVector( normalMask:getPixel( pixX, pixY ) );
+				Utils.ColorToNormal( normalMask:getPixel( pixX, pixY ) );
 	
 			local msg = "Gradient #" .. i .. 
 						" failed to produce the expected output at (" ..
@@ -108,7 +96,7 @@ function T:  TEST_linear_interpoltion()
 		local expected		= testValues[i][4];
 		local tolerance		= testValues[i][5];
 
-		local value = ImageUtils.Lerp( a, b,  weight );
+		local value = Utils.Lerp( a, b,  weight );
 
 		assert_equal( expected,	 value,  tolerance );
 	end
@@ -140,7 +128,7 @@ function T:  TEST_bilinear_interpoltion()
 		local expected		= testValues[i][7];
 		local tolerance		= testValues[i][8];
 
-		local value = ImageUtils.Bilerp( a0, b0, a1, b1, weight1, weight2 );
+		local value = Utils.Bilerp( a0, b0, a1, b1, weight1, weight2 );
 
 		assert_equal( expected,	 value,  tolerance );
 	end

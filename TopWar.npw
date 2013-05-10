@@ -6,7 +6,7 @@
             <Folder name="math">
                 <File name="src\math\Vector.lua" />
                 <File name="src\math\PolarVector.lua" />
-                <File name="src\math\ImageUtils.lua" />
+                <File name="src\math\Utils.lua" />
             </Folder>
             <Folder name="game">
                 <Folder name="phisics">
@@ -41,6 +41,7 @@
             </Folder>
             <Folder name="testutils">
                 <File name="test\testutils\GradientTestImage.lua" />
+                <File name="test\testutils\NormalUnitImageFilter.lua" />
             </Folder>
             <Folder name="game">
                 <Folder name="physics">
@@ -52,7 +53,7 @@
             <Folder name="math">
                 <File name="test\math\TestPolarVector.lua" />
                 <File name="test\math\TestVector.lua" />
-                <File name="test\math\TestImageUtils.lua" />
+                <File name="test\math\TestUtils.lua" />
             </Folder>
             <File name="test\TestMain.lua" />
         </Folder>

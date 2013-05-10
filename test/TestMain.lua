@@ -1,13 +1,10 @@
 --===========================================================================--
---  Dependencies (I)
+--  Dependencies
 --===========================================================================--
+-- Modules
 require 'src.strict';
 
-
---===========================================================================--
---  Forward Declarations
---===========================================================================--
--- lunatest dependencies
+-- forward declarations (lunatest dependencies)
 declare 'random'
 declare 'fail'
 declare 'skip'
@@ -44,10 +41,7 @@ declare 'assert_not_metatable'
 declare 'assert_error'
 declare 'assert_random'
 
-
---===========================================================================--
---  Dependencies (II)
---===========================================================================--
+-- Modules
 require 'test.lib.lunatest.lunatest';
 
 
@@ -63,13 +57,10 @@ end
 
 
 
-
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	TestMain : 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local TestMain = {}
-
-
 
 
 -------------------------------------------------------------------------------
@@ -80,7 +71,7 @@ function TestMain:GetSuiteList()
 	{
 		'test.math.TestVector',
 		'test.math.TestPolarVector',
-		'test.math.TestImageUtils',
+		'test.math.TestUtils',
 		'test.game.physics.TestTop',
 		'test.game.physics.TestArena',
 	}

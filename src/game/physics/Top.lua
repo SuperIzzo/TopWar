@@ -1,37 +1,30 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+-- Modules
 local PolarVector	= require 'src.math.PolarVector'
 local Vector		= require 'src.math.Vector'
+local Utils			= require 'src.math.Utils'
 
-local assert 		= _G.assert
-local sqrt			= _G.math.sqrt
-local log			= _G.math.log
-local max			= _G.math.max
-local floor			= _G.math.floor
-local asin			= _G.math.asin
-local pi			= _G.math.pi
+-- Aliases
+local assert 		= assert
+local sqrt			= math.sqrt
+local log			= math.log
+local max			= math.max
+local floor			= math.floor
+local clamp			= Utils.Clamp
+local asin			= math.asin
+local pi			= math.pi
 
 
--------------------------------------------------------------------------------
---  clamp : clamps a value in range
--------------------------------------------------------------------------------
-local function clamp( x, bot, top )
-	if x < bot then
-		x = bot
-	elseif x > top then
-		x = top
-	end
-	
-	return x;
-end
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class PhTop : The physical data and logic of a spinning top object
+--	Class Top : The physical data and logic of a spinning top object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local PhTop = {}
-PhTop.__index = PhTop;
+local Top = {}
+Top.__index = Top;
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -43,9 +36,10 @@ local EFFECTIVE_ALPHA_THRESHOLD = 125
 -------------------------------------------------------------------------------
 --  Top:new : Creates a new top instance
 -------------------------------------------------------------------------------
-function PhTop:new()
-	local obj = {}
+function Top:new()
+	local obj = {}	
 	
+	-- Statistics
 	obj._weigth 	= 0;
 	obj._jaggedness = 0;
 	obj._radius 	= 0;
@@ -58,7 +52,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetWeight : Returns the weight of the top
 -------------------------------------------------------------------------------
-function PhTop:GetWeight()
+function Top:GetWeight()
 	return self._weigth;
 end
 
@@ -66,7 +60,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetJaggedness : Returns the jaggedness of the top
 -------------------------------------------------------------------------------
-function PhTop:GetJaggedness()
+function Top:GetJaggedness()
 	return self._jaggedness;
 end
 
@@ -74,7 +68,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetRadius : Returns the radius of the top
 -------------------------------------------------------------------------------
-function PhTop:GetRadius()
+function Top:GetRadius()
 	return self._radius;
 end
 
@@ -82,7 +76,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:GetRadius : Returns the radius of the top
 -------------------------------------------------------------------------------
-function PhTop:GetBalance()
+function Top:GetBalance()
 	return self._balance;
 end
 
@@ -90,7 +84,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetWeight : Sets the weight of the top
 -------------------------------------------------------------------------------
-function PhTop:SetWeight( weigth )
+function Top:SetWeight( weigth )
 	assert( weigth >= 0 )
 	
 	self._weigth = weigth;
@@ -100,7 +94,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetJaggedness : Sets the jaggedness of the top
 -------------------------------------------------------------------------------
-function PhTop:SetJaggedness( jag )
+function Top:SetJaggedness( jag )
 	assert( jag >= 0 and jag <= 1 )
 	
 	self._jaggedness = jag;
@@ -110,7 +104,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetBalance : Sets the balance of the top
 -------------------------------------------------------------------------------
-function PhTop:SetRadius( rad )
+function Top:SetRadius( rad )
 	assert( rad >= 0 )
 	
 	self._radius = rad;
@@ -120,7 +114,7 @@ end
 -------------------------------------------------------------------------------
 --  Top:SetBalance : Sets the balance of the top
 -------------------------------------------------------------------------------
-function PhTop:SetBalance( balance )
+function Top:SetBalance( balance )
 	assert( balance >= 0 and balance <= 1)
 	
 	self._balance = balance;
@@ -130,7 +124,7 @@ end
 -------------------------------------------------------------------------------
 -- Top:SetFromImageData : Sets the properties of a top from an image
 -------------------------------------------------------------------------------
-function PhTop:SetFromImageData( imgData )
+function Top:SetFromImageData( imgData )
 	local imgSize	= Vector:new( imgData:getWidth(), imgData:getHeight() );	
 	local halfSize	= imgSize/2;
 	local radSpan	= halfSize:Length();
@@ -209,4 +203,4 @@ end
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return PhTop
+return Top
