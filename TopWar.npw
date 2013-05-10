@@ -17,6 +17,7 @@
             </Folder>
             <Folder name="gui" />
             <File name="src\strict.lua" />
+            <File name="src\demo.lua" />
         </Folder>
         <Folder name="test">
             <Folder name="lib">

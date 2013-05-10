@@ -26,5 +26,8 @@ end
 
 
 
+
+
+
 --Shape affects physical traits - speed, weight, attack
 --Color and symbols affect special abilities
