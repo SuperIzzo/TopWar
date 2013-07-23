@@ -24,7 +24,13 @@ if conf and conf.test then
 end
 
 
+local ScBattle = require("src.game.scene.ScBattle");
 
+ScBattle:Init();
+
+function love.draw()
+	ScBattle:Draw();
+end
 
 --Shape affects physical traits - speed, weight, attack
 --Color and symbols affect special abilities

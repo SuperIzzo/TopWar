@@ -1,52 +1,46 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+local Top				= require 'src.game.object.Top'
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class Arena : The physical data and logic of a battle arena
+--	Class ScBattle : Battle scene 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local Arena = {}
-Arena.__index = Arena;
+local ScBattle = {}
 
 
 -------------------------------------------------------------------------------
---  Arena:new : Creates a new arena
+--  ScBattle:Init : Initializes the scene
 -------------------------------------------------------------------------------
-function Arena:new()
-	local obj = {}
+function ScBattle:Init()
+
+	self.top1 = Top:new();
+	self.top2 = Top:new();
 	
-	obj._depthMask = nil;
-	obj._normalMask = nil;
-	
-	return setmetatable(obj, self);
 end
 
 
 -------------------------------------------------------------------------------
---  Arena:SetDepthMask : Sets the depth mask of the arena
+--  ScBattle:Update : Updates the scene
 -------------------------------------------------------------------------------
-function Arena:SetDepthMask( mask )
-	self._depthMask = mask;
+function ScBattle:Update()
+	self.top1:Update();
+	self.top2:Update();
 end
 
 
 -------------------------------------------------------------------------------
---  Arena:SetDepthMask : Sets the depth mask of the arena
+--  ScBattle:Draw : Draws the scene
 -------------------------------------------------------------------------------
-function Arena:GetDepth( x, y )
-	local result = {};
-	
-	result.x = 0;
-	result.y = 0;
-	result.z = 0;
-	
-	return result;
+function ScBattle:Draw()
+	self.top1:Draw();
+	self.top2:Draw();
 end
-
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return Arena
+return ScBattle;

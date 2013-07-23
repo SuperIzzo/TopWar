@@ -1,52 +1,50 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+local PhTop = require 'src.game.physics.Top'
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class Arena : The physical data and logic of a battle arena
+--	Class Top : A top game object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local Arena = {}
-Arena.__index = Arena;
+local Top = {}
+Top.__index = Top;
 
 
 -------------------------------------------------------------------------------
---  Arena:new : Creates a new arena
+--  Top:new : Creates a new top game object
 -------------------------------------------------------------------------------
-function Arena:new()
+function Top:new()
 	local obj = {}
+	local phTop = PhTop:new();
 	
-	obj._depthMask = nil;
-	obj._normalMask = nil;
+	---------------------------
+	phTop:SetRadius( 10 );
+	---------------------------
+	
+	obj.physicsBody = phTop;
 	
 	return setmetatable(obj, self);
 end
 
 
 -------------------------------------------------------------------------------
---  Arena:SetDepthMask : Sets the depth mask of the arena
+--  Top:Update : Updates the top
 -------------------------------------------------------------------------------
-function Arena:SetDepthMask( mask )
-	self._depthMask = mask;
+function Top:Update()
 end
 
 
 -------------------------------------------------------------------------------
---  Arena:SetDepthMask : Sets the depth mask of the arena
+--  Top:Draw : Updates the top
 -------------------------------------------------------------------------------
-function Arena:GetDepth( x, y )
-	local result = {};
-	
-	result.x = 0;
-	result.y = 0;
-	result.z = 0;
-	
-	return result;
+function Top:Draw()
+	local phTop = self.physicsBody;
+	love.graphics.circle( "fill", phTop.x, phTop.y, phTop:GetRadius(), 20 );
 end
-
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return Arena
+return Top;
