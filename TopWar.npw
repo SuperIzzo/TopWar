@@ -16,6 +16,12 @@
                 <Folder name="graphics">
                     <File name="src\game\graphics\ImageUtils.lua" />
                 </Folder>
+                <Folder name="object">
+                    <File name="src\game\object\Top.lua" />
+                </Folder>
+                <Folder name="scenes">
+                    <File name="src\game\scene\ScBattle.lua" />
+                </Folder>
             </Folder>
             <Folder name="gui" />
             <File name="src\strict.lua" />
