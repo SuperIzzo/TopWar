@@ -117,3 +117,5 @@ http://en.wikipedia.org/wiki/Balancing_of_rotating_masses
 
 Precession and imbalance cause a top to lose inertia and create
 vibrations.
+
+offbalance = stronger attacks but faster loss of angular velocity

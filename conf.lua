@@ -7,7 +7,7 @@ function love.conf( game )
     game.version				= "0.8.0"
     game.console				= true
     game.release 				= false
-	game.test					= true
+	game.test					= false
 	
 	-- Screen settings
     game.screen.width 			= 800

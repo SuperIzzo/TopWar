@@ -1,36 +1,48 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local Arena 			= require 'src.game.physics.Arena'
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Test
+--	Class MathUtils : general math functions
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local T = {}
+local MathUtils = {}
 
 
 -------------------------------------------------------------------------------
---  LoadImage : loads and caches an image
+--  MathUtils.Clamp : clamps a value in range
 -------------------------------------------------------------------------------
-local loadedImages = {}	-- cache loaded tops
-local function LoadImage( imgFileName )
-	if not loadedImages[ imgFileName ] then
-		loadedImages[imgFileName] = love.image.newImageData( imgFileName );
-	end;
+function MathUtils.Clamp( x, bot, top )
+	if x < bot then
+		x = bot
+	elseif x > top then
+		x = top
+	end
 	
-	return loadedImages[ imgFileName ];
+	return x;
 end
 
 
 -------------------------------------------------------------------------------
---  TEST_arena_normal_map_is_generated_properly
+--  MathUtils.Lerp : Linearly interpolate between two values
 -------------------------------------------------------------------------------
-function T: TEST_arena_normal_map_is()
-	
+function MathUtils.Lerp( a, b, t )
+	return a + (b-a)*t;
 end
+
+
+-------------------------------------------------------------------------------
+--  MathUtils.Bilerp : Linearly interpolate between two values
+-------------------------------------------------------------------------------
+function MathUtils.Bilerp( a1, a2, b1, b2, t1, t2 )
+	local a = MathUtils.Lerp(a1, a2, t1);
+	local b = MathUtils.Lerp(b1, b2, t1);
+	return MathUtils.Lerp(a, b, t2);
+end
+
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return T;
+return MathUtils

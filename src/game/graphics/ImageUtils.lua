@@ -4,8 +4,6 @@
 local sqrt 				= math.sqrt
 
 
-
-
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class ImageUtils : general image processing routines 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -39,8 +37,8 @@ ImageUtils.__index = ImageUtils;
 --   and 128-255 (for positive); Z can only ever be positive and is mapped to 
 --   the full 0-255 range.
 -------------------------------------------------------------------------------
-function ImageUtils.DepthToNormalMap( imgData, outData )
-	local width, height = imgData:getWidth(), imgData:getHeight();
+function ImageUtils.DepthToNormalMap( inDepthData, outNormData )
+	local width, height = inDepthData:getWidth(), inDepthData:getHeight();
 
 	-- We need to store 2 columns of the original image
 	local columnA = {}
@@ -48,7 +46,7 @@ function ImageUtils.DepthToNormalMap( imgData, outData )
 
 	-- Get the first column in advance
 	for y = 0, height-1 do
-		columnA[y] = imgData:getPixel( 0, y );
+		columnA[y] = inDepthData:getPixel( 0, y );
 		columnB[y] = columnA[y];
 	end	
 	columnA[-1] = columnA[0]
@@ -63,12 +61,12 @@ function ImageUtils.DepthToNormalMap( imgData, outData )
 	-- Process every pixel from the input image
 	-- We poduce an image that is 4 rows and 4 colums smaller
 	for x = 0, height-2 do	
-		local C1 = imgData:getPixel( x, 0 );
+		local C1 = inDepthData:getPixel( x, 0 );
 		local C0 = C1;
 		columnB[-1] = columnB[0];
 
 		for y = 0, height-2 do
-			local C2 = imgData:getPixel( x+1, y+1 );
+			local C2 = inDepthData:getPixel( x+1, y+1 );
 
 			-- Diagonals have less weight
 			local dg1 = ( columnA[y-1] - C2 ) * diagonalWeight;
@@ -91,7 +89,7 @@ function ImageUtils.DepthToNormalMap( imgData, outData )
 			-- to turn into color space
 			local term = 127/len;
 
-			outData:setPixel( x, y,
+			outNormData:setPixel( x, y,
 			hr*term + 127, 
 			vr*term + 127,
 			z_mul_255/len,	
@@ -99,7 +97,6 @@ function ImageUtils.DepthToNormalMap( imgData, outData )
 		end
 	end
 end
-
 
 
 

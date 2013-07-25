@@ -1,50 +1,36 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhTop = require 'src.game.physics.Top'
+local Arena 			= require 'src.game.physics.PhArena'
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class Top : A top game object
+--	Test
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local Top = {}
-Top.__index = Top;
+local T = {}
 
 
 -------------------------------------------------------------------------------
---  Top:new : Creates a new top game object
+--  LoadImage : loads and caches an image
 -------------------------------------------------------------------------------
-function Top:new()
-	local obj = {}
-	local phTop = PhTop:new();
+local loadedImages = {}	-- cache loaded tops
+local function LoadImage( imgFileName )
+	if not loadedImages[ imgFileName ] then
+		loadedImages[imgFileName] = love.image.newImageData( imgFileName );
+	end;
 	
-	---------------------------
-	phTop:SetRadius( 10 );
-	---------------------------
-	
-	obj.physicsBody = phTop;
-	
-	return setmetatable(obj, self);
+	return loadedImages[ imgFileName ];
 end
 
 
 -------------------------------------------------------------------------------
---  Top:Update : Updates the top
+--  TEST_arena_normal_map_is_generated_properly
 -------------------------------------------------------------------------------
-function Top:Update()
+function T: TEST_arena_normal_map_is()
+	
 end
-
-
--------------------------------------------------------------------------------
---  Top:Draw : Updates the top
--------------------------------------------------------------------------------
-function Top:Draw()
-	local phTop = self.physicsBody;
-	love.graphics.circle( "fill", phTop.x, phTop.y, phTop:GetRadius(), 20 );
-end
-
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return Top;
+return T;

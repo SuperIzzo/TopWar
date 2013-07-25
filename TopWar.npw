@@ -6,18 +6,24 @@
             <Folder name="math">
                 <File name="src\math\Vector.lua" />
                 <File name="src\math\PolarVector.lua" />
-                <File name="src\math\Utils.lua" />
+                <File name="src\math\MathUtils.lua" />
             </Folder>
             <Folder name="game">
                 <Folder name="phisics">
-                    <File name="src\game\physics\Top.lua" />
-                    <File name="src\game\physics\Arena.lua" />
+                    <File name="src\game\physics\PhDyzkBody.lua" />
+                    <File name="src\game\physics\PhArena.lua" />
                 </Folder>
                 <Folder name="graphics">
                     <File name="src\game\graphics\ImageUtils.lua" />
                 </Folder>
+                <Folder name="input">
+                    <File name="src\game\input\BattleController.lua" />
+                </Folder>
                 <Folder name="object">
-                    <File name="src\game\object\Top.lua" />
+                    <File name="src\game\object\Dyzk.lua" />
+                    <File name="src\game\object\Arena.lua" />
+                    <File name="src\game\object\Camera.lua" />
+                    <File name="src\game\object\Sparks.lua" />
                 </Folder>
                 <Folder name="scenes">
                     <File name="src\game\scene\ScBattle.lua" />
@@ -58,8 +64,8 @@
             </Folder>
             <Folder name="game">
                 <Folder name="physics">
-                    <File name="test\game\physics\TestTop.lua" />
-                    <File name="test\game\physics\TestArena.lua" />
+                    <File name="test\game\physics\TestPhDyzkBody.lua" />
+                    <File name="test\game\physics\TestPhArena.lua" />
                 </Folder>
                 <Folder name="graphics">
                     <File name="test\game\graphics\TestImageUtils.lua" />

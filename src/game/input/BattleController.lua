@@ -3,50 +3,50 @@
 --===========================================================================--
 
 
+
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class Arena : The physical data and logic of a battle arena
+--	Class BattleController : A battle scene controller game object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local Arena = {}
-Arena.__index = Arena;
+local BattleController = {}
+BattleController.__index = BattleController;
 
 
 -------------------------------------------------------------------------------
---  Arena:new : Creates a new arena
+--  BattleController:new : Creates a new controller
 -------------------------------------------------------------------------------
-function Arena:new()
+function BattleController:new( player, phDyzk )
 	local obj = {}
 	
-	obj._depthMask = nil;
-	obj._normalMask = nil;
+	obj._dyzk	= phDyzk;
+	obj._player	= player;
 	
-	return setmetatable(obj, self);
+	return setmetatable( obj, self );
 end
 
 
 -------------------------------------------------------------------------------
---  Arena:SetDepthMask : Sets the depth mask of the arena
+--  BattleController:new : Creates a new controller
 -------------------------------------------------------------------------------
-function Arena:SetDepthMask( mask )
-	self._depthMask = mask;
+function BattleController:Control( control )
+	if control.player == self._player and control.type == "axis" then
+		if control.name == "x" then
+			local val = control.value;
+			local vx, vy = self._dyzk:GetVelocity();
+			
+			self._dyzk:SetVelocity( vx+val*5, vy );
+		end
+		
+		if control.name == "y" then
+			local val = control.value;
+			local vx, vy = self._dyzk:GetVelocity();
+			
+			self._dyzk:SetVelocity( vx, vy+val*5 );
+		end
+	end
 end
-
-
--------------------------------------------------------------------------------
---  Arena:SetDepthMask : Sets the depth mask of the arena
--------------------------------------------------------------------------------
-function Arena:GetDepth( x, y )
-	local result = {};
-	
-	result.x = 0;
-	result.y = 0;
-	result.z = 0;
-	
-	return result;
-end
-
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return Arena
+return BattleController
