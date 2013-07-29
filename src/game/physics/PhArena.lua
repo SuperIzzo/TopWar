@@ -158,7 +158,8 @@ function PhArena:DetectCollision()
 			local rad2 = dyzk2:GetRadius();
 			
 			if sqrt((x1-x2)^2 + (y1-y2)^2) < (rad1+rad2) then
-				dyzk1:OnDyzkCollision( dyzk2 );
+				dyzk1:OnDyzkCollision( dyzk2, true );
+				dyzk2:OnDyzkCollision( dyzk1, false );
 			end
 		end
 	end

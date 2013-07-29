@@ -1,10 +1,15 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhDyzk = require 'src.game.physics.PhDyzkBody'
-local Sparks = require 'src.game.object.Sparks'
+local PhDyzk 			= require 'src.game.physics.PhDyzkBody'
+local Sparks 			= require 'src.game.object.Sparks'
 
+
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--	Constants
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local DEFAULT_DYZK_SCALE = 0.5
+local DEBUG_GRAPHICS	 = true
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -44,6 +49,7 @@ if love.graphics.isSupported( "pixeleffect" ) then
 	}
 	]]
 end
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -88,7 +94,7 @@ function Dyzk:Update( dt )
 	self.phDyzk:Update( dt );
 	
 	if self._sparks then
-		self._sparks.COUNTER = self._sparks.COUNTER - dt;
+		self._sparks:Update( dt );
 	end
 end
 
@@ -97,18 +103,21 @@ end
 --  Dyzk:Draw : Updates the Dyzk
 -------------------------------------------------------------------------------
 function Dyzk:Draw()
+	local g = love.graphics
 	local phDyzk = self.phDyzk;
 	
 	if self.image then
 		-- Set spin blur
 		if spinBlurShader then
-			love.graphics.setPixelEffect( spinBlurShader );
+			g.setPixelEffect( spinBlurShader );
 			spinBlurShader:send("angle", self.phDyzk:GetAngularVelocity()/60 );
 		end
 		
-		love.graphics.draw( self.image, phDyzk.x, phDyzk.y, phDyzk.ang,
-			DEFAULT_DYZK_SCALE, DEFAULT_DYZK_SCALE,
-			self.image:getWidth()/2, self.image:getHeight()/2);
+		-- Draw the image
+		g.draw( self.image, phDyzk.x, phDyzk.y, phDyzk.ang,
+				DEFAULT_DYZK_SCALE, DEFAULT_DYZK_SCALE,
+				self.image:getWidth()/2, self.image:getHeight()/2
+			  );
 		
 		-- Unset spin blur
 		if spinBlurShader then
@@ -119,16 +128,22 @@ function Dyzk:Draw()
 		if self._sparks then
 			self._sparks:Draw();
 			
-			if self._sparks.COUNTER <= 0 then
+			if self._sparks:IsAnimOver() then
 				self._sparks = nil;
 			end
 		end
-		
-		-- Debug graphics
-		love.graphics.circle( "line", phDyzk.x, phDyzk.y, phDyzk:GetRadius(), 20 );
-		love.graphics.line( phDyzk.x, phDyzk.y, phDyzk.x + phDyzk.vx, phDyzk.y + phDyzk.vy );
 	else
-		love.graphics.circle( "fill", phDyzk.x, phDyzk.y, phDyzk:GetRadius(), 20 );
+		g.circle( "fill", phDyzk.x, phDyzk.y, phDyzk:GetRadius(), 20 );
+	end
+	
+	-- Debug graphics
+	if DEBUG_GRAPHICS then
+		-- Collision circle
+		g.circle( "line", phDyzk.x, phDyzk.y, phDyzk:GetRadius(), 20 );
+		-- Velocity vector
+		g.line( phDyzk.x, phDyzk.y, 
+				phDyzk.x + phDyzk.vx, phDyzk.y + phDyzk.vy
+			  );
 	end
 end
 
@@ -149,7 +164,7 @@ function Dyzk:OnDyzkCollision( collisionPoint, collisionNormal )
 			collisionPoint.x, collisionPoint.y,
 			collisionNormal
 		);
-	self._sparks.COUNTER = 0.08;
+	self._sparks:SetAnimDuration( 0.08 );
 end
 
 

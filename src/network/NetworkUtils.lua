@@ -3,50 +3,44 @@
 --===========================================================================--
 
 
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--	Constants
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+local DEFAULT_PORT = 18553;
+
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class BattleController : A battle scene controller game object
+--	Class NetworkUtils: a brief... 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local BattleController = {}
-BattleController.__index = BattleController;
+local NetworkUtils = {}
 
 
 -------------------------------------------------------------------------------
---  BattleController:new : Creates a new controller
+--  NetworkUtils.GetDefaultPort : Returns a default port
 -------------------------------------------------------------------------------
-function BattleController:new( player, phDyzk )
-	local obj = {}
-	
-	obj._dyzk	= phDyzk;
-	obj._player	= player;
-	
-	return setmetatable( obj, self );
+function NetworkUtils.GetDefaultPort()
+	return DEFAULT_PORT
 end
 
 
 -------------------------------------------------------------------------------
---  BattleController:new : Creates a new controller
+--  NetworkUtils.GetDefaultAddress : Returns a default address
 -------------------------------------------------------------------------------
-function BattleController:Control( control )
-	if control.player == self._player and control.type == "axis" then
-		if control.name == "x" then
-			local val = control.value;
-			local vx, vy = self._dyzk:GetVelocity();
-			
-			self._dyzk:SetVelocity( vx+val*5, vy );
-		end
-		
-		if control.name == "y" then
-			local val = control.value;
-			local vx, vy = self._dyzk:GetVelocity();
-			
-			self._dyzk:SetVelocity( vx, vy+val*5 );
-		end
-	end
+function NetworkUtils.GetDefaultAddress()
+	return NetworkUtils.GetLocalHost();
 end
+
+
+-------------------------------------------------------------------------------
+--  NetworkUtils.GetLocalHost : Returns a localhost address
+-------------------------------------------------------------------------------
+function NetworkUtils.GetLocalHost()
+	return 'localhost';
+end
+
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return BattleController
+return NetworkUtils

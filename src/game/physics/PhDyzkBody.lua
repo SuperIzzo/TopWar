@@ -17,16 +17,18 @@ local clamp			= MathUtils.Clamp
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--  Constants
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+local EFFECTIVE_ALPHA_THRESHOLD = 125
+local RPS_TO_RPM_SCALE			= 9.5493
+
+
+
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class PhDyzkBody : The physical data and logic of a spinning PhDyzkBody object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local PhDyzkBody = {}
 PhDyzkBody.__index = PhDyzkBody;
-
-
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---  Local donstants
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local EFFECTIVE_ALPHA_THRESHOLD = 125
 
 
 -------------------------------------------------------------------------------
@@ -35,7 +37,7 @@ local EFFECTIVE_ALPHA_THRESHOLD = 125
 function PhDyzkBody:new()
 	local obj = {}
 	
-	obj._weigth 	= 0;
+	obj._weight 	= 0;
 	obj._jaggedness = 0;
 	obj._radius 	= 0;
 	obj._balance	= 0;
@@ -68,6 +70,7 @@ function PhDyzkBody:Update( dt )
 	self.x = self.x + self.vx*dt;
 	self.y = self.y + self.vy*dt;
 	
+	self.angVel = self.angVel - dt*0.1;
 	self.ang = self.ang + self.angVel*dt;
 end
 
@@ -125,17 +128,26 @@ end
 
 
 -------------------------------------------------------------------------------
+--  PhDyzkBody:GetRPM : Returns the angular velocity in revolution per minutes
+-------------------------------------------------------------------------------
+function PhDyzkBody:GetRPM()
+	return self:GetAngularVelocity()*RPS_TO_RPM_SCALE;
+end
+
+
+-------------------------------------------------------------------------------
 --  PhDyzkBody:GetAngularVelocity : Returns the angular velocity
 -------------------------------------------------------------------------------
 function PhDyzkBody:GetAngularVelocity()
 	return self.angVel;
 end
 
+
 -------------------------------------------------------------------------------
 --  PhDyzkBody:GetWeight : Returns the weight of the PhDyzkBody
 -------------------------------------------------------------------------------
 function PhDyzkBody:GetWeight()
-	return self._weigth;
+	return self._weight;
 end
 
 
@@ -169,7 +181,7 @@ end
 function PhDyzkBody:SetWeight( weigth )
 	assert( weigth >= 0 )
 	
-	self._weigth = weigth;
+	self._weight = weigth;
 end
 
 
@@ -206,21 +218,27 @@ end
 -------------------------------------------------------------------------------
 --  PhDyzkBody:OnDyzkCollision : Handles dyzk-dyzk collision
 -------------------------------------------------------------------------------
-function PhDyzkBody:OnDyzkCollision( other )
+function PhDyzkBody:OnDyzkCollision( other, primary )
+
+	-- Ignore if the collision is being handle by other
+	if not primary then return end;
+	
 	local x1, y1 = self:GetPosition();
 	local x2, y2 = other:GetPosition();
 	local rad1, rad2 = self:GetRadius(), other:GetRadius();
 	
 	-- Distance is the distance between the centers
-	local distance = rad1+rad2;
+	local distance = math.sqrt((x1-x2)^2 + (y1-y2)^2);
+	local radDistance = rad1+rad2;
 	
-	-- Ratio is the radius to th
-	local ratio = rad1/distance;
+	-- Ratio is the ratio between the two radiuses
+	local ratio = rad1/radDistance;
 	
 	-- The collision point
 	local xCol, yCol = x1*ratio+x2*(1-ratio), y1*ratio+y2*(1-ratio);
 	
-	-- The collision normal
+	-- The collision normal is a normalized vector in the direction of
+	-- the collision (i.e. the two centers)
 	local collisionNormal = Vector:new(
 				(x2-x1)/distance, 
 				(y2-y1)/distance );
@@ -234,28 +252,59 @@ function PhDyzkBody:OnDyzkCollision( other )
 	local dir1 = vel1/speed1;
 	local dir2 = vel2/speed2;
 	
-	-- 
+	-- Motion direction to collision normal dot product
+	-- tell us which direction the dyzk is hit from in respect
+	-- to the direction it is moving in:
+	-- frontal collision(1), sides(0), back(-1)
 	local dirNormDot1 = dir1:Dot( collisionNormal );
 	local dirNormDot2 = -dir2:Dot( collisionNormal );
 	
-	-- Calculate an attack term based on parameters
-	local attackForce = (self._jaggedness + other._jaggedness)*0.2 +1;
-	attackForce = attackForce + 2 - self._balance - other._balance;
+	-- facingTerm is how much do the two dyzx face each other
+	-- safe arc is a modifier which increases or decreases the
+	-- pushback negation area (higher is safer)
+	local safeArc = 0.6
+	local facingTerm = dirNormDot1*dirNormDot2 * safeArc;
 	
-	-- calculate the respective force returns
-	-- it is done such that directly facing the collision will result in least
-	-- pushback, while side-ways and back causes max pushback
+	-- Force is calculated such that, if a dyzk is striken from the
+	-- side it takes the most damage, if the two dyzx face each other
+	-- directly they will stop and take almost no damage
+	local force1 = math.max(0,dirNormDot2-facingTerm)
+	local force2 = math.max(0,dirNormDot1-facingTerm)
 	
-	local force1 = math.max(0,dirNormDot2)*( speed2*attackForce ); 
-	local force2 = math.max(0,dirNormDot1)*( speed1*attackForce );
-	print( attackForce );
+	-- Term to move out of intersection
+	local intersectionForce = ((radDistance+5)/distance)^4*10;
 	
-	-- Apply the forces as two impulses in direction opposite to the
+	local pushBack1 = 
+				(
+					force1 * 
+					speed2 * 
+					(1 + (self._jaggedness*0.3 + other._jaggedness*0.7)*0.2)
+					+ (1 - self._balance*0.3 + other._balance*0.7) * 2
+				) * other._weight / self._weight
+				+ intersectionForce;
+	local pushBack2 =
+				(
+					force2 *
+					speed1 * 
+					(1 + (self._jaggedness*0.7 + other._jaggedness*0.3)*0.2)
+					+ (1 - self._balance*0.7 + other._balance*0.3) * 2
+				) * self._weight / other._weight
+				+ intersectionForce;
+				 
+	local rpmDmg1 = force1 
+						* other.angVel * (self._jaggedness*0.2 + other._jaggedness*0.8)
+	local rpmDmg2 = force2 
+						* self.angVel * (self._jaggedness*0.8 + other._jaggedness*0.2)
+	
+	self.angVel = self.angVel - rpmDmg1/20 -0.2;
+	other.angVel = other.angVel - rpmDmg2/20 -0.2;
+	
+	-- Apply the forces as two impulses in direction opposite to the 
 	-- collision normal (to the dyzk centers)
-	self:SetVelocity(	-collisionNormal.x*force1,
-						-collisionNormal.y*force1 );
-	other:SetVelocity(	collisionNormal.x*force2,
-						collisionNormal.y*force2 );
+	self:SetVelocity(	-collisionNormal.x*pushBack1,
+						-collisionNormal.y*pushBack1 );
+	other:SetVelocity(	collisionNormal.x*pushBack2,
+						collisionNormal.y*pushBack2 );
 
 	for i=1,#self._collisionListener do
 		local listener = self._collisionListener[i];
@@ -324,7 +373,13 @@ function PhDyzkBody:SetFromImageData( imgData, scale )
 	local jag = 0;
 	for ang =0, angSpan do
 		local rad = allRads[ang] or 0;
-		jag = jag + log( maxRad - rad + 1);
+		
+		-- tolerate a difference of up to 2 pixels
+		local difference = maxRad - rad;
+		difference = difference-2;
+		if difference<0 then difference = 0 end;
+		
+		jag = jag + log( difference + 1);
 	end
 	
 	-- Normalize

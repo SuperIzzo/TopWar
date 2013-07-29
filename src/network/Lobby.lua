@@ -1,57 +1,66 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local floor				= math.floor
+-- Modules
+
+-- Aliases
+local setmetatable 		= setmetatable
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class MathUtils : general math functions
+--	Class Lobby: a brief... 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local MathUtils = {}
+local Lobby = {}
+Lobby.__index = Lobby;
 
 
 -------------------------------------------------------------------------------
---  MathUtils.Clamp : clamps a value in range
+--  Lobby:new : Creates a new Lobby
 -------------------------------------------------------------------------------
-function MathUtils.Clamp( x, bot, top )
-	if x < bot then
-		x = bot
-	elseif x > top then
-		x = top
+function Lobby:new( numSlots )
+	local obj = {}
+	
+	obj._numSlots = numSlots or 2;
+	obj._players = {};
+
+	return setmetatable(obj, self);
+end
+
+
+-------------------------------------------------------------------------------
+--  Lobby:GetNumSlots : Returns the number of slots
+-------------------------------------------------------------------------------
+function Lobby:GetNumSlots()
+	return self._numSlots;
+end
+
+
+-------------------------------------------------------------------------------
+--  Lobby:GetRemainingSlots : Returns the number of slots
+-------------------------------------------------------------------------------
+function Lobby:GetRemainingSlots()
+	return self.numSlots - #self._players;
+end
+
+
+-------------------------------------------------------------------------------
+--  Lobby:Enter : Enters a player into the lobby
+-------------------------------------------------------------------------------
+function Lobby:Enter( player )
+	local success = false;
+	
+	if self:GetRemainingSlots()>0 then
+		table.insert( self._players, player );
+		success = true;
 	end
 	
-	return x;
+	return success;
 end
 
-
--------------------------------------------------------------------------------
---  MathUtils.Round : Rounds a number
--------------------------------------------------------------------------------
-function MathUtils.Round(num, idp)
-  local mult = 10^(idp or 0)
-  return floor(num * mult + 0.5) / mult
-end
-
-
--------------------------------------------------------------------------------
---  MathUtils.Lerp : Linearly interpolate between two values
--------------------------------------------------------------------------------
-function MathUtils.Lerp( a, b, t )
-	return a + (b-a)*t;
-end
-
-
--------------------------------------------------------------------------------
---  MathUtils.Bilerp : Linearly interpolate between two values
--------------------------------------------------------------------------------
-function MathUtils.Bilerp( a1, a2, b1, b2, t1, t2 )
-	local a = MathUtils.Lerp(a1, a2, t1);
-	local b = MathUtils.Lerp(b1, b2, t1);
-	return MathUtils.Lerp(a, b, t2);
-end
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return MathUtils
+return Lobby

@@ -1,6 +1,7 @@
 <NotepadPlus>
     <Project name="TopWar">
         <File name="main.lua" />
+        <File name="serverMain.lua" />
         <File name="conf.lua" />
         <Folder name="src">
             <Folder name="math">
@@ -17,17 +18,30 @@
                     <File name="src\game\graphics\ImageUtils.lua" />
                 </Folder>
                 <Folder name="input">
-                    <File name="src\game\input\BattleController.lua" />
+                    <File name="src\game\input\DirectBattleController.lua" />
                 </Folder>
                 <Folder name="object">
                     <File name="src\game\object\Dyzk.lua" />
                     <File name="src\game\object\Arena.lua" />
                     <File name="src\game\object\Camera.lua" />
                     <File name="src\game\object\Sparks.lua" />
+                    <File name="src\game\object\RPMMeter.lua" />
                 </Folder>
                 <Folder name="scenes">
                     <File name="src\game\scene\ScBattle.lua" />
+                    <File name="src\game\scene\ScSelection.lua" />
+                    <File name="src\game\scene\SceneManager.lua" />
                 </Folder>
+            </Folder>
+            <Folder name="lib">
+                <File name="src\lib\bintable.lua" />
+            </Folder>
+            <Folder name="network">
+                <File name="src\network\GDImageWrapper.lua" />
+                <File name="src\network\Server.lua" />
+                <File name="src\network\Client.lua" />
+                <File name="src\network\NetworkUtils.lua" />
+                <File name="src\network\Lobby.lua" />
             </Folder>
             <Folder name="gui" />
             <File name="src\strict.lua" />
@@ -37,6 +51,7 @@
             <File name="docs\Tops.txt" />
             <File name="docs\Colors.txt" />
             <File name="docs\Spirit.txt" />
+            <File name="docs\Network.txt" />
         </Folder>
         <Folder name="test">
             <Folder name="lib">

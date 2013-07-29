@@ -1,57 +1,57 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local floor				= math.floor
+-- Modules
+
+-- Aliases
+local setmetatable 		= setmetatable
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class MathUtils : general math functions
+--	Class Message: a brief... 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local MathUtils = {}
+local Message = {}
+Message.__index = Message;
 
 
 -------------------------------------------------------------------------------
---  MathUtils.Clamp : clamps a value in range
+--  Message.Type : message type enumeratoin
 -------------------------------------------------------------------------------
-function MathUtils.Clamp( x, bot, top )
-	if x < bot then
-		x = bot
-	elseif x > top then
-		x = top
-	end
+Message.Type = 
+{
+	LOGIN = "login",
+	ACCEPT = "accept"
+}
+
+
+-------------------------------------------------------------------------------
+--  Message:newLoginMessage : Creates a new Login message
+-------------------------------------------------------------------------------
+function Message:newLoginMessage( id )
+	local obj = {}
 	
-	return x;
+	obj.type 	= self.Type.LOGIN;
+	obj.id 		= id;
+
+	return obj;
 end
 
 
 -------------------------------------------------------------------------------
---  MathUtils.Round : Rounds a number
+--  Message:newAcceptMessage : Creates a new Accept message
 -------------------------------------------------------------------------------
-function MathUtils.Round(num, idp)
-  local mult = 10^(idp or 0)
-  return floor(num * mult + 0.5) / mult
+function Message:newAcceptMessage()
+	local obj = {}
+	
+	obj.type = self.Type.ACCEPT;
+
+	return obj;
 end
 
-
--------------------------------------------------------------------------------
---  MathUtils.Lerp : Linearly interpolate between two values
--------------------------------------------------------------------------------
-function MathUtils.Lerp( a, b, t )
-	return a + (b-a)*t;
-end
-
-
--------------------------------------------------------------------------------
---  MathUtils.Bilerp : Linearly interpolate between two values
--------------------------------------------------------------------------------
-function MathUtils.Bilerp( a1, a2, b1, b2, t1, t2 )
-	local a = MathUtils.Lerp(a1, a2, t1);
-	local b = MathUtils.Lerp(b1, b2, t1);
-	return MathUtils.Lerp(a, b, t2);
-end
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return MathUtils
+return Message
