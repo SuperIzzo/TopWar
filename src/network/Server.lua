@@ -45,9 +45,8 @@ end
 --  Server:Send : Sends a message to a client
 -------------------------------------------------------------------------------
 function Server:Send( client, msg )
-	local port = port or NetworkUtils.GetDefaultPort();
 	local packet = bintable.packtable( msg )
-	
+;
 	self._udp:sendto( packet, client.ip, client.port )
 end
 
@@ -104,16 +103,39 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Server:AddLobby : Adds a lobby to the lobby list
+-------------------------------------------------------------------------------
+function Server:AddLobby( lobby )
+	self._lobbies[ #self._lobbies+1 ] = lobby;
+end
+
+
+-------------------------------------------------------------------------------
 --  Server:DispatchLobbyList : Dispatch a list of all lobbies to each client
 -------------------------------------------------------------------------------
 function Server:DispatchLobbyList()
 	local lobbyList = {}
 	
-	for lobby in ipairs(self._lobbies) do
+	lobbyList.type = Message.Type.LOBBY_INFO;
+	
+	for i, lobby in ipairs(self._lobbies) do
 		local lobbyData = {}
-		lobbyData.name = lobby.GetLobbyName();
+		
+		lobbyData.id 			= lobby:GetID();
+		lobbyData.numSlots		= lobby:GetNumSlots();
+		lobbyData.numFreeSlots	= lobby:GetRemainingSlots();
+		
+		local arena = lobby:GetArena();
+		if arena then 
+			lobbyData.arena = arena:GetName();
+		end
+		
+		lobbyList[i] = lobbyData;
 	end
+	
+	self:SendAll( lobbyList );
 end
+
 
 -------------------------------------------------------------------------------
 --  Server:Login : Handle login message
@@ -125,7 +147,7 @@ function Server:HandleMsg_login( msg )
 	client.id = msg.id;
 	client.ip = msg._ip;
 	client.port = msg._port;
-	self._clients[client.id] = client;
+	self._clients[ #self._clients+1 ] = client;
 	
 	local accepted = Message:newAcceptMessage()
 	self:Send( client, accepted )

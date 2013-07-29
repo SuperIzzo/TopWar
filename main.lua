@@ -48,9 +48,15 @@ function love.update( dt )
 	
 	
 	---------------------
-	for msg in client:Messages() do		
+	for msg in client:Messages() do
+		print( msg.type );
 		for k,v in pairs(msg) do
 			print(" >".. tostring(k) .. " = " .. tostring(v));
+		end
+		if msg.type == "lobbyInfo" then
+			for k,v in pairs(msg[1]) do
+				print(" >>".. tostring(k) .. " = " .. tostring(v));
+			end
 		end
 	end
 	--------------------------

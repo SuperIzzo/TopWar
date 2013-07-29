@@ -18,13 +18,23 @@ Lobby.__index = Lobby;
 -------------------------------------------------------------------------------
 --  Lobby:new : Creates a new Lobby
 -------------------------------------------------------------------------------
-function Lobby:new( numSlots )
+function Lobby:new( id, numSlots )
 	local obj = {}
 	
-	obj._numSlots = numSlots or 2;
-	obj._players = {};
+	obj._id 	 	= id
+	obj._numSlots	= numSlots or 2;
+	obj._players	= {};
+	obj._arena		= nil;
 
 	return setmetatable(obj, self);
+end
+
+
+-------------------------------------------------------------------------------
+--  Lobby:GetID : Returns the lobby id
+-------------------------------------------------------------------------------
+function Lobby:GetID()
+	return self._id
 end
 
 
@@ -40,7 +50,7 @@ end
 --  Lobby:GetRemainingSlots : Returns the number of slots
 -------------------------------------------------------------------------------
 function Lobby:GetRemainingSlots()
-	return self.numSlots - #self._players;
+	return self._numSlots - #self._players;
 end
 
 
@@ -58,6 +68,13 @@ function Lobby:Enter( player )
 	return success;
 end
 
+
+-------------------------------------------------------------------------------
+--  Lobby:GetArena : Returns the lobby arena 
+-------------------------------------------------------------------------------
+function Lobby:GetArena()
+	return self._arena
+end
 
 
 --===========================================================================--

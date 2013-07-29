@@ -20,8 +20,9 @@ Message.__index = Message;
 -------------------------------------------------------------------------------
 Message.Type = 
 {
-	LOGIN = "login",
-	ACCEPT = "accept"
+	LOGIN 		= "login",
+	ACCEPT 		= "accept",
+	LOBBY_INFO	= "lobbyInfo",
 }
 
 

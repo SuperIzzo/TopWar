@@ -1,6 +1,7 @@
 local ImageUtils 		= require 'src.game.graphics.ImageUtils'
 local GDImageWrapper 	= require 'src.network.GDImageWrapper'
 local Server 			= require 'src.network.Server'
+local Lobby 			= require 'src.network.Lobby'
 
 
 
@@ -32,13 +33,20 @@ phArena:SetNormalMask( normalImg );
 
 
 local server = Server:new();
+local lobby = Lobby:new(1, 2)
+server:AddLobby(lobby)
 
 server:Start()
 
 print "Beginning server loop."
 local runing = true
-while runing do
 
+local lobbyDispatchTime = 5;
+local lastLobbyDispatch = os.time();
+
+while runing do
+	local currentTime = os.time();
+	
 	for serverEvent in server:Messages() do		
 		print("[from " .. serverEvent._ip .. "]" );
 
@@ -47,6 +55,11 @@ while runing do
 		end
 		
 		server:Peek( serverEvent );
+	end
+	
+	if currentTime - lastLobbyDispatch > lobbyDispatchTime then
+		lastLobbyDispatch = currentTime;
+		server:DispatchLobbyList();
 	end
 	
 	phArena:Update( 1 );

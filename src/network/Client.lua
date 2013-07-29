@@ -66,7 +66,9 @@ end
 --  Client:Messages : Retrieve message iterator
 -------------------------------------------------------------------------------
 function Client:Messages()
-	return function() return self:Poll() end;
+	return function()  
+		return self:Poll()
+	end;
 end
 
 

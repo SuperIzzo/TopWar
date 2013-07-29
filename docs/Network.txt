@@ -1,0 +1,12 @@
+There are a lot of options to realize a multiplayer protocol
+the current favourite is client-server 
+
+Ideally players won't have to deal with setting up IP-s 
+
+the protocol for establishing a connectoio
+
+
+> Send a request to connect to a server
+	(username and pass are sent)
+> If approved retrieve a list of all lobbies on that server
+
