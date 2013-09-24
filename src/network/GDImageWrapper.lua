@@ -17,7 +17,11 @@ GDImageWrapper.__index = GDImageWrapper;
 function GDImageWrapper:new( image )
 	local obj = {}
 	
-	obj._image = image;
+	if type(image) == "string" then
+		obj._image = gd.createFromPng(image)
+	else
+		obj._image = image;
+	end
 	
 	return setmetatable( obj, self );
 end

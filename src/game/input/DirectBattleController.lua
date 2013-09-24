@@ -28,15 +28,15 @@ end
 --  BattleController:Control : Handles controls
 -------------------------------------------------------------------------------
 function BattleController:Control( control )
-	if control.player == self._player and control.type == "axis" then
-		if control.name == "x" then
+	if control.player == self._player then
+		if control.id == "xAxis" then
 			local val = control.value;
 			local vx, vy = self._dyzk:GetVelocity();
 			
 			self._dyzk:SetVelocity( vx+val*40/(self._dyzk:GetWeight()+2), vy );
 		end
 		
-		if control.name == "y" then
+		if control.id == "yAxis" then
 			local val = control.value;
 			local vx, vy = self._dyzk:GetVelocity();
 			

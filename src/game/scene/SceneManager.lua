@@ -103,6 +103,16 @@ function SceneManager:Control( control )
 end
 
 
+-------------------------------------------------------------------------------
+--  SceneManager:Message : Handles (network) messages in the current scene
+-------------------------------------------------------------------------------
+function SceneManager:Message( msg )
+	if self._currentScene and self._currentScene.Message then
+		self._currentScene:Message( msg );
+	end
+end
+
+
 --===========================================================================--
 --  Initialization
 --===========================================================================--

@@ -19,6 +19,9 @@
                 </Folder>
                 <Folder name="input">
                     <File name="src\game\input\DirectBattleController.lua" />
+                    <File name="src\game\input\ControlBox.lua" />
+                    <File name="src\game\input\Control.lua" />
+                    <File name="src\game\input\TriggerType.lua" />
                 </Folder>
                 <Folder name="object">
                     <File name="src\game\object\Dyzk.lua" />
@@ -33,15 +36,24 @@
                     <File name="src\game\scene\SceneManager.lua" />
                 </Folder>
             </Folder>
-            <Folder name="lib">
-                <File name="src\lib\bintable.lua" />
+            <Folder name="server">
+                <Folder name="lobbies">
+                    <File name="src\server\lobbies\LobbyManager.lua" />
+                    <File name="src\server\lobbies\LbBattle.lua" />
+                    <File name="src\server\lobbies\LbGameSetup.lua" />
+                </Folder>
             </Folder>
             <Folder name="network">
                 <File name="src\network\GDImageWrapper.lua" />
                 <File name="src\network\Server.lua" />
                 <File name="src\network\Client.lua" />
+                <File name="src\network\ClientObject.lua" />
                 <File name="src\network\NetworkUtils.lua" />
-                <File name="src\network\Lobby.lua" />
+                <File name="src\network\NetworkBase.lua" />
+                <File name="src\network\Message.lua" />
+            </Folder>
+            <Folder name="lib">
+                <File name="src\lib\bintable.lua" />
             </Folder>
             <Folder name="gui" />
             <File name="src\strict.lua" />

@@ -1,67 +1,52 @@
-local ImageUtils 		= require 'src.game.graphics.ImageUtils'
-local GDImageWrapper 	= require 'src.network.GDImageWrapper'
 local Server 			= require 'src.network.Server'
-local Lobby 			= require 'src.network.Lobby'
+
+local LobbyManager		= require 'src.server.lobbies.LobbyManager'
+local LbGameSetup		= require 'src.server.lobbies.LbGameSetup'
 
 
+local lobbyManager = LobbyManager:GetInstance();
 
-local depthImg = 
-	GDImageWrapper:new( 
-			gd.createFromPng("data/arena/arena_mask2.png")
-	)
-	
-local normalImg =
-	GDImageWrapper:newImageData( 
-		depthImg:getWidth(), 
-		depthImg:getHeight()
-	)
-	
-
-local PhArena		= require 'src.game.physics.PhArena'
-local PhDyzkBody	= require 'src.game.physics.PhDyzkBody'
-
-
-local phArena = PhArena:new();
-local phDyzk = PhDyzkBody:new();
-
-ImageUtils.DepthToNormalMap( depthImg, normalImg );
-
-phArena:AddDyzk( phDyzk );
-phArena:SetDepthMask( depthImg );
-phArena:SetNormalMask( normalImg );
-
+local gameSetup = LbGameSetup:new( 1, 1 );
+lobbyManager:AddLobby( gameSetup );
+lobbyManager:SetDefaultLobby( gameSetup );
 
 
 local server = Server:new();
-local lobby = Lobby:new(1, 2)
-server:AddLobby(lobby)
-
-server:Start()
+server:Bind()
 
 print "Beginning server loop."
 local runing = true
 
-local lobbyDispatchTime = 5;
-local lastLobbyDispatch = os.time();
+local currentTime = socket.gettime();
 
 while runing do
-	local currentTime = os.time();
+	local prevTime = currentTime
+	currentTime = socket.gettime();
+	local timeDelta = currentTime - prevTime;
 	
-	for serverEvent in server:Messages() do		
-		print("[from " .. serverEvent._ip .. "]" );
+	
+	for msg in server:Messages() do	
+		--print("[from " .. msg:GetClient()._ip .. "]" );
 
-		for k,v in pairs(serverEvent) do
+		for k,v in pairs(msg) do
 			print(" >".. tostring(k) .. " = " .. tostring(v));
 		end
 		
-		server:Peek( serverEvent );
+		--lobbyManager:Message( msg );
+	
+		local client = msg:GetClient()
+		local lobby = client and client:GetLobby();
+			  lobby = lobby or lobbyManager:GetDefaultLobby();
+			  
+		print( lobby );
+		if lobby then
+			if lobby.Message then
+				lobby:Message( msg );
+			end
+		end
+		
 	end
 	
-	if currentTime - lastLobbyDispatch > lobbyDispatchTime then
-		lastLobbyDispatch = currentTime;
-		server:DispatchLobbyList();
-	end
-	
-	phArena:Update( 1 );
-	phDyzk:Update( 1 );
+	lobbyManager:Update( timeDelta );
+
 end

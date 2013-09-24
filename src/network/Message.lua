@@ -16,43 +16,71 @@ Message.__index = Message;
 
 
 -------------------------------------------------------------------------------
---  Message.Type : message type enumeratoin
+--  Enum Message.Type : message type enumeratoin
 -------------------------------------------------------------------------------
 Message.Type = 
 {
-	LOGIN 		= "login",
-	ACCEPT 		= "accept",
-	LOBBY_INFO	= "lobbyInfo",
+	LOGIN 		= "LOGIN",
+	ACCEPT 		= "ACCEPT",
+	
+	LOBBY_INFO	= "LOBBY_INFO",
+	LOBBY_ENTER	= "LOBBY_ENTER",
+	
+	DYZK_DESC	= "DYZK_DESC",
 }
 
 
 -------------------------------------------------------------------------------
---  Message:newLoginMessage : Creates a new Login message
+--  Message:new : Creates a new message
 -------------------------------------------------------------------------------
-function Message:newLoginMessage( id )
-	local obj = {}
-	
-	obj.type 	= self.Type.LOGIN;
-	obj.id 		= id;
-
-	return obj;
+function Message:new( data )
+	local obj = data or {}
+	return setmetatable( data, self );
 end
 
 
 -------------------------------------------------------------------------------
---  Message:newAcceptMessage : Creates a new Accept message
+--  Message:GetClient : Returns the client
 -------------------------------------------------------------------------------
-function Message:newAcceptMessage()
-	local obj = {}
-	
-	obj.type = self.Type.ACCEPT;
-
-	return obj;
+function Message:GetClient()
+	return self._client;
 end
 
+
+-------------------------------------------------------------------------------
+--  Message:SetClient : Sets the client
+-------------------------------------------------------------------------------
+function Message:SetClient( client)
+	self._client = client;
+end
+
+
+-------------------------------------------------------------------------------
+--  Message:GetType : Returns the message type
+-------------------------------------------------------------------------------
+function Message:GetType()
+	return self.type;
+end
+
+
+-------------------------------------------------------------------------------
+--  Message:SetClient : Sets the type of the message
+-------------------------------------------------------------------------------
+function Message:SetType( type )
+	self.type = type ;
+end
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
+setmetatable( 
+	Message.Type, 
+	{ 
+		__index = function (tab, key)
+			error( "Enum does not contain key '" .. key .. "'" );
+		end
+	}
+);
+
 return Message

@@ -5,6 +5,8 @@ local Dyzk				= require 'src.game.object.Dyzk'
 local ScBattle			= require 'src.game.scene.ScBattle'
 local SceneManager		= require 'src.game.scene.SceneManager'
 local MathUtils 		= require 'src.math.MathUtils'
+local Message			= require 'src.network.Message'
+local Client			= require 'src.network.Client'
 
 local round 			= MathUtils.Round
 
@@ -17,6 +19,7 @@ ScSelection.__index = ScSelection
 
 
 function ScSelection:new()
+
 	local obj = {}
 	
 	local dyzkList = {}
@@ -35,6 +38,20 @@ function ScSelection:new()
 	obj._selection = 1;
 	
 	return setmetatable( obj, self );
+end
+
+
+function ScSelection:EnterLobby()
+	local sceneMgr = SceneManager:GetInstance();
+	local client = Client:GetInstance();
+	
+	if client:IsLoggedIn() then
+		local msg = {}
+		msg.type = Message.Type.LOBBY_ENTER
+		
+		client:Send( msg );
+		self.lobbyEntered = true;
+	end
 end
 
 
@@ -155,33 +172,47 @@ function ScSelection:Draw()
 end
 
 function ScSelection:Update( dt )
+	if not self.lobbyEntered then
+		self:EnterLobby();
+	end
 end
 
 function ScSelection:Control( control )
-	if 	control.player == 1
-		and control.type == "button"
-		and control.value == "released" 
-	then
-		
-		if control.name == "left" then
+	if 	control.player == 1 and not control.value then
+	
+		if control.id == "Left" then
 			self._selection = self._selection-1;
 			if self._selection<1 then
 				self._selection = self._selection + #self._dyzx
 			end
 		end
 		
-		if control.name == "right" then
+		if control.id == "Right" then
 			self._selection = self._selection+1;
 			if self._selection>#self._dyzx then
 				self._selection = self._selection - #self._dyzx
 			end
 		end
 		
-		if control.name == "A" then
+		if control.id == "A" then
 			local sceneMgr = SceneManager:GetInstance();
 			local battleScene = ScBattle:new();
+			local dyzk = self._dyzx[self._selection]
 			
-			battleScene:AddDyzk( self._dyzx[self._selection] )
+			local client = Client:GetInstance();
+			local msg = {}
+			local phDyzk = dyzk:GetPhysicsBody()
+			
+			msg.type = Message.Type.DYZK_DESC
+			msg.dyzk = {}
+			msg.dyzk.radius  = phDyzk:GetRadius();
+			msg.dyzk.weight  = phDyzk:GetWeight();
+			msg.dyzk.jag 	 = phDyzk:GetJaggedness();
+			msg.dyzk.balance = phDyzk:GetBalance();
+			
+			client:Send( msg );
+			
+			battleScene:AddDyzk( dyzk )
 			sceneMgr:SetScene( battleScene )
 		end
 	end

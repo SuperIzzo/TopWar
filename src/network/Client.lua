@@ -4,93 +4,89 @@
 require 'src.lib.bintable'
 local socket 			= require 'socket'
 local NetworkUtils		= require 'src.network.NetworkUtils'
+local NetworkBase		= require 'src.network.NetworkBase'
 local Message			= require 'src.network.Message'
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class Client: A high level client representation
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local Client = {}
+local Client = setmetatable({}, NetworkBase)
 Client.__index = Client;
 
+local instance
 
 -------------------------------------------------------------------------------
 --  Client:new : Creates a new Client
 -------------------------------------------------------------------------------
 function Client:new()
-	local obj = {}
+	local obj = NetworkBase.new(self)
 	
-	obj._udp = socket.udp()
-
-	return setmetatable(obj, self);
+	return obj;
 end
 
 
 -------------------------------------------------------------------------------
---  Client:Connect : Connects to a server
+--  Client:SetInstance : Sets a singleton instance
 -------------------------------------------------------------------------------
-function Client:Connect(address, port)
-	local address	= address or NetworkUtils.GetDefaultAddress();
-	local port 		= port 	  or NetworkUtils.GetDefaultPort();
-
-	self._udp:settimeout(0)
-	self._udp:setpeername(address, port);
+function Client:SetInstance( client )
+	instance = client;
 end
 
 
 -------------------------------------------------------------------------------
---  Client:Send : Sends a message to the server
+--  Client:GetInstance : Returns a singleton instance
 -------------------------------------------------------------------------------
-function Client:Send( data )
-	local packet = bintable.packtable( data )
-	self._udp:send( packet )
+function Client:GetInstance()
+	return instance;
 end
 
 
 -------------------------------------------------------------------------------
---  Client:Poll : Reveives a message from the server
+--  Server:Poll : Overwrite Poll
 -------------------------------------------------------------------------------
 function Client:Poll()
-	local event = nil
+	local data = NetworkBase.Poll( self );
+	local client = nil
 	
-	local rawData = self._udp:receive();
-	if rawData then
-		event = bintable.unpackdata(rawData);
+	if data then 
+		if data.type == Message.Type.LOGIN and data.session then
+			self._session = data.session;
+			return self:Poll(); -- skip to next message
+		else			
+			return Message:new( data );
+		end
 	end
-	
-	return event;
 end
 
 
 -------------------------------------------------------------------------------
---  Client:Messages : Retrieve message iterator
+--  Client:Send : Overwrite send
 -------------------------------------------------------------------------------
-function Client:Messages()
-	return function()  
-		return self:Poll()
-	end;
-end
-
-
-------------------------- Non-pure function -----------------------------------
-
-
--------------------------------------------------------------------------------
---  Client:Peek : Handles the message
--------------------------------------------------------------------------------
-function Client:Peek( msg )
-	
+function Client:Send( data, ip, port )
+	data.session = self._session;
+	return NetworkBase.Send( self, data, ip, port )
 end
 
 
 -------------------------------------------------------------------------------
---  Client:Login : Sends a handshake
+--  Client:IsLoggedIn : return true if logged in
+-------------------------------------------------------------------------------
+function Client:IsLoggedIn()
+	return ((self._session and true) or false)
+end
+
+
+-------------------------------------------------------------------------------
+--  Client:Login : Sends a login request message to the server
 -------------------------------------------------------------------------------
 function Client:Login( id )
-	local message = Message:newLoginMessage( id );
-	self:Send( message );
-end
+	local msg = {}
+	msg.type = Message.Type.LOGIN
+	msg.id = id;
 
+	return self:Send( msg );
+end
 
 
 --===========================================================================--

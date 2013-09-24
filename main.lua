@@ -1,15 +1,11 @@
 require 'src.strict'
 
 
+local Client 		= require 'src.network.Client'
+local Message 		= require 'src.network.Message'
+local ControlBox 	= require 'src.game.input.ControlBox'
+local Trigger	 	= require 'src.game.input.TriggerType'
 
-----------------------------
-local Client = require 'src.network.Client'
-
-local  client = Client:new();
-client:Connect();
-------------------------------
-
-client:Login( "Izzo" );
 
 
 local gameConf	 = nil;
@@ -34,6 +30,14 @@ if conf and conf.test then
 end
 
 
+local  client = Client:new();
+Client:SetInstance( client );
+
+client:Connect();
+client:Login( "Izzo" );
+
+
+
 local ScBattle = require("src.game.scene.ScBattle");
 local ScSelection = require("src.game.scene.ScSelection");
 local SceneManager = require("src.game.scene.SceneManager");
@@ -41,149 +45,152 @@ local SceneManager = require("src.game.scene.SceneManager");
 local sceneMgr = SceneManager:GetInstance();
 sceneMgr:SetScene( ScSelection:new() );
  
+ 
+local abs = math.abs
 
-local hatL, hatR = false, false;
 
+
+local function Spring2Switch( moreThan, lessThan )
+
+	local function TR_SPRING_TO_SWITCH( control, newValue )
+
+		if type(newValue) == 'number' then
+			local triggerValue = false;
+			
+			if newValue >= moreThan and newValue < lessThan then
+				triggerValue = true;
+			end
+			
+			if triggerValue ~= control.value then
+				control.value = triggerValue;
+				return true;
+			end;
+		end
+		
+		return false;
+	end
+	
+	return TR_SPRING_TO_SWITCH;
+end
+ 
+ 
+ 
+local p1Box = ControlBox:new();
+p1Box.player = 1
+
+local xAxis1	= p1Box:CreateControl("xAxis");
+xAxis1:SetValue(0);
+xAxis1:Bind'Joy1Axis'( 1, 	Trigger.SLIDER(false) 						);
+xAxis1:Bind'Key'( 'a', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+xAxis1:Bind'Key'( 'd', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
+xAxis1:Bind'Joy1Hat'( 'l1', Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+xAxis1:Bind'Joy1Hat'( 'lu1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
+xAxis1:Bind'Joy1Hat'( 'ld1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
+xAxis1:Bind'Joy1Hat'( 'r1', Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
+xAxis1:Bind'Joy1Hat'( 'ru1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+xAxis1:Bind'Joy1Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+xAxis1:Bind'Update'( 1, 	Trigger.ALWAYS() 						);
+
+local yAxis1	= p1Box:CreateControl("yAxis");
+yAxis1:SetValue(0);
+yAxis1:Bind'Joy1Axis'( 2, 	Trigger.SLIDER(false) 					);
+yAxis1:Bind'Key'( 'w', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+yAxis1:Bind'Key'( 's', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
+yAxis1:Bind'Joy1Hat'( 'u1', Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+yAxis1:Bind'Joy1Hat'( 'ru1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
+yAxis1:Bind'Joy1Hat'( 'lu1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
+yAxis1:Bind'Joy1Hat'( 'd1', Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
+yAxis1:Bind'Joy1Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+yAxis1:Bind'Joy1Hat'( 'ld1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+yAxis1:Bind'Update'( 1, 	Trigger.ALWAYS() 						);
+
+local A1		= p1Box:CreateControl("A");
+A1:Bind'Joy1Button'( 3,		Trigger.SWITCH(true)					);
+A1:Bind'Key'( ' ', 			Trigger.SWITCH(true)			 		);
+
+local Left1		= p1Box:CreateControl("Left");
+Left1:Bind'Control'( 	'xAxis',		Spring2Switch(-2, -0.5)		);
+
+local Right1	= p1Box:CreateControl("Right");
+Right1:Bind'Control'( 	'xAxis',		Spring2Switch( 0.5,  2)		);
+
+local Up1		= p1Box:CreateControl("Up");
+Up1:Bind'Control'(		'yAxis',		Spring2Switch(-2, -0.5)		);
+
+local Down1		= p1Box:CreateControl("Down");
+Down1:Bind'Control'( 	'yAxis',		Spring2Switch( 0.5,  2)		);	
+
+
+
+local function sceneControl( box, control )
+	local sceneMgr = SceneManager:GetInstance();
+	
+	sceneMgr:Control
+	{
+		player	= p1Box.player,
+		id		= control:GetID(),
+		value	= control:GetValue()
+	}
+	
+	box:Trigger( "Control", control:GetID(), control:GetValue() );
+end
+
+p1Box:SetCallback( sceneControl )
+
+
+
+
+
+local prevHat = {}
+
+local joinedLobby = false;
+local keys = {}
 function love.update( dt )
 	
 	
 	---------------------
 	for msg in client:Messages() do
-		print( msg.type );
+		client:Peek( msg );
+		
 		for k,v in pairs(msg) do
 			print(" >".. tostring(k) .. " = " .. tostring(v));
 		end
-		if msg.type == "lobbyInfo" then
-			for k,v in pairs(msg[1]) do
-				print(" >>".. tostring(k) .. " = " .. tostring(v));
-			end
+		
+		if client:IsLoggedIn() and client.inLobby then
+			local msg = {}
+			msg.type = Message.Type.LOBBY_ENTER
+			client:Send( msg );
+			client.inLobby = true;
 		end
 	end
 	--------------------------
 
+	for axis=1, love.joystick.getNumAxes(1) do
+		p1Box:Trigger( "Joy1Axis", axis, love.joystick.getAxis( 1, axis ) );
+	end
+	
+	for key, value in pairs(keys) do
+		p1Box:Trigger( "Key", key, value );
+	end
+
 
 	sceneMgr:Update(dt);
 	
-	sceneMgr:Control
-	{
-		type	= "axis",
-		player	= 1,
-		name	= "x",
-		value	= love.joystick.getAxis( 1, 1 )
-	}
-	
-	sceneMgr:Control
-	{
-		type  	= "axis",
-		player	= 1,
-		name  	= "y",
-		value 	= love.joystick.getAxis( 1, 2 )
-	}
-	
-	sceneMgr:Control
-	{
-		type	= "axis",
-		player	= 2,
-		name	= "x",
-		value	= love.joystick.getAxis( 1, 4 )
-	}
-	
-	sceneMgr:Control
-	{
-		type  	= "axis",
-		player	= 2,
-		name  	= "y",
-		value 	= love.joystick.getAxis( 1, 3 )
-	}
-	
-	if love.keyboard.isDown( "a") then 
-		sceneMgr:Control
-		{
-			type	= "axis",
-			player	= 2,
-			name	= "x",
-			value	= -1
-		}
-	end
-	
-	if love.keyboard.isDown( "d") then 
-		sceneMgr:Control
-		{
-			type	= "axis",
-			player	= 2,
-			name	= "x",
-			value	= 1
-		}
-	end
-	
-	if love.keyboard.isDown( "w") then 
-		sceneMgr:Control
-		{
-			type	= "axis",
-			player	= 2,
-			name	= "y",
-			value	= -1
-		}
-	end
-	
-	if love.keyboard.isDown( "s") then 
-		sceneMgr:Control
-		{
-			type	= "axis",
-			player	= 2,
-			name	= "y",
-			value	= 1
-		}
-	end
-	
-	
-	if love.joystick.getHat( 1, 1 )=="l" then
-		if not hatL then
-			sceneMgr:Control
-			{
-				type	= "button",
-				player	= 1,
-				name	= "left",
-				value	= "pressed",
-			}
-			hatL = true;
-		end
-	else
-		if hatL then
-			sceneMgr:Control
-			{
-				type	= "button",
-				player	= 1,
-				name	= "left",
-				value	= "released",
-			}
-			hatL = false;
+	p1Box:Trigger( "Update", 1 );
+
+	for i=1, love.joystick.getNumHats(1) do
+		local hat = love.joystick.getHat( 1, i );
+		
+		if prevHat[i] ~= hat then 
+			if prevHat[i] then
+				p1Box:Trigger( "Joy1Hat", prevHat[i] .. i , false );
+			end
+			
+			prevHat[i] = hat;
+			p1Box:Trigger( "Joy1Hat", hat .. i, true );
 		end
 	end
 	
-	if love.joystick.getHat( 1, 1 )=="r" then
-		if not hatR then
-			sceneMgr:Control
-			{
-				type	= "button",
-				player	= 1,
-				name	= "right",
-				value	= "pressed",
-			}
-			hatR = true;
-		end
-	else
-		if hatR then
-			sceneMgr:Control
-			{
-				type	= "button",
-				player	= 1,
-				name	= "right",
-				value	= "released",
-			}
-			hatR = false;
-		end
-	end
 	
 end
 
@@ -191,17 +198,24 @@ function love.draw()
 	sceneMgr:Draw();
 end
 
-function love.joystickreleased( j, but )
-	if but == 3 then 
-		sceneMgr:Control
-		{
-			type	= "button",
-			player	= 1,
-			name	= "A",
-			value	= "released",
-		}
-	end
+
+function love.keypressed( key )
+	keys[key] = true;
 end
+
+function love.keyreleased( key )
+	keys[key] = false;
+end
+
+function love.joystickpressed( j, but )
+	p1Box:Trigger( "Joy1Button", but, true );
+end
+
+function love.joystickreleased( j, but )
+	p1Box:Trigger( "Joy1Button", but, false );
+end
+
+
 
 
 --Shape affects physical traits - speed, weight, attack
