@@ -14,8 +14,8 @@ local Message			= require 'src.network.Message'
 local Client = setmetatable({}, NetworkBase)
 Client.__index = Client;
 
-local instance
 
+local instance
 -------------------------------------------------------------------------------
 --  Client:new : Creates a new Client
 -------------------------------------------------------------------------------
@@ -49,43 +49,9 @@ function Client:Poll()
 	local data = NetworkBase.Poll( self );
 	local client = nil
 	
-	if data then 
-		if data.type == Message.Type.LOGIN and data.session then
-			self._session = data.session;
-			return self:Poll(); -- skip to next message
-		else			
-			return Message:new( data );
-		end
+	if data then 			
+		return Message:new( data );
 	end
-end
-
-
--------------------------------------------------------------------------------
---  Client:Send : Overwrite send
--------------------------------------------------------------------------------
-function Client:Send( data, ip, port )
-	data.session = self._session;
-	return NetworkBase.Send( self, data, ip, port )
-end
-
-
--------------------------------------------------------------------------------
---  Client:IsLoggedIn : return true if logged in
--------------------------------------------------------------------------------
-function Client:IsLoggedIn()
-	return ((self._session and true) or false)
-end
-
-
--------------------------------------------------------------------------------
---  Client:Login : Sends a login request message to the server
--------------------------------------------------------------------------------
-function Client:Login( id )
-	local msg = {}
-	msg.type = Message.Type.LOGIN
-	msg.id = id;
-
-	return self:Send( msg );
 end
 
 

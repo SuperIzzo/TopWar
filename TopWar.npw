@@ -4,59 +4,53 @@
         <File name="serverMain.lua" />
         <File name="conf.lua" />
         <Folder name="src">
+            <File name="src\strict.lua" />
+            <Folder name="lib">
+                <File name="src\lib\bintable.lua" />
+            </Folder>
             <Folder name="math">
                 <File name="src\math\Vector.lua" />
                 <File name="src\math\PolarVector.lua" />
                 <File name="src\math\MathUtils.lua" />
             </Folder>
-            <Folder name="game">
-                <Folder name="phisics">
-                    <File name="src\game\physics\PhDyzkBody.lua" />
-                    <File name="src\game\physics\PhArena.lua" />
-                </Folder>
-                <Folder name="graphics">
-                    <File name="src\game\graphics\ImageUtils.lua" />
-                </Folder>
-                <Folder name="input">
-                    <File name="src\game\input\DirectBattleController.lua" />
-                    <File name="src\game\input\ControlBox.lua" />
-                    <File name="src\game\input\Control.lua" />
-                    <File name="src\game\input\TriggerType.lua" />
-                </Folder>
-                <Folder name="object">
-                    <File name="src\game\object\Dyzk.lua" />
-                    <File name="src\game\object\Arena.lua" />
-                    <File name="src\game\object\Camera.lua" />
-                    <File name="src\game\object\Sparks.lua" />
-                    <File name="src\game\object\RPMMeter.lua" />
-                </Folder>
-                <Folder name="scenes">
-                    <File name="src\game\scene\ScBattle.lua" />
-                    <File name="src\game\scene\ScSelection.lua" />
-                    <File name="src\game\scene\SceneManager.lua" />
-                </Folder>
+            <Folder name="phisics">
+                <File name="src\physics\PhDyzkBody.lua" />
+                <File name="src\physics\PhArena.lua" />
             </Folder>
-            <Folder name="server">
-                <Folder name="lobbies">
-                    <File name="src\server\lobbies\LobbyManager.lua" />
-                    <File name="src\server\lobbies\LbBattle.lua" />
-                    <File name="src\server\lobbies\LbGameSetup.lua" />
-                </Folder>
+            <Folder name="graphics">
+                <File name="src\graphics\ImageUtils.lua" />
+            </Folder>
+            <Folder name="input">
+                <File name="src\input\DirectBattleController.lua" />
+                <File name="src\input\ControlBox.lua" />
+                <File name="src\input\Control.lua" />
+                <File name="src\input\TriggerType.lua" />
+            </Folder>
+            <Folder name="object">
+                <File name="src\object\Dyzk.lua" />
+                <File name="src\object\Arena.lua" />
+                <File name="src\object\Camera.lua" />
+                <File name="src\object\Sparks.lua" />
+                <File name="src\object\RPMMeter.lua" />
+            </Folder>
+            <Folder name="scenes">
+                <File name="src\scene\ScBattle.lua" />
+                <File name="src\scene\ScSelection.lua" />
+                <File name="src\scene\SceneManager.lua" />
+                <File name="src\scene\ScMainMenu.lua" />
             </Folder>
             <Folder name="network">
-                <File name="src\network\GDImageWrapper.lua" />
-                <File name="src\network\Server.lua" />
-                <File name="src\network\Client.lua" />
-                <File name="src\network\ClientObject.lua" />
-                <File name="src\network\NetworkUtils.lua" />
                 <File name="src\network\NetworkBase.lua" />
+                <File name="src\network\NetworkUtils.lua" />
                 <File name="src\network\Message.lua" />
+                <Folder name="client">
+                    <File name="src\network\Client.lua" />
+                </Folder>
+                <Folder name="server">
+                    <File name="src\network\Server.lua" />
+                    <File name="src\network\ClientObject.lua" />
+                </Folder>
             </Folder>
-            <Folder name="lib">
-                <File name="src\lib\bintable.lua" />
-            </Folder>
-            <Folder name="gui" />
-            <File name="src\strict.lua" />
         </Folder>
         <Folder name="docs">
             <File name="docs\Rules.txt" />

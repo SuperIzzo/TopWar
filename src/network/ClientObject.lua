@@ -8,10 +8,9 @@ ClientObject.__index = ClientObject
 -------------------------------------------------------------------------------
 --  ClientObject:new : Creates a new client object
 -------------------------------------------------------------------------------
-function ClientObject:new( server, session, ip, port )
+function ClientObject:new( server, ip, port )
 	local obj = {}
 	
-	obj._session	= session;
 	obj._ip			= ip;
 	obj._port		= port;
 	
@@ -22,25 +21,21 @@ function ClientObject:new( server, session, ip, port )
 end
 
 
+-------------------------------------------------------------------------------
+--  ClientObject:Send : Sends a message to this client
+-------------------------------------------------------------------------------
 function ClientObject:Send( msg )
 	return self._server:SendToClient( self, msg );
 end
 
 
-function ClientObject:SetLobby( lobby )
-	self._lobby = lobby;
-end
-
-
-function ClientObject:GetLobby()
-	return self._lobby;
-end
-
-
+-------------------------------------------------------------------------------
+--  ClientObject:__tostring : Sends a message to this client
+-------------------------------------------------------------------------------
 function ClientObject:__tostring()
-	return "Client object: " .. tostring(self._ip) .. ":" .. tostring(self._port) 
-			.. "; session: " .. tostring(self._session);
+	return "Client object: " .. tostring(self._ip) .. ":" .. tostring(self._port);
 end
+
 
 --===========================================================================--
 --  Initialization

@@ -16,12 +16,11 @@ Message.__index = Message;
 
 
 -------------------------------------------------------------------------------
---  Enum Message.Type : message type enumeratoin
+--  Enum Message.Type : message type enumeration
 -------------------------------------------------------------------------------
 Message.Type = 
 {
-	LOGIN 		= "LOGIN",
-	ACCEPT 		= "ACCEPT",
+	HANDSHAKE 	= "HANDSHAKE",
 	
 	LOBBY_INFO	= "LOBBY_INFO",
 	LOBBY_ENTER	= "LOBBY_ENTER",

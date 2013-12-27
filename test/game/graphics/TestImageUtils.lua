@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local ImageUtils 			= require 'src.game.graphics.ImageUtils'
+local ImageUtils 			= require 'src.graphics.ImageUtils'
 local GradientTestImage 	= require 'test.testutils.GradientTestImage'
 local random 				= math.random
 

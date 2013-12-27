@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhDyzkBody 		= require 'src.game.physics.PhDyzkBody'
+local PhDyzkBody 		= require 'src.physics.PhDyzkBody'
 local ipairs			= ipairs
 local coroutine			= coroutine
 

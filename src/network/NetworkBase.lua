@@ -110,7 +110,6 @@ end
 --  NetworkBase:Peek : Handles a message internally
 -------------------------------------------------------------------------------
 function NetworkBase:Peek( msg )
-	print( msg and msg.type );
 	if  msg  and  type(msg.type) == "string"  then
 		local handler = self[ "HandleMsg_" .. msg.type ];
 		if handler then

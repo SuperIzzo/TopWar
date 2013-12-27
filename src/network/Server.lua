@@ -54,32 +54,26 @@ function Server:Poll()
 	local client = nil
 	local msg = nil
 	
-	if data then 
-		if data.session then
-			
-			client = self._sessions[data.session];
-			
-			if client then
-				-- TODO: verify IP?
-				
-				msg = Message:new( data );
-				msg:SetClient( client );
-			end
-			
-		elseif data.type == Message.Type.LOGIN then
-			local session = GenerateID();
-			client = ClientObject:new( self, session, ip, port )
-			
-			self._sessions[session] = client;
-			
-			msg = {}
-			msg.type = Message.Type.LOGIN;
-			msg.session = session;
-			
-			self:SendToClient( client, msg );
-			return self:Poll();
+	if data and ip and port then
+		-- Create a message and decipher the raw data
+		msg = Message:new( data );
+	
+		-- Make a session ID
+		local sessionID = "SESION:" .. ip;
+		client = self._sessions[sessionID];
+		
+		-- Register the client (if necessary)
+		if not client then
+			client = ClientObject:new( self, ip, port );
+			self._sessions[sessionID] = client;
 		end
+		
+		-- Add the client object to the message
+		msg:SetClient( client );
 	end
+	
+	-- Peek the message before sending
+	self:Peek(msg);
 	
 	return msg;
 end
@@ -102,6 +96,20 @@ function Server:SendToAllClients( msg )
 	end
 end
 
+
+-------------------------------------------------------------------------------
+--  Server:HandleMsg_HANDSHAKE : Handles handshakes
+-------------------------------------------------------------------------------
+Server[ "HandleMsg_" .. Message.Type.HANDSHAKE ] = function(self, msg)
+	local client = msg:GetClient();
+
+	-- Prepare a response message
+	local response = {}
+	response.type = Message.Type.HANDSHAKE;
+	
+	-- Send the message
+	return self:SendToClient( client, response );
+end
 
 
 --===========================================================================--

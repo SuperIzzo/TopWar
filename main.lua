@@ -1,11 +1,13 @@
 require 'src.strict'
 
+declare 'loveframes'
+require 'src.lib.loveframes'
+
 
 local Client 		= require 'src.network.Client'
 local Message 		= require 'src.network.Message'
-local ControlBox 	= require 'src.game.input.ControlBox'
-local Trigger	 	= require 'src.game.input.TriggerType'
-
+local ControlBox 	= require 'src.input.ControlBox'
+local Trigger	 	= require 'src.input.TriggerType'
 
 
 local gameConf	 = nil;
@@ -34,16 +36,28 @@ local  client = Client:new();
 Client:SetInstance( client );
 
 client:Connect();
-client:Login( "Izzo" );
+
+local msg = {};
+msg.type = Message.Type.HANDSHAKE;
+
+client:Send( msg );
 
 
-
-local ScBattle = require("src.game.scene.ScBattle");
-local ScSelection = require("src.game.scene.ScSelection");
-local SceneManager = require("src.game.scene.SceneManager");
-
+local SceneManager = require("src.scene.SceneManager");
 local sceneMgr = SceneManager:GetInstance();
-sceneMgr:SetScene( ScSelection:new() );
+
+
+local ScMainMenu = require("src.scene.ScMainMenu");
+local ScBattle = require("src.scene.ScBattle");
+local ScSelection = require("src.scene.ScSelection");
+
+
+sceneMgr:AddScene( "Main Menu"	, ScMainMenu:new()	);
+sceneMgr:AddScene( "Battle"		, ScBattle:new()	);
+sceneMgr:AddScene( "Selection"	, ScSelection:new()	);
+
+sceneMgr:SetScene( "Main Menu" );
+ 
  
  
 local abs = math.abs
@@ -54,6 +68,7 @@ local function Spring2Switch( moreThan, lessThan )
 
 	local function TR_SPRING_TO_SWITCH( control, newValue )
 
+		--print( control.id, control.value, newValue );
 		if type(newValue) == 'number' then
 			local triggerValue = false;
 			
@@ -132,6 +147,8 @@ local function sceneControl( box, control )
 		value	= control:GetValue()
 	}
 	
+	--print( control.id, control.value );
+	
 	box:Trigger( "Control", control:GetID(), control:GetValue() );
 end
 
@@ -143,10 +160,8 @@ p1Box:SetCallback( sceneControl )
 
 local prevHat = {}
 
-local joinedLobby = false;
 local keys = {}
 function love.update( dt )
-	
 	
 	---------------------
 	for msg in client:Messages() do
@@ -156,12 +171,6 @@ function love.update( dt )
 			print(" >".. tostring(k) .. " = " .. tostring(v));
 		end
 		
-		if client:IsLoggedIn() and client.inLobby then
-			local msg = {}
-			msg.type = Message.Type.LOBBY_ENTER
-			client:Send( msg );
-			client.inLobby = true;
-		end
 	end
 	--------------------------
 
@@ -177,6 +186,7 @@ function love.update( dt )
 	sceneMgr:Update(dt);
 	
 	p1Box:Trigger( "Update", 1 );
+	print(p1Box._controls["xAxis"].value);
 
 	for i=1, love.joystick.getNumHats(1) do
 		local hat = love.joystick.getHat( 1, i );
@@ -192,20 +202,44 @@ function love.update( dt )
 	end
 	
 	
+	-- Update GUI
+	loveframes.update(dt);
+	
 end
 
 function love.draw()
 	sceneMgr:Draw();
+	
+	-- Draw GUI
+	loveframes.draw();
+	
 end
 
 
-function love.keypressed( key )
+function love.keypressed( key, unicode )
 	keys[key] = true;
+	
+	-- Handle GUI
+	loveframes.keypressed( key, unicode )
 end
 
-function love.keyreleased( key )
+function love.keyreleased( key, unicode )
 	keys[key] = false;
+	
+	-- Handle GUI
+	loveframes.keyreleased( key, unicode )
 end
+
+function love.mousepressed(x, y, button)
+    -- Handle GUI
+    loveframes.mousepressed(x, y, button)
+end
+ 
+function love.mousereleased(x, y, button)
+    -- Handle GUI
+    loveframes.mousereleased(x, y, button)
+end
+
 
 function love.joystickpressed( j, but )
 	p1Box:Trigger( "Joy1Button", but, true );
