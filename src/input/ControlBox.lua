@@ -74,6 +74,14 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Control:CreateControl : Returns the control with `controlID' or nil
+-------------------------------------------------------------------------------
+function ControlBox:GetControl( controlID )
+	return self._controls[controlID];
+end
+
+
+-------------------------------------------------------------------------------
 --  Control:Trigger : Triggers all controls which respond to the input
 -------------------------------------------------------------------------------
 function ControlBox:Trigger( event, input, value )

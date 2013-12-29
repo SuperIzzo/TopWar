@@ -3,7 +3,7 @@
 	-- Copyright (c) 2013 Kenny Shields --
 --]]------------------------------------------------
 
--- columnlist class
+-- columnlist object
 local newobject = loveframes.NewObject("columnlist", "loveframes_object_columnlist", true)
 
 --[[---------------------------------------------------------
@@ -71,11 +71,11 @@ function newobject:update(dt)
 		self.y = self.parent.y + self.staticy
 	end
 	
-	for k, v in ipairs(children) do
+	for k, v in ipairs(internals) do
 		v:update(dt)
 	end
 	
-	for k, v in ipairs(internals) do
+	for k, v in ipairs(children) do
 		v:update(dt)
 	end
 	
@@ -513,8 +513,10 @@ function newobject:SelectRow(row, ctrl)
 					onrowselected(self, row, row:GetColumnData())
 				end
 			end
-		elseif v ~= row and not multiselect and not ctrl then
-			v.selected = false
+		elseif v ~= row then
+			if not (multiselect and ctrl) then
+				v.selected = false
+			end
 		end
 	end
 	

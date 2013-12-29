@@ -15,6 +15,9 @@ local smallfont = love.graphics.newFont(10)
 local imagebuttonfont = love.graphics.newFont(15)
 local bordercolor = {143, 143, 143, 255}
 
+-- add skin directives to this table
+skin.directives = {}
+
 -- controls 
 skin.controls = {}
 
@@ -88,6 +91,7 @@ skin.controls.tooltip_body_color                    = {255, 255, 255, 255}
 skin.controls.textinput_body_color                  = {250, 250, 250, 255}
 skin.controls.textinput_indicator_color             = {0, 0, 0, 255}
 skin.controls.textinput_text_normal_color           = {0, 0, 0, 255}
+skin.controls.textinput_text_placeholder_color      = {127, 127, 127, 255}
 skin.controls.textinput_text_selected_color         = {255, 255, 255, 255}
 skin.controls.textinput_highlight_bar_color         = {51, 204, 255, 255}
 
@@ -100,7 +104,7 @@ skin.controls.checkbox_check_color                  = {128, 204, 255, 255}
 skin.controls.checkbox_text_font                    = smallfont
 
 -- collapsiblecategory
-skin.controls.collapsiblecategory_text_color        = {0, 0, 0, 255}
+skin.controls.collapsiblecategory_text_color        = {255, 255, 255, 255}
 
 -- columnlist
 skin.controls.columnlist_body_color                 = {232, 232, 232, 255}
@@ -130,8 +134,23 @@ skin.controls.modalbackground_body_color            = {255, 255, 255, 100}
 skin.controls.linenumberspanel_text_color           = {170, 170, 170, 255}
 skin.controls.linenumberspanel_body_color			= {235, 235, 235, 255}
 
+-- grid
+skin.controls.grid_body_color                       = {230, 230, 230, 255}
+
+-- form
+skin.controls.form_text_color                       = {0, 0, 0, 255}
+skin.controls.form_text_font                        = smallfont
+
+-- menu
+skin.controls.menu_body_color                       = {255, 255, 255, 255}
+
+-- menuoption
+skin.controls.menuoption_body_hover_color           = {51, 204, 255, 255}
+skin.controls.menuoption_text_hover_color           = {255, 255, 255, 255}
+skin.controls.menuoption_text_color                 = {180, 180, 180, 255}
+
 --[[---------------------------------------------------------
-	- func: OutlinedRectangle(object)
+	- func: OutlinedRectangle(x, y, width, height, ovt, ovb, ovl, ovr)
 	- desc: creates and outlined rectangle
 --]]---------------------------------------------------------
 function skin.OutlinedRectangle(x, y, width, height, ovt, ovb, ovl, ovr)
@@ -199,8 +218,6 @@ function skin.DrawFrame(object)
 	-- frame top bar
 	love.graphics.setColor(255, 255, 255, 255)
 	love.graphics.draw(topbarimage, x, y, 0, topbarimage_scalex, topbarimage_scaley)
-	love.graphics.setColor(bordercolor)
-	skin.OutlinedRectangle(x, y + 25, width, 1)
 	
 	-- frame name section
 	love.graphics.setFont(font)
@@ -221,6 +238,12 @@ function skin.DrawFrame(object)
 	-- frame border
 	love.graphics.setColor(bordercolor)
 	skin.OutlinedRectangle(x, y, width, height)
+	
+	love.graphics.setColor(255, 255, 255, 70)
+	skin.OutlinedRectangle(x + 1, y + 1, width - 2, 24)
+	
+	love.graphics.setColor(220, 220, 220, 255)
+	skin.OutlinedRectangle(x + 1, y + 25, width - 2, height - 26)
 	
 end
 
@@ -308,6 +331,9 @@ function skin.DrawButton(object)
 		love.graphics.setColor(bordercolor)
 		skin.OutlinedRectangle(x, y, width, height)
 	end
+	
+	love.graphics.setColor(255, 255, 255, 150)
+	skin.OutlinedRectangle(x + 1, y + 1, width - 2, height - 2)
 
 end
 
@@ -448,9 +474,9 @@ function skin.DrawProgressBar(object)
 	local height = object:GetHeight()
 	local value = object:GetValue()
 	local max = object:GetMax()
+	local text = object:GetText()
 	local barwidth = object:GetBarWidth()
 	local font = skin.controls.progressbar_text_font
-	local text = value .. "/" ..max
 	local twidth = font:getWidth(text)
 	local theight = font:getHeight("a")
 	local bodycolor = skin.controls.progressbar_body_color
@@ -472,7 +498,9 @@ function skin.DrawProgressBar(object)
 	-- progress bar border
 	love.graphics.setColor(bordercolor)
 	skin.OutlinedRectangle(x, y, width, height)
-		
+	
+	object:SetText(value .. "/" ..max)
+	
 end
 
 --[[---------------------------------------------------------
@@ -494,9 +522,9 @@ function skin.DrawScrollArea(object)
 	love.graphics.setColor(bordercolor)
 	
 	if bartype == "vertical" then
-		skin.OutlinedRectangle(x, y, width, height, true, true)
+		--skin.OutlinedRectangle(x, y, width, height, true, true)
 	elseif bartype == "horizontal" then
-		skin.OutlinedRectangle(x, y, width, height, false, false, true, true)
+		--skin.OutlinedRectangle(x, y, width, height, false, false, true, true)
 	end
 	
 end
@@ -545,18 +573,6 @@ function skin.DrawScrollBar(object)
 		skin.OutlinedRectangle(x, y, width, height)
 	end
 	
-	if bartype == "vertical" then
-		love.graphics.setColor(bordercolor)
-		love.graphics.rectangle("fill", x + 3, y + height/2 - 3, width - 6, 1)
-		love.graphics.rectangle("fill", x + 3, y + height/2, width - 6, 1)
-		love.graphics.rectangle("fill", x + 3, y + height/2 + 3, width - 6, 1)
-	else
-		love.graphics.setColor(bordercolor)
-		love.graphics.rectangle("fill", x + width/2 - 3, y + 3, 1, height - 6)
-		love.graphics.rectangle("fill", x + width/2, y + 3, 1, height - 6)
-		love.graphics.rectangle("fill", x + width/2 + 3, y + 3, 1, height - 6)
-	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -592,6 +608,10 @@ function skin.DrawPanel(object)
 	
 	love.graphics.setColor(bodycolor)
 	love.graphics.rectangle("fill", x, y, width, height)
+	
+	love.graphics.setColor(255, 255, 255, 200)
+	skin.OutlinedRectangle(x + 1, y + 1, width - 2, height - 2)
+	
 	love.graphics.setColor(bordercolor)
 	skin.OutlinedRectangle(x, y, width, height)
 	
@@ -652,6 +672,14 @@ function skin.DrawTabPanel(object)
 	skin.OutlinedRectangle(x, y + buttonheight - 1, width, height - buttonheight + 2)
 	
 	object:SetScrollButtonSize(15, buttonheight)
+
+end
+
+--[[---------------------------------------------------------
+	- func: DrawOverTabPanel(object)
+	- desc: draws over the tab panel object
+--]]---------------------------------------------------------
+function skin.DrawOverTabPanel(object)
 
 end
 
@@ -907,6 +935,7 @@ function skin.DrawTextInput(object)
 	local text = object:GetText()
 	local multiline = object:GetMultiLine()
 	local lines = object:GetLines()
+	local placeholder = object:GetPlaceholderText()
 	local offsetx = object:GetOffsetX()
 	local offsety = object:GetOffsetY()
 	local indicatorx = object:GetIndicatorX()
@@ -915,9 +944,11 @@ function skin.DrawTextInput(object)
 	local hbar = object:HasHorizontalScrollBar()
 	local linenumbers = object:GetLineNumbersEnabled()
 	local itemwidth = object:GetItemWidth()
+	local masked = object:GetMasked()
 	local theight = font:getHeight("a")
 	local bodycolor = skin.controls.textinput_body_color
 	local textnormalcolor = skin.controls.textinput_text_normal_color
+	local textplaceholdercolor = skin.controls.textinput_text_placeholder_color
 	local textselectedcolor = skin.controls.textinput_text_selected_color
 	local highlightbarcolor = skin.controls.textinput_highlight_bar_color
 	local indicatorcolor = skin.controls.textinput_indicator_color
@@ -929,7 +960,11 @@ function skin.DrawTextInput(object)
 		local bary = 0
 		if multiline then
 			for i=1, #lines do
-				local twidth = font:getWidth(lines[i])
+				local str = lines[i]
+				if masked then
+					str = str:gsub(".", "*")
+				end
+				local twidth = font:getWidth(str)
 				if twidth == 0 then
 					twidth = 5
 				end
@@ -938,7 +973,13 @@ function skin.DrawTextInput(object)
 				bary = bary + theight
 			end
 		else
-			local twidth = font:getWidth(text)
+			local twidth = 0
+			if masked then
+				local maskchar = object:GetMaskChar()
+				twidth = font:getWidth(text:gsub(".", maskchar))
+			else
+				twidth = font:getWidth(text)
+			end
 			love.graphics.setColor(highlightbarcolor)
 			love.graphics.rectangle("fill", textx, texty, twidth, theight)
 		end
@@ -1003,18 +1044,34 @@ function skin.DrawTextInput(object)
 	
 	if alltextselected then
 		love.graphics.setColor(textselectedcolor)
+	elseif #lines == 1 and lines[1] == "" then
+		love.graphics.setColor(textplaceholdercolor)
 	else
 		love.graphics.setColor(textnormalcolor)
 	end
 	
+	local str = ""
 	if multiline then
 		for i=1, #lines do
-			love.graphics.print(lines[i], textx, texty + theight * i - theight)
+			str = lines[i]
+			if masked then
+				local maskchar = object:GetMaskChar()
+				str = str:gsub(".", maskchar)
+			end
+			love.graphics.print(#str > 0 and str or (#lines == 1 and placeholder or ""), textx, texty + theight * i - theight)
 		end
 	else
-		love.graphics.print(lines[1], textx, texty)
+		str = lines[1]
+		if masked then
+			local maskchar = object:GetMaskChar()
+			str = str:gsub(".", maskchar)
+		end
+		love.graphics.print(#str > 0 and str or placeholder, textx, texty)
 	end
-		
+	
+	love.graphics.setColor(230, 230, 230, 255)
+	skin.OutlinedRectangle(x + 1, y + 1, width - 2, height - 2)
+	
 end
 
 --[[---------------------------------------------------------
@@ -1277,15 +1334,19 @@ function skin.DrawCollapsibleCategory(object)
 	local textcolor = skin.controls.collapsiblecategory_text_color
 	local font = smallfont
 	local image = skin.images["button-nohover.png"]
+	local topbarimage = skin.images["frame-topbar.png"]
+	local topbarimage_width = topbarimage:getWidth()
+	local topbarimage_height = topbarimage:getHeight()
+	local topbarimage_scalex = width/topbarimage_width
+	local topbarimage_scaley = 25/topbarimage_height
 	local imageheight = image:getHeight()
 	local scaley = height/imageheight
 	
 	love.graphics.setColor(255, 255, 255, 255)
 	love.graphics.draw(image, x, y, 0, width, scaley)
 	
-	love.graphics.setFont(font)
-	love.graphics.setColor(textcolor)
-	love.graphics.print(text, x + 5, y + 5)
+	love.graphics.setColor(255, 255, 255, 255)
+	love.graphics.draw(topbarimage, x, y, 0, topbarimage_scalex, topbarimage_scaley)
 	
 	love.graphics.setColor(bordercolor)
 	skin.OutlinedRectangle(x, y, width, height)
@@ -1295,11 +1356,19 @@ function skin.DrawCollapsibleCategory(object)
 		local icon = skin.images["collapse.png"]
 		icon:setFilter("nearest", "nearest")
 		love.graphics.draw(icon, x + width - 21, y + 5)
+		love.graphics.setColor(255, 255, 255, 70)
+		skin.OutlinedRectangle(x + 1, y + 1, width - 2, 24)
 	else
 		local icon = skin.images["expand.png"]
 		icon:setFilter("nearest", "nearest")
 		love.graphics.draw(icon, x + width - 21, y + 5)
+		love.graphics.setColor(255, 255, 255, 70)
+		skin.OutlinedRectangle(x + 1, y + 1, width - 2, 23)
 	end
+	
+	love.graphics.setFont(font)
+	love.graphics.setColor(textcolor)
+	love.graphics.print(text, x + 5, y + 5)
 	
 end
 
@@ -1460,23 +1529,15 @@ function skin.DrawColumnListRow(object)
 	if selected then
 		love.graphics.setColor(bodyselectedcolor)
 		love.graphics.rectangle("fill", x, y, width, height)
-		love.graphics.setColor(bordercolor)
-		skin.OutlinedRectangle(x, y, width, height, true, false, true, true)
 	elseif hover then
 		love.graphics.setColor(bodyhovercolor)
 		love.graphics.rectangle("fill", x, y, width, height)
-		love.graphics.setColor(bordercolor)
-		skin.OutlinedRectangle(x, y, width, height, true, false, true, true)
 	elseif colorindex == 1 then
 		love.graphics.setColor(body1color)
-		love.graphics.rectangle("fill", x + 1, y + 1, width - 2, height - 2)
-		love.graphics.setColor(bordercolor)
-		skin.OutlinedRectangle(x, y, width, height, true, false, true, true)
+		love.graphics.rectangle("fill", x, y, width, height)
 	else
 		love.graphics.setColor(body2color)
 		love.graphics.rectangle("fill", x, y, width, height)
-		love.graphics.setColor(bordercolor)
-		skin.OutlinedRectangle(x, y, width, height, true, false, true, true)
 	end
 	
 	for k, v in ipairs(columndata) do
@@ -1569,6 +1630,7 @@ function skin.DrawGrid(object)
 	local y = object:GetY()
 	local width = object:GetWidth()
 	local height = object:GetHeight()
+	local bodycolor = skin.controls.grid_body_color
 	
 	love.graphics.setColor(bordercolor)
 	skin.OutlinedRectangle(x, y, width, height)
@@ -1588,6 +1650,9 @@ function skin.DrawGrid(object)
 			if n > 1 then	
 				ovl = true
 			end
+			love.graphics.setColor(bodycolor)
+			love.graphics.rectangle("fill", cx, cy, cw, ch)
+			love.graphics.setColor(bordercolor)
 			skin.OutlinedRectangle(cx, cy, cw, ch, ovt, false, ovl, false)
 			cx = cx + cw
 		end
@@ -1595,6 +1660,103 @@ function skin.DrawGrid(object)
 		cy = cy + ch
 	end
 
+end
+
+--[[---------------------------------------------------------
+	- func: skin.DrawForm(object)
+	- desc: draws the form object
+--]]---------------------------------------------------------
+function skin.DrawForm(object)
+
+	local skin = object:GetSkin()
+	local x = object:GetX()
+	local y = object:GetY()
+	local width = object:GetWidth()
+	local height = object:GetHeight()
+	local topmargin = object.topmargin
+	local name = object.name
+	local font = skin.controls.form_text_font
+	local textcolor = skin.controls.form_text_color
+	local twidth = font:getWidth(name)
+	
+	love.graphics.setFont(font)
+	love.graphics.setColor(textcolor)
+	love.graphics.print(name, x + 7, y)
+	
+	love.graphics.setColor(bordercolor)
+	love.graphics.rectangle("fill", x, y + 7, 5, 1)
+	love.graphics.rectangle("fill", x + twidth + 9, y + 7, width - (twidth + 9), 1)
+	love.graphics.rectangle("fill", x, y + height, width, 1)
+	love.graphics.rectangle("fill", x, y + 7, 1, height - 7)
+	love.graphics.rectangle("fill", x + width - 1, y + 7, 1, height - 7)
+	
+end
+
+--[[---------------------------------------------------------
+	- func: skin.DrawMenu(object)
+	- desc: draws the menu object
+--]]---------------------------------------------------------
+function skin.DrawMenu(object)
+	
+	local skin = object:GetSkin()
+	local x = object:GetX()
+	local y = object:GetY()
+	local width = object:GetWidth()
+	local height = object:GetHeight()
+	local bodycolor = skin.controls.menu_body_color
+	
+	love.graphics.setColor(bodycolor)
+	love.graphics.rectangle("fill", x, y, width, height)
+	
+	love.graphics.setColor(bordercolor)
+	skin.OutlinedRectangle(x, y, width, height)
+	
+end
+
+--[[---------------------------------------------------------
+	- func: skin.DrawMenuOption(object)
+	- desc: draws the menuoption object
+--]]---------------------------------------------------------
+function skin.DrawMenuOption(object)
+
+	local skin = object:GetSkin()
+	local x = object:GetX()
+	local y = object:GetY()
+	local width = object:GetWidth()
+	local height = object:GetHeight()
+	local hover = object:GetHover()
+	local text = object:GetText()
+	local icon = object:GetIcon()
+	local option_type = object.option_type
+	local body_hover_color = skin.controls.menuoption_body_hover_color
+	local text_hover_color = skin.controls.menuoption_text_hover_color
+	local text_color = skin.controls.menuoption_text_color
+	local twidth = smallfont:getWidth(text)
+	
+	
+	if option_type == "divider" then
+		love.graphics.setColor(200, 200, 200, 255)
+		love.graphics.rectangle("fill", x + 4, y + 2, width - 8, 1)
+		object.contentheight = 10
+	else
+		love.graphics.setFont(smallfont)
+		if hover then
+			love.graphics.setColor(body_hover_color)
+			love.graphics.rectangle("fill", x + 2, y + 2, width - 4, height - 4)
+			love.graphics.setColor(text_hover_color)
+			love.graphics.print(text, x + 26, y + 5)
+		else
+			love.graphics.setColor(text_color)
+			love.graphics.print(text, x + 26, y + 5)
+		end
+		if icon then
+			love.graphics.setColor(255, 255, 255, 255)
+			love.graphics.draw(icon, x + 5, y + 5)
+		end
+		object.contentwidth = twidth + 31
+		object.contentheight = 25
+	end
+	
 end
 
 -- register the skin

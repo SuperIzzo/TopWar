@@ -1,52 +1,39 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-
+local passTable 	= require 'data.server.passwords'
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class BattleController : A battle scene controller game object
+--	Class Authenticator : Authentication service
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local BattleController = {}
-BattleController.__index = BattleController;
+local Authenticator = {}
+Authenticator.__index = Authenticator
 
 
 -------------------------------------------------------------------------------
---  BattleController:new : Creates a new controller
+--  Authenticator:new : Creates a new authenticator
 -------------------------------------------------------------------------------
-function BattleController:new( player, phDyzk )
+function Authenticator:new()
 	local obj = {}
 	
-	obj._dyzk	= phDyzk;
-	obj._player	= player;
+	obj.passwords = passTable;
 	
-	return setmetatable( obj, self );
+	return setmetatable(obj, self);
 end
 
 
 -------------------------------------------------------------------------------
---  BattleController:Control : Handles controls
+--  Authenticator:new : Creates a new authenticator
 -------------------------------------------------------------------------------
-function BattleController:Control( control )
-	if control.player == self._player then
-		if control.id == "xAxis" then
-			local val = control.value;
-			local vx, vy = self._dyzk:GetControlVector();
-			
-			self._dyzk:SetControlVector( val, vy );
-		end
-		
-		if control.id == "yAxis" then
-			local val = control.value;
-			local vx, vy = self._dyzk:GetControlVector();
-			
-			self._dyzk:SetControlVector( vx, val );
-		end
-	end
+function Authenticator:Authenticate( userName, pass )
+	return 	type(userName)=="string" and 
+			type(pass) == "string" and 
+			self.passwords[userName] == pass;
 end
 
 
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return BattleController
+return Authenticator;

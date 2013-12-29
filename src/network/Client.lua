@@ -3,7 +3,7 @@
 --===========================================================================--
 require 'src.lib.bintable'
 local socket 			= require 'socket'
-local NetworkUtils		= require 'src.network.NetworkUtils'
+local NetUtils			= require 'src.network.NetworkUtils'
 local NetworkBase		= require 'src.network.NetworkBase'
 local Message			= require 'src.network.Message'
 
@@ -21,6 +21,9 @@ local instance
 -------------------------------------------------------------------------------
 function Client:new()
 	local obj = NetworkBase.new(self)
+	
+	obj._authentic 	= false;
+	obj._name 		= false;
 	
 	return obj;
 end
@@ -43,15 +46,54 @@ end
 
 
 -------------------------------------------------------------------------------
---  Server:Poll : Overwrite Poll
+--  Client:Poll : Overwrite Poll
 -------------------------------------------------------------------------------
 function Client:Poll()
 	local data = NetworkBase.Poll( self );
 	local client = nil
 	
 	if data then 			
-		return Message:new( data );
+		local msg = Message:new( data );
+		
+		self:Peek( msg );
+		
+		return msg;
 	end
+end
+
+
+-------------------------------------------------------------------------------
+--  Client:Authenticate : Authenticates the client to the server
+-------------------------------------------------------------------------------
+function Client:Authenticate( name, pass )
+	self:Send(NetUtils.NewAuthMsg( name, pass ));
+end
+
+
+-------------------------------------------------------------------------------
+--  Client:IsAuthentic : Retuerns true if the client is authenticated
+-------------------------------------------------------------------------------
+function Client:IsAuthentic()
+	return self._authentic;
+end
+
+
+-------------------------------------------------------------------------------
+--  Client:HandleMsg_AUTH : Handles authentication feedback
+-------------------------------------------------------------------------------
+Client[ "HandleMsg_" .. Message.Type.AUTH ] = function(self, msg)
+	if msg:GetSubtype() == Message.Type.INFO then
+		local userName = msg.name;
+		local status   = msg.status;
+		
+		if status then
+			self._authentic	= true;
+			self._name 		= userName;
+			print( "Client authenticated: \"" .. userName .. "\"");
+		else
+			self._name 		= "";
+		end
+	end	
 end
 
 

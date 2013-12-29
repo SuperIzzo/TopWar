@@ -3,24 +3,25 @@
 	-- Copyright (c) 2013 Kenny Shields --
 --]]------------------------------------------------
 
--- button object
-local newobject = loveframes.NewObject("button", "loveframes_object_button", true)
+-- menu object
+local newobject = loveframes.NewObject("menu", "loveframes_object_menu", true)
 
 --[[---------------------------------------------------------
 	- func: initialize()
 	- desc: initializes the object
 --]]---------------------------------------------------------
-function newobject:initialize()
+function newobject:initialize(menu)
 	
-	self.type = "button"
-	self.text = "Button"
+	self.type = "menu"
 	self.width = 80
 	self.height = 25
+	self.largest_item_width = 0
+	self.largest_item_height = 0
+	self.is_sub_menu = false
 	self.internal = false
-	self.down = false
-	self.clickable = true
-	self.enabled = true
-	self.OnClick = nil
+	self.parentmenu = nil
+	self.options = {}
+	self.internals = {}
 	
 end
 
@@ -49,28 +50,46 @@ function newobject:update(dt)
 	self:CheckHover()
 	
 	local hover = self.hover
-	local down = self.down
-	local downobject = loveframes.downobject
 	local parent = self.parent
 	local base = loveframes.base
 	local update = self.Update
-	
-	if not hover then
-		self.down = false
-		if downobject == self then
-			self.hover = true
-		end
-	else
-		if downobject == self then
-			self.down = true
-		end
-	end
 	
 	-- move to parent if there is a parent
 	if parent ~= base then
 		self.x = self.parent.x + self.staticx
 		self.y = self.parent.y + self.staticy
 	end
+	
+	for k, v in ipairs(self.internals) do
+		local width = v.contentwidth
+		local height = v.contentheight
+		if width > self.largest_item_width then
+			self.largest_item_width = width
+		end
+		if height > self.largest_item_height then
+			self.largest_item_height = height
+		end
+	end
+	
+	local y = 0
+	self.height = 0
+	
+	for k, v in ipairs(self.internals) do
+		v:SetWidth(self.largest_item_width)
+		if v.option_type ~= "divider" then
+			v:SetHeight(self.largest_item_height)
+		else
+			v:SetHeight(5)
+		end
+		v:SetY(y)
+		self.height = self.height + v.height
+		y = y + v.height
+		v:update(dt)
+	end
+	
+	self.width = self.largest_item_width
+	self.largest_item_width = 0
+	self.largest_item_height = 0
 	
 	if update then
 		update(self, dt)
@@ -102,8 +121,9 @@ function newobject:draw()
 	local defaultskin = loveframes.config["DEFAULTSKIN"]
 	local selfskin = self.skin
 	local skin = skins[selfskin] or skins[skinindex]
-	local drawfunc = skin.DrawButton or skins[defaultskin].DrawButton
+	local drawfunc = skin.DrawMenu or skins[defaultskin].DrawMenu
 	local draw = self.Draw
+	local drawoverfunc = skin.DrawOverMenu or skins[defaultskin].DrawOverMenu
 	local drawcount = loveframes.drawcount
 	
 	-- set the object's draw order
@@ -113,6 +133,14 @@ function newobject:draw()
 		draw(self)
 	else
 		drawfunc(self)
+	end
+	
+	for k, v in ipairs(self.internals) do
+		v:draw()
+	end
+	
+	if drawoverfunc then
+		drawoverfunc(self)
 	end
 	
 end
@@ -136,17 +164,6 @@ function newobject:mousepressed(x, y, button)
 		return
 	end
 	
-	local hover = self.hover
-	
-	if hover and button == "l" then
-		local baseparent = self:GetBaseParent()
-		if baseparent and baseparent.type == "frame" then
-			baseparent:MakeTop()
-		end
-		self.down = true
-		loveframes.downobject = self
-	end
-	
 end
 
 --[[---------------------------------------------------------
@@ -168,80 +185,108 @@ function newobject:mousereleased(x, y, button)
 		return
 	end
 	
-	local hover = self.hover
-	local down = self.down
-	local clickable = self.clickable
-	local enabled = self.enabled
-	local onclick = self.OnClick
+	local internals = self.internals
+	for k, v in ipairs(internals) do
+		v:mousereleased(x, y, button)
+	end
+
+end
+
+--[[---------------------------------------------------------
+	- func: AddOption(text, icon, func)
+	- desc: adds an option to the object
+--]]---------------------------------------------------------
+function newobject:AddOption(text, icon, func)
+
+	local menuoption = loveframes.objects["menuoption"]:new(self)
+	menuoption:SetText(text)
+	menuoption:SetIcon(icon)
+	menuoption:SetFunction(func)
 	
-	if hover and down and clickable and button == "l" then
-		if enabled then
-			if onclick then
-				onclick(self, x, y)
+	table.insert(self.internals, menuoption)
+	
+end
+
+--[[---------------------------------------------------------
+	- func: AddSubMenu(text, icon, menu)
+	- desc: adds a submenu to the object
+--]]---------------------------------------------------------
+function newobject:AddSubMenu(text, icon, menu)
+
+	local function activatorFunc(object)
+		if menu:GetVisible() then
+			local hoverobject = loveframes.hoverobject
+			if hoverobject ~= object and hoverobject:GetBaseParent() ~= menu then
+				menu:SetVisible(false)
 			end
+		else
+			menu:SetVisible(true)
+			menu:SetPos(object:GetX() + object:GetWidth(), object:GetY())
 		end
 	end
 	
-	self.down = false
-
-end
-
---[[---------------------------------------------------------
-	- func: SetText(text)
-	- desc: sets the object's text
---]]---------------------------------------------------------
-function newobject:SetText(text)
-
-	self.text = text
+	menu:SetVisible(false)
+	
+	local menuoption = loveframes.objects["menuoption"]:new(self, "submenu_activator", menu)
+	menuoption:SetText(text)
+	menuoption:SetIcon(icon)
+	
+	if menu then
+		menu.is_sub_menu = true
+		menu.parentmenu = self
+	end
+	
+	table.insert(self.internals, menuoption)
 	
 end
 
 --[[---------------------------------------------------------
-	- func: GetText()
-	- desc: gets the object's text
+	- func: AddDivider()
+	- desc: adds a divider to the object
 --]]---------------------------------------------------------
-function newobject:GetText()
+function newobject:AddDivider()
 
-	return self.text
+	local menuoption = loveframes.objects["menuoption"]:new(self, "divider")
+	
+	table.insert(self.internals, menuoption)
 	
 end
 
 --[[---------------------------------------------------------
-	- func: SetClickable(bool)
-	- desc: sets whether the object can be clicked or not
+	- func: GetBaseMenu(t)
+	- desc: gets the object's base menu
 --]]---------------------------------------------------------
-function newobject:SetClickable(bool)
-
-	self.clickable = bool
+function newobject:GetBaseMenu(t)
+	
+	local t = t or {}
+	
+	if self.parentmenu then
+		table.insert(t, self.parentmenu)
+		self.parentmenu:GetBaseMenu(t)
+	else
+		return self
+	end
+	
+	return t[#t]
 	
 end
 
 --[[---------------------------------------------------------
-	- func: GetClickable(bool)
-	- desc: gets whether the object can be clicked or not
+	- func: SetVisible(bool)
+	- desc: sets the object's visibility
 --]]---------------------------------------------------------
-function newobject:GetClickable()
+function newobject:SetVisible(bool)
 
-	return self.clickable
+	self.visible = bool
 	
-end
-
---[[---------------------------------------------------------
-	- func: SetClickable(bool)
-	- desc: sets whether or not the object is enabled
---]]---------------------------------------------------------
-function newobject:SetEnabled(bool)
-
-	self.enabled = bool
-	
-end
-
---[[---------------------------------------------------------
-	- func: GetEnabled()
-	- desc: gets whether or not the object is enabled
---]]---------------------------------------------------------
-function newobject:GetEnabled()
-
-	return self.enabled
+	if not bool then
+		local internals = self.internals
+		for k, v in ipairs(internals) do
+			if v.menu then
+				v.activated = false
+				v.menu:SetVisible(bool)
+			end
+		end
+	end
 	
 end

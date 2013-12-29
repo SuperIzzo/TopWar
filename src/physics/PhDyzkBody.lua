@@ -41,6 +41,7 @@ function PhDyzkBody:new()
 	obj._jaggedness = 0;
 	obj._radius 	= 0;
 	obj._balance	= 0;
+	obj._speed		= 400;
 	
 	obj.x = 0;
 	obj.y = 0;
@@ -52,8 +53,15 @@ function PhDyzkBody:new()
 	obj.ang = 0;
 	obj.angVel = 0;
 	
-	obj._friction	= 0.01;
+	obj._friction	= 0.01;	
 	obj._collisionListener = {};
+	
+	-- Control vector
+	obj._controlVecX = 0;
+	obj._controlVecY = 0;
+	
+	-- Extra information
+	obj.metaData = {}
 	
 	return setmetatable(obj, self);
 end
@@ -62,16 +70,36 @@ end
 -------------------------------------------------------------------------------
 --  PhDyzkBody:Update : Updates the PhDyzkBody
 -------------------------------------------------------------------------------
-function PhDyzkBody:Update( dt )
-	local velWeight = 1 - self._friction*dt;
+function PhDyzkBody:Update( dt )	
+	-- Cap the control vector to a magnitude of 1
+	local controlVec = Vector:new( self._controlVecX, self._controlVecY );
+	local controlVecMagnitude = controlVec:Length()
+	
+	if controlVecMagnitude > 1 then
+		controlVec.x = controlVec.x/controlVecMagnitude;
+		controlVec.y = controlVec.y/controlVecMagnitude;
+	end;
+	
+	-- Update velocity based on acceleration and velocity decay 
+	local velWeight = 1 - self._friction*dt;	
 	self.vx = self.vx*velWeight + self.ax*dt;
 	self.vy = self.vy*velWeight + self.ay*dt;
 	
+	-- Update velocity based on eternal control vector
+	self.vx = self.vx + controlVec.x*self._speed*dt;
+	self.vy = self.vy + controlVec.y*self._speed*dt;
+	
+	-- Update position based on velocity
 	self.x = self.x + self.vx*dt;
 	self.y = self.y + self.vy*dt;
 	
+	-- Update angular velocity and angle
 	self.angVel = self.angVel - dt*0.1;
 	self.ang = self.ang + self.angVel*dt;
+	
+	-- Reset the control vector
+	self._controlVecX = 0;
+	self._controlVecY = 0;
 end
 
 
@@ -124,6 +152,23 @@ end
 -------------------------------------------------------------------------------
 function PhDyzkBody:GetVelocity()
 	return self.vx, self.vy;
+end
+
+
+-------------------------------------------------------------------------------
+--  PhDyzkBody:SetControlVector : Sets the control vector (forced velocity)
+-------------------------------------------------------------------------------
+function PhDyzkBody:SetControlVector( x, y )
+	self._controlVecX = x;
+	self._controlVecY = y;
+end
+
+
+-------------------------------------------------------------------------------
+--  PhDyzkBody:GetControlVector : Returns the control vector
+-------------------------------------------------------------------------------
+function PhDyzkBody:GetControlVector()
+	return self._controlVecX,	self._controlVecY;
 end
 
 

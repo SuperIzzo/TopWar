@@ -1,6 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+local Message			= require 'src.network.Message'
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -38,6 +39,66 @@ function NetworkUtils.GetLocalHost()
 	return 'localhost';
 end
 
+
+-------------------------------------------------------------------------------
+--  NetworkUtils.NewAuthMsg : Creates a new handshake message
+-------------------------------------------------------------------------------
+function NetworkUtils.NewHandshakeMsg()
+	local msg = Message:new();
+	
+	msg:SetType( Message.Type.HANDSHAKE );
+	
+	return msg;
+end
+
+
+-------------------------------------------------------------------------------
+--  NetworkUtils.NewAuthMsg : Creates authentication message
+-------------------------------------------------------------------------------
+function NetworkUtils.NewAuthMsg( name, pass )
+	local msg = Message:new();
+
+	msg:SetType( Message.Type.AUTH );
+	msg:SetSubtype( Message.Type.ACTION );
+	msg.name = name;
+	msg.pass = pass;
+
+	return msg;
+end
+
+
+-------------------------------------------------------------------------------
+--  NetworkUtils.NewAuthMsg : Creates authentication information message
+-------------------------------------------------------------------------------
+function NetworkUtils.NewAuthInfoMsg( name, status )
+	local msg = Message:new();
+
+	msg:SetType( Message.Type.AUTH );
+	msg:SetSubtype( Message.Type.INFO );
+	msg.name 	= name;
+	msg.status 	= status;
+
+	return msg;
+end
+
+
+-------------------------------------------------------------------------------
+--  NetworkUtils.NewDyzkDescMsg : Sends a dyzk description
+-------------------------------------------------------------------------------
+function NetworkUtils.NewDyzkDescMsg( dyzk, player )
+	local msg = Message:new();
+
+	msg:SetType( Message.Type.DYZK_DESC )
+	msg.player = player;		
+	
+	msg.dyzkDesc = {}		
+	msg.dyzkDesc.radius 	= dyzk:GetRadius();
+	msg.dyzkDesc.jaggedness	= dyzk:GetJaggedness();
+	msg.dyzkDesc.weight 	= dyzk:GetWeight();
+	msg.dyzkDesc.balance 	= dyzk:GetBalance();
+
+	return msg;
+end
 
 
 --===========================================================================--

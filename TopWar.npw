@@ -20,11 +20,15 @@
             <Folder name="graphics">
                 <File name="src\graphics\ImageUtils.lua" />
             </Folder>
+            <Folder name="settings">
+                <File name="src\settings\Settings.lua" />
+            </Folder>
             <Folder name="input">
-                <File name="src\input\DirectBattleController.lua" />
                 <File name="src\input\ControlBox.lua" />
                 <File name="src\input\Control.lua" />
                 <File name="src\input\TriggerType.lua" />
+                <File name="src\input\DirectBattleController.lua" />
+                <File name="src\input\NetworkBattleController.lua" />
             </Folder>
             <Folder name="object">
                 <File name="src\object\Dyzk.lua" />
@@ -34,9 +38,10 @@
                 <File name="src\object\RPMMeter.lua" />
             </Folder>
             <Folder name="scenes">
-                <File name="src\scene\ScBattle.lua" />
-                <File name="src\scene\ScSelection.lua" />
                 <File name="src\scene\SceneManager.lua" />
+                <File name="src\scene\ScBattle.lua" />
+                <File name="src\scene\ScBattleSetup.lua" />
+                <File name="src\scene\ScSelection.lua" />
                 <File name="src\scene\ScMainMenu.lua" />
             </Folder>
             <Folder name="network">
@@ -49,6 +54,12 @@
                 <Folder name="server">
                     <File name="src\network\Server.lua" />
                     <File name="src\network\ClientObject.lua" />
+                    <File name="src\network\Authenticator.lua" />
+                    <File name="data\server\passwords.lua" />
+                </Folder>
+                <Folder name="lobbies">
+                    <File name="src\network\LobbyManager.lua" />
+                    <File name="src\network\LbBattleSetup.lua" />
                 </Folder>
             </Folder>
         </Folder>
@@ -58,6 +69,7 @@
             <File name="docs\Colors.txt" />
             <File name="docs\Spirit.txt" />
             <File name="docs\Network.txt" />
+            <File name="docs\Dyzk Networking.txt" />
         </Folder>
         <Folder name="test">
             <Folder name="lib">

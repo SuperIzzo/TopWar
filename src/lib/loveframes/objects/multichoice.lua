@@ -3,7 +3,7 @@
 	-- Copyright (c) 2013 Kenny Shields --
 --]]------------------------------------------------
 
--- multichoice class
+-- multichoice object
 local newobject = loveframes.NewObject("multichoice", "loveframes_object_multichoice", true)
 
 --[[---------------------------------------------------------
@@ -141,7 +141,7 @@ function newobject:mousepressed(x, y, button)
 		self.haslist = true
 		self.list = loveframes.objects["multichoicelist"]:new(self)
 		self.list:SetState(self.state)
-		loveframes.hoverobject = self
+		loveframes.downobject = self
 	end
 
 end

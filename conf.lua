@@ -4,17 +4,17 @@ function love.conf( game )
     game.author 				= "Hristoz S. Stefanov"
     game.url 					= nil
     game.identity 				= nil
-    game.version				= "0.8.0"
+    game.version				= "0.9.0"
     game.console				= true
     game.release 				= false
-	game.test					= true
+	game.test					= false
 	
 	-- Screen settings
-    game.screen.width 			= 800
-    game.screen.height 			= 600
-    game.screen.fullscreen 		= false
-    game.screen.vsync 			= true
-    game.screen.fsaa 			= 0
+    game.window.width 			= 800
+    game.window.height 			= 600
+    game.window.fullscreen 		= false
+    game.window.vsync 			= true
+    game.window.fsaa 			= 0
 	
 	-- Module flags
     game.modules.joystick		= true

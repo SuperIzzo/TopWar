@@ -10,3 +10,22 @@ the protocol for establishing a connectoio
 	(username and pass are sent)
 > If approved retrieve a list of all lobbies on that server
 
+Message protocols:
+
+HANDSHAKE - 
+	when a client sends the server a handshake the server replies with a HANDSHAKE message
+	this is useful to test communication status
+	
+AUTH -
+	ACTION: Sends authentication informantion to the server: (name and pass)
+		the server replies with success or fail message
+	INFO: Requests information about the authentication status on the server side
+		the server replies with the success or fail based on the status and the
+		authenticated name.
+
+DYZK_INFO -
+	ACTION: Sends dyzk information about a cleint/player to the server, 
+		if in a battle lobby the server will automatically dispatch the information to
+		othe players
+	INFO: Request information about a dyzk a specific client/player has,
+	

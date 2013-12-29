@@ -1,0 +1,44 @@
+Dyzks are stored on the server, players can have a specific number of original uploaded dyzks
+(maybe around 30) the dyzk authentication is done on the server, but at the time of the upload
+statistics are then stored and reused, during a multiplayer game a bad copy of the image is sent
+to each client (filtered and artificially nurfed so that it cannot be "stolen").
+
+When a new top is uploaded it can be sold if the creator offered to and agrees to do so. Only creators
+keep the original image (as well as teh server). If someone buys a dyzk they only get a nerfd copy
+but never the original.
+
+This stategy allows for in-game purchases where the creators can gain a percent (and have an initiative) and the 
+server owners can also benefit. This in turn allows players to enjoy a free game,
+even get rewarded for playing, on the other hand dyzks are now a rarity and the developers will get paid from in-game purchases
+
+
+When a player buys a dyzk they obtain a bad copy of the image with a "statistical overwrite" file which shows the
+actual statistics of the dyzk.
+
+
+Note: "bad" in "bad copy" does not mean lower quality image, it means image that has been altered so that
+it produces lower statistics, this can be done trough applying multiple image filters to the original image
+so that the result looks similar to the original, but it yelds different in-game characteristics.
+It is also hard to revert back to the original.
+
+
+WARNING: This scheme relies on imbalance and will hurt the gameplay since the payers are 
+more likely to gain the upper hand (even though it comes with its disadvantages).
+
+
+Upgrading to a deplenishing end... 
+The majority of the dyzks will have average stats, simple modifications may lead to a few points
+boost. The more points are required the more random combinations will have to be tried out.
+(If it is possible for a bot to nurf it will be possible for a bot to create something good too)
+
+focus on diversity rather than stats 
+This means that skills will be more important than sheer stats and the war will be for getting the
+desired skills in place rather than the max points.
+I.e. there is no "best", there is just "different" what's more there is right or wrong, just 
+suitable and not suitable.
+To accomplish this the game will need to include a large database of skills having 4 of them allows for 
+a very large number of combinations. 
+For instance a pool of 20 skills has 4845 different combinations 
+(if the order does not matter and skills do not repeat, otherwise it could be slightly more)
+
+Combinations without repetitions -> n!/(r!*(n-r)!)

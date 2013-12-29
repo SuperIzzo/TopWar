@@ -12,19 +12,6 @@ BattleController.__index = BattleController;
 
 
 -------------------------------------------------------------------------------
---  BattleController:new : Creates a new controller
--------------------------------------------------------------------------------
-function BattleController:new( player, phDyzk )
-	local obj = {}
-	
-	obj._dyzk	= phDyzk;
-	obj._player	= player;
-	
-	return setmetatable( obj, self );
-end
-
-
--------------------------------------------------------------------------------
 --  BattleController:Control : Handles controls
 -------------------------------------------------------------------------------
 function BattleController:Control( control )
@@ -44,9 +31,3 @@ function BattleController:Control( control )
 		end
 	end
 end
-
-
---===========================================================================--
---  Initialization
---===========================================================================--
-return BattleController

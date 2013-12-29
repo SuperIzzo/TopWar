@@ -39,7 +39,7 @@ end
 -------------------------------------------------------------------------------
 --  SceneManager:SetScene : Changes the current scene
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
--- The argument can be either a scene object or a scene name
+--  The argument can be either a scene object or a scene name
 -------------------------------------------------------------------------------
 function SceneManager:SetScene( arg )	
 	local scene;
@@ -132,11 +132,11 @@ end
 
 
 -------------------------------------------------------------------------------
---  SceneManager:Message : Handles (network) messages in the current scene
+--  SceneManager:Network : Handles network messages in the current scene
 -------------------------------------------------------------------------------
-function SceneManager:Message( msg )
+function SceneManager:Network( msg )
 	if self._currentScene and self._currentScene.Message then
-		self._currentScene:Message( msg );
+		self._currentScene:Network( msg );
 	end
 end
 

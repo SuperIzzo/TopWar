@@ -47,6 +47,7 @@ end
 -------------------------------------------------------------------------------
 function ScBattle:Init()
 
+	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
 		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA004.png");
 		dyzk1.phDyzk.x = 100;
@@ -65,6 +66,7 @@ function ScBattle:Init()
 		self._dyzx[1] = dyzk1;
 		self._dyzx[2] = dyzk2;
 	end
+
 
 	for i=1, #self._dyzx do
 		local dyzk = self._dyzx[i];
@@ -126,11 +128,16 @@ end
 --  ScBattle:Control : Handle input event
 -------------------------------------------------------------------------------
 function ScBattle:Control( control )
+	print( control.id );
 	for i=1, #self._controllers do
 		self._controllers[i]:Control( control );
 	end
 end
 
+
+-------------------------------------------------------------------------------
+--  ScBattle:Control : Handle input event
+-------------------------------------------------------------------------------
 
 --===========================================================================--
 --  Initialization

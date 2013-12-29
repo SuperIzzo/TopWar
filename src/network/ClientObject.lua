@@ -14,11 +14,15 @@ function ClientObject:new( server, ip, port )
 	obj._ip			= ip;
 	obj._port		= port;
 	
+	obj._name 		= "";
+	obj._authentic	= false;
+	
 	obj._server		= server;
 	obj._lobby		= nil;
 	
 	return setmetatable( obj, self );
-end
+
+	end
 
 
 -------------------------------------------------------------------------------
@@ -26,6 +30,30 @@ end
 -------------------------------------------------------------------------------
 function ClientObject:Send( msg )
 	return self._server:SendToClient( self, msg );
+end
+
+
+-------------------------------------------------------------------------------
+--  ClientObject:SetAuthentic : Flags the client as authentic (and sets name)
+-------------------------------------------------------------------------------
+function ClientObject:SetAuthentic( name, status )
+	if not name then
+		self._authentic = false;
+	elseif name == true then
+		self._authentic = true;
+	elseif type(name) == "string" then
+		local auth = status  or  type(status) == "nil";
+		self._authentic = auth;
+		self._name = name;
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  ClientObject:IsAuthentic : Returns if the client is authentic
+-------------------------------------------------------------------------------
+function ClientObject:IsAuthentic()
+	return self._authentic;
 end
 
 

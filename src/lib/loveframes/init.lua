@@ -10,7 +10,7 @@ loveframes = {}
 
 -- library info
 loveframes.author = "Kenny Shields"
-loveframes.version = "0.9.6.3"
+loveframes.version = "0.9.7"
 loveframes.stage = "Alpha"
 
 -- library configurations
@@ -25,13 +25,18 @@ loveframes.config["DEBUG"] = false
 loveframes.state = "none"
 loveframes.drawcount = 0
 loveframes.collisioncount = 0
+loveframes.objectcount = 0
 loveframes.hoverobject = false
 loveframes.modalobject = false
 loveframes.inputobject = false
+loveframes.downobject = false
 loveframes.hover = false
+loveframes.input_cursor_set = false
+loveframes.prevcursor = nil
 loveframes.basicfont = love.graphics.newFont(12)
 loveframes.basicfontsmall = love.graphics.newFont(10)
 loveframes.objects = {}
+loveframes.collisions = {}
 
 --[[---------------------------------------------------------
 	- func: load()
@@ -56,7 +61,7 @@ function loveframes.load()
 	require(dir .. ".debug")
 	
 	-- replace all "." with "/" in the directory setting
-	dir = dir:gsub("%.", "/")
+	dir = dir:gsub("\\", "/"):gsub("(%a)%.(%a)", "%1/%2")
 	loveframes.config["DIRECTORY"] = dir
 	
 	-- create a list of gui objects, skins and templates
@@ -98,9 +103,54 @@ end
 function loveframes.update(dt)
 
 	local base = loveframes.base
+	local input_cursor_set = loveframes.input_cursor_set
+	local version = love._version
 	
 	loveframes.collisioncount = 0
+	loveframes.objectcount = 0
 	loveframes.hover = false
+	loveframes.hoverobject = false
+	
+	local downobject = loveframes.downobject
+	if #loveframes.collisions > 0 then
+		local top = loveframes.collisions[#loveframes.collisions]
+		if not downobject then
+			loveframes.hoverobject = top
+		else
+			if downobject == top then
+				loveframes.hoverobject = top
+			end
+		end
+	end
+	
+	if version == "0.9.0" then
+		local hoverobject = loveframes.hoverobject
+		if hoverobject then
+			if not input_cursor_set then
+				if hoverobject.type == "textinput" then
+					local curcursor = love.mouse.getCursor()
+					local newcursor = love.mouse.getSystemCursor("ibeam")
+					love.mouse.setCursor(newcursor)
+					loveframes.prevcursor = curcursor
+					loveframes.input_cursor_set = true
+				end
+			else
+				if hoverobject.type ~= "textinput" then
+					local prevcursor = loveframes.prevcursor
+					love.mouse.setCursor(prevcursor)
+					loveframes.input_cursor_set = false
+				end
+			end
+		else
+			if input_cursor_set then
+				local prevcursor = loveframes.prevcursor
+				love.mouse.setCursor(prevcursor)
+				loveframes.input_cursor_set = false
+			end
+		end
+	end
+	
+	loveframes.collisions = {}
 	base:update(dt)
 
 end
@@ -137,6 +187,24 @@ function loveframes.mousepressed(x, y, button)
 	local base = loveframes.base
 	base:mousepressed(x, y, button)
 	
+	-- close open menus
+	local bchildren = base.children
+	local hoverobject = loveframes.hoverobject
+	for k, v in ipairs(bchildren) do
+		local otype = v.type
+		local visible = v.visible
+		if hoverobject then
+			local htype = hoverobject.type
+			if otype == "menu" and visible and htype ~= "menu" and htype ~= "menuoption" then
+				v:SetVisible(false)
+			end
+		else
+			if otype == "menu" and visible then
+				v:SetVisible(false)
+			end
+		end
+	end
+	
 end
 
 --[[---------------------------------------------------------
@@ -150,7 +218,7 @@ function loveframes.mousereleased(x, y, button)
 	
 	-- reset the hover object
 	if button == "l" then
-		loveframes.hoverobject = false
+		loveframes.downobject = false
 		loveframes.selectedobject = false
 	end
 	
@@ -179,6 +247,17 @@ function loveframes.keyreleased(key)
 end
 
 --[[---------------------------------------------------------
+	- func: textinput(text)
+	- desc: called when the user inputs text
+--]]---------------------------------------------------------
+function loveframes.textinput(text)
+
+	local base = loveframes.base
+	base:textinput(text)
+	
+end
+
+--[[---------------------------------------------------------
 	- func: Create(type, parent)
 	- desc: creates a new object or multiple new objects
 			(based on the method used) and returns said
@@ -190,6 +269,7 @@ function loveframes.Create(data, parent)
 	
 		local objects = loveframes.objects
 		local object = objects[data]
+		local objectcount = loveframes.objectcount
 		
 		if not object then
 			loveframes.util.Error("Error creating object: Invalid object '" ..data.. "'.")
@@ -220,6 +300,8 @@ function loveframes.Create(data, parent)
 		if parent then
 			newobject:SetParent(parent)
 		end
+		
+		loveframes.objectcount = objectcount + 1
 		
 		-- return the object for further manipulation
 		return newobject

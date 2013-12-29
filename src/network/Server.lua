@@ -3,10 +3,11 @@
 --===========================================================================--
 require 'src.lib.bintable'
 local socket 			= require "socket"
-local NetworkUtils		= require 'src.network.NetworkUtils'
+local NetUtils		= require 'src.network.NetworkUtils'
 local NetworkBase		= require 'src.network.NetworkBase'
 local Message			= require 'src.network.Message'
 local ClientObject		= require 'src.network.ClientObject'
+local Authenticator		= require 'src.network.Authenticator'
 
 local random			= math.random
 local unpack			= unpack
@@ -16,7 +17,7 @@ local unpack			= unpack
 --  GenerateID : Generates a random string
 -------------------------------------------------------------------------------
 local IDCharSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVXYZ0123456789"
-function GenerateID()
+local function GenerateID()
 	local id = {}
 	
 	for b=1, 16 do
@@ -41,6 +42,7 @@ function Server:new()
 	local obj = NetworkBase.new( self )
 	
 	obj._sessions 	= {};
+	obj._auth		= Authenticator:new();
 	
 	return obj;
 end
@@ -102,13 +104,30 @@ end
 -------------------------------------------------------------------------------
 Server[ "HandleMsg_" .. Message.Type.HANDSHAKE ] = function(self, msg)
 	local client = msg:GetClient();
-
-	-- Prepare a response message
-	local response = {}
-	response.type = Message.Type.HANDSHAKE;
 	
 	-- Send the message
-	return self:SendToClient( client, response );
+	return self:SendToClient( client, NetUtils.NewHandshakeMsg() );
+end
+
+
+-------------------------------------------------------------------------------
+--  Server:HandleMsg_AUTH : Handles authentication requests
+-------------------------------------------------------------------------------
+Server[ "HandleMsg_" .. Message.Type.AUTH ] = function(self, msg)
+	local client = msg:GetClient();
+
+	local userName = msg.name;
+	local password = msg.pass;
+	local authStatus = false;
+	
+	if self._auth:Authenticate( userName, password ) then
+		client:SetAuthentic(userName);
+		authStatus = true;
+		print( "Authenticated user: \"" .. userName .. "\"");
+	end
+	
+	-- Send the message
+	return self:SendToClient( client, NetUtils.NewAuthInfoMsg(userName, authStatus) );
 end
 
 

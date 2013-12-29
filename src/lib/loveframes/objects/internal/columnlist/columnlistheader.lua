@@ -77,13 +77,9 @@ function newobject:update(dt)
 	if not self.hover then
 		self.down = false
 	else
-		if loveframes.hoverobject == self then
+		if loveframes.downobject == self then
 			self.down = true
 		end
-	end
-	
-	if self.down and loveframes.hoverobject == self then
-		self.hover = true
 	end
 	
 	-- move to parent if there is a parent
@@ -142,7 +138,7 @@ function newobject:mousepressed(x, y, button)
 			baseparent:MakeTop()
 		end
 		self.down = true
-		loveframes.hoverobject = self
+		loveframes.downobject = self
 	end
 	
 end

@@ -70,7 +70,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  TriggerType.SWITCH_TO_SPRING : Creates a slider trigger function
+--  TriggerType.SWITCH_TO_SPRING : Creates a switch to spring converter func
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  Springs act like sliders in the sense that they produce a numeric value,
 --  however they have take a boolean as an input. If a `true' signal is
@@ -99,6 +99,37 @@ function TriggerType.SWITCH_TO_SPRING( trigger, numericOnVal, numericOffVal )
 	return TR_SWITCH_TO_SPRING;
 end
 
+
+-------------------------------------------------------------------------------
+--  TriggerType.SPRING_TO_SWITCH : Creates a spring to switch converter func
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--  Springs act like sliders in the sense that they produce a numeric value,
+--  however they have take a boolean as an input. If a `true' signal is
+--  passed they return a constant ON numeric value, if `false' - an OFF value. 
+-------------------------------------------------------------------------------
+function TriggerType.SPRING_TO_SWITCH( trigger, moreThan, lessThan )
+
+	local function TR_SPRING_TO_SWITCH( control, newValue )
+
+		if type(newValue) == 'number' then
+			local inRange = false;
+			
+			-- Check if the spring value is in the ON range
+			if newValue >= moreThan and newValue < lessThan then
+				inRange = true;
+			end
+			
+			if inRange ~= control.value then
+				control.value = inRange;
+				return trigger;
+			end;
+		end
+		
+		return false;
+	end
+	
+	return TR_SPRING_TO_SWITCH;
+end
 
 -------------------------------------------------------------------------------
 --  TriggerType.ALWAYS : Always triggers

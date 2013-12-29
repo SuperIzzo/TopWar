@@ -1,9 +1,6 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
--- Modules
-
--- Aliases
 local setmetatable 		= setmetatable
 
 
@@ -21,11 +18,13 @@ Message.__index = Message;
 Message.Type = 
 {
 	HANDSHAKE 	= "HANDSHAKE",
-	
-	LOBBY_INFO	= "LOBBY_INFO",
-	LOBBY_ENTER	= "LOBBY_ENTER",
+	AUTH		= "AUTH",	
 	
 	DYZK_DESC	= "DYZK_DESC",
+	
+	-- Subtypes --
+	ACTION		= "sACTION",
+	INFO		= "sINFO",
 }
 
 
@@ -34,7 +33,7 @@ Message.Type =
 -------------------------------------------------------------------------------
 function Message:new( data )
 	local obj = data or {}
-	return setmetatable( data, self );
+	return setmetatable( obj, self );
 end
 
 
@@ -49,7 +48,7 @@ end
 -------------------------------------------------------------------------------
 --  Message:SetClient : Sets the client
 -------------------------------------------------------------------------------
-function Message:SetClient( client)
+function Message:SetClient( client )
 	self._client = client;
 end
 
@@ -67,6 +66,30 @@ end
 -------------------------------------------------------------------------------
 function Message:SetType( type )
 	self.type = type ;
+end
+
+
+-------------------------------------------------------------------------------
+--  Message:GetSubtype : Returns the message sub-type
+-------------------------------------------------------------------------------
+function Message:GetType()
+	return self.stype;
+end
+
+
+-------------------------------------------------------------------------------
+--  Message:SetSubtype : Sets the subtype of the message
+-------------------------------------------------------------------------------
+function Message:SetSubtype( stype )
+	self.stype = stype ;
+end
+
+
+-------------------------------------------------------------------------------
+--  Message:GetSubtype : Sets the sub-type of the message
+-------------------------------------------------------------------------------
+function Message:GetSubtype()
+	return self.stype;
 end
 
 

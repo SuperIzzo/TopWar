@@ -16,8 +16,8 @@ local DEBUG_GRAPHICS	 = true
 --  Spin blush shader
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local spinBlurShader;
-if love.graphics.isSupported( "pixeleffect" ) then
-	spinBlurShader = love.graphics.newPixelEffect[[
+if love.graphics.isSupported( "shader" ) then
+	spinBlurShader = love.graphics.newShader[[
 	uniform float angle;
 	#define NUM_ROTATIONS 30
 	
@@ -109,7 +109,7 @@ function Dyzk:Draw()
 	if self.image then
 		-- Set spin blur
 		if spinBlurShader then
-			g.setPixelEffect( spinBlurShader );
+			g.setShader( spinBlurShader );
 			spinBlurShader:send("angle", self.phDyzk:GetAngularVelocity()/60 );
 		end
 		
@@ -121,7 +121,7 @@ function Dyzk:Draw()
 		
 		-- Unset spin blur
 		if spinBlurShader then
-			love.graphics.setPixelEffect( nil );
+			love.graphics.setShader( nil );
 		end
 		
 		-- Collision sparks

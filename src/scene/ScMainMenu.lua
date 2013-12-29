@@ -66,7 +66,7 @@ local function CreateGUI()
 	
 	
 	-- GUI Behaviour
-	gui.btnMultiplayer.OnClick = ChangeToSceneFB( "Battle" );
+	gui.btnMultiplayer.OnClick = ChangeToSceneFB( "BattleSetup" );
 	gui.btnLocalGame.OnClick = ChangeToSceneFB( "Battle" );
 	gui.btnSettings.OnClick = ChangeToSceneFB( "Selection" );
 	gui.btnQuit.OnClick = function() love.event.push('quit') end;
