@@ -11,7 +11,7 @@ local DyzkImageAnalysis		= require 'src.graphics.DyzkImageAnalysis'
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Constants
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local DEFAULT_DYZK_SCALE = 0.5
+local DEFAULT_DYZK_SCALE = 1
 local DEBUG_GRAPHICS	 = true
 
 

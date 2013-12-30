@@ -33,10 +33,10 @@ function ScBattle:new()
 	obj._rpmMeters = {}
 	
 	obj._arena = Arena:new("data/arena/arena_mask2.png");
-	obj._arena:SetScale(2,2,4);
+	obj._arena:SetScale(4,4,8);
 	
 	obj._camera = Camera:new();
-	obj._camera:SetScale( 0.5, 0.5 );
+	obj._camera:SetScale( 0.25, 0.25 );
 	
 	return setmetatable( obj, self );
 end
@@ -57,8 +57,8 @@ function ScBattle:Init()
 		dyzk1.phDyzk.angVel = 600;
 		
 		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA002.png");
-		dyzk2.phDyzk.x = 1024;
-		dyzk2.phDyzk.y = 1024;
+		dyzk2.phDyzk.x = 2048;
+		dyzk2.phDyzk.y = 2048;
 		dyzk2.phDyzk.vx = -10;
 		dyzk2.phDyzk.vy = -10;
 		dyzk2.phDyzk.angVel = 600;
