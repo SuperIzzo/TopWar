@@ -15,20 +15,24 @@ local NUM_SPARKS = 40
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class Sparks : A sparks animation special effect object
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--  Sparks appear when two dyzx clash in battle, the annimation appears at
+--  the location of the collision and remains a few seconds after the impact.
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local Sparks = {}
 Sparks.__index = Sparks
 
 
 -------------------------------------------------------------------------------
---  Sparks:new : creates new sparks
+--  Sparks:new : creates new sparks animation
 -------------------------------------------------------------------------------
-function Sparks:new( x, y, norm )
+function Sparks:new( x, y, normX, normY )
 	local obj = {}
 	
 	obj.x = x;
 	obj.y = y;
-	obj.norm = norm;
+	obj.normX = normX;
+	obj.normY = normY;
 	obj.counter = nil;
 	
 	return setmetatable( obj, self );
@@ -91,8 +95,8 @@ function Sparks:Draw()
 		local sparkY1 = sparkY2 * randomStart;
 		
 		-- Normal perpendicular vector
-		local normPerpX = self.norm.y; 
-		local normPerpY = -self.norm.x;
+		local normPerpX = self.normY; 
+		local normPerpY = -self.normX;
 		
 		-- We need the spark end to normal perpendicular dot products
 		-- to scale the sparks along the normal perp vector
