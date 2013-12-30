@@ -13,12 +13,14 @@
                 <File name="src\math\PolarVector.lua" />
                 <File name="src\math\MathUtils.lua" />
             </Folder>
-            <Folder name="phisics">
+            <Folder name="physics">
                 <File name="src\physics\PhDyzkBody.lua" />
                 <File name="src\physics\PhArena.lua" />
+                <Folder name="abilities" />
             </Folder>
             <Folder name="graphics">
                 <File name="src\graphics\ImageUtils.lua" />
+                <File name="src\graphics\DyzkImageAnalysis.lua" />
             </Folder>
             <Folder name="settings">
                 <File name="src\settings\Settings.lua" />
