@@ -42,6 +42,10 @@ function BattleController:Control( control )
 			
 			self._dyzk:SetControlVector( vx, val );
 		end
+		
+		if control.id == "A" then
+			self._dyzk:ActivateAbility( 1, control.value );
+		end
 	end
 end
 

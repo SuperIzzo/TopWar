@@ -16,8 +16,6 @@ local sqrt			= _G.math.sqrt
 --  Constants
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 
-local RPS_TO_RPM_SCALE			= 9.5493
-
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -25,6 +23,14 @@ local RPS_TO_RPM_SCALE			= 9.5493
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local PhDyzkBody = {}
 PhDyzkBody.__index = PhDyzkBody;
+
+
+-------------------------------------------------------------------------------
+--  PhDyzkBody constants
+-------------------------------------------------------------------------------
+PhDyzkBody.RPS_TO_RPM_SCALE			= 9.5493
+PhDyzkBody.MAX_NUM_ABILITIES		= 8
+
 
 
 -------------------------------------------------------------------------------
@@ -56,6 +62,9 @@ function PhDyzkBody:new()
 	obj._controlVecX = 0;
 	obj._controlVecY = 0;
 	
+	-- Abilities
+	obj._abilities = {};
+	
 	-- Extra information
 	obj.metaData = {}
 	
@@ -66,7 +75,11 @@ end
 -------------------------------------------------------------------------------
 --  PhDyzkBody:Update : Updates the PhDyzkBody
 -------------------------------------------------------------------------------
-function PhDyzkBody:Update( dt )	
+function PhDyzkBody:Update( dt )
+	
+	-- Update abilities
+	self:UpdateAbilities( dt );
+	
 	-- Cap the control vector to a magnitude of 1
 	local controlVec = Vector:new( self._controlVecX, self._controlVecY );
 	local controlVecMagnitude = controlVec:Length()
@@ -91,11 +104,11 @@ function PhDyzkBody:Update( dt )
 	
 	-- Update angular velocity and angle
 	self.angVel = self.angVel - dt*0.1;
-	self.ang = self.ang + self.angVel*dt;
+	self.ang = self.ang + self.angVel*dt;	
 	
 	-- Reset the control vector
 	self._controlVecX = 0;
-	self._controlVecY = 0;
+	self._controlVecY = 0;	
 end
 
 
@@ -172,7 +185,7 @@ end
 --  PhDyzkBody:GetRPM : Returns the angular velocity in revolution per minutes
 -------------------------------------------------------------------------------
 function PhDyzkBody:GetRPM()
-	return self:GetAngularVelocity()*RPS_TO_RPM_SCALE;
+	return self:GetAngularVelocity()*self.RPS_TO_RPM_SCALE;
 end
 
 
@@ -361,8 +374,8 @@ function PhDyzkBody:OnDyzkCollision( other, primary )
 				self, other, true,
 				xCol, yCol, 
 				collisionNormal.x, collisionNormal.y,
-				rpmDmg1 * RPS_TO_RPM_SCALE, 
-				rpmDmg2 * RPS_TO_RPM_SCALE,
+				rpmDmg1 * self.RPS_TO_RPM_SCALE, 
+				rpmDmg2 * self.RPS_TO_RPM_SCALE,
 				pushBack1, pushBack2 );
 				
 	local collisionReport2 = 
@@ -370,8 +383,8 @@ function PhDyzkBody:OnDyzkCollision( other, primary )
 				other, self, false,
 				xCol, yCol, 
 				-collisionNormal.x, -collisionNormal.y,
-				rpmDmg2 * RPS_TO_RPM_SCALE,
-				rpmDmg1 * RPS_TO_RPM_SCALE, 				
+				rpmDmg2 * self.RPS_TO_RPM_SCALE,
+				rpmDmg1 * self.RPS_TO_RPM_SCALE, 				
 				pushBack2, pushBack1 );
 	
 	for i=1,#self._collisionListener do
@@ -398,6 +411,46 @@ function PhDyzkBody:CopyFromDyzkData( dyzkData )
 	self:SetJaggedness( 	dyzkData:GetJaggedness() 	);
 	self:SetWeight( 		dyzkData:GetWeight() 		);
 	self:SetBalance( 		dyzkData:GetBalance()		);
+end
+
+
+-------------------------------------------------------------------------------
+--  PhDyzkBody:SetAbility : Sets a dyzk ability
+-------------------------------------------------------------------------------
+function PhDyzkBody:SetAbility( id, ability )
+	self._abilities[id] = ability;
+end
+
+
+-------------------------------------------------------------------------------
+--  PhDyzkBody:GetAbility : Returns the ability with id
+-------------------------------------------------------------------------------
+function PhDyzkBody:GetAbility( id )
+	return self._abilities[id];
+end
+
+
+-------------------------------------------------------------------------------
+--  PhDyzkBody:ActivateAbility : Activates an ability (passing on/off signal)
+-------------------------------------------------------------------------------
+function PhDyzkBody:ActivateAbility( id, on )
+	if self._abilities[id] then
+		self._abilities[id]:Activate( on );
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  PhDyzkBody:UpdateAbilities : Sets a dyzk ability
+-------------------------------------------------------------------------------
+function PhDyzkBody:UpdateAbilities( dt )
+	for i = 1, self.MAX_NUM_ABILITIES do
+		local ability = self._abilities[i];
+		
+		if ability then
+			ability:Update( dt );
+		end;
+	end
 end
 
 

@@ -7,6 +7,9 @@ local Camera			= require 'src.object.Camera'
 local RPMMeter			= require 'src.object.RPMMeter'
 local DBC				= require 'src.input.DirectBattleController'
 
+local SABoost			= require 'src.abilities.SABoost'
+local SARedirect		= require 'src.abilities.SARedirect'
+
 
 
 local RPMCoords = 
@@ -49,14 +52,15 @@ function ScBattle:Init()
 
 	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
-		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA001.png");
+		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA002.png");
 		dyzk1.phDyzk.x = 100;
 		dyzk1.phDyzk.y = 100;
 		dyzk1.phDyzk.vx = 10;
 		dyzk1.phDyzk.vy = 10;
 		dyzk1.phDyzk.angVel = 600;
+		dyzk1.phDyzk:SetAbility( 1, SARedirect:new( dyzk1.phDyzk ) );
 		
-		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA002.png");
+		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA003.png");
 		dyzk2.phDyzk.x = 2048;
 		dyzk2.phDyzk.y = 2048;
 		dyzk2.phDyzk.vx = -10;
@@ -137,10 +141,6 @@ function ScBattle:Control( control )
 	end
 end
 
-
--------------------------------------------------------------------------------
---  ScBattle:Control : Handle input event
--------------------------------------------------------------------------------
 
 --===========================================================================--
 --  Initialization

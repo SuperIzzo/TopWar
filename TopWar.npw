@@ -16,7 +16,11 @@
             <Folder name="physics">
                 <File name="src\physics\PhDyzkBody.lua" />
                 <File name="src\physics\PhArena.lua" />
-                <Folder name="abilities" />
+                <File name="src\physics\DyzxCollisionReport.lua" />
+                <Folder name="abilities">
+                    <File name="src\abilities\SABoost.lua" />
+                    <File name="src\abilities\SARedirect.lua" />
+                </Folder>
             </Folder>
             <Folder name="graphics">
                 <File name="src\graphics\ImageUtils.lua" />
