@@ -1,8 +1,11 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhDyzk 			= require 'src.physics.PhDyzkBody'
-local Sparks 			= require 'src.object.Sparks'
+local PhDyzk 				= require 'src.physics.PhDyzkBody'
+local Sparks 				= require 'src.object.Sparks'
+local DyzkImageAnalysis		= require 'src.graphics.DyzkImageAnalysis'
+
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -67,19 +70,26 @@ function Dyzk:new( fname )
 	local phDyzk = PhDyzk:new();
 	
 	obj.image = nil;
+	local analysis = nil;
 	
 	---------------------------
 	if fname then
-		local data = love.image.newImageData( fname );
-		phDyzk:SetFromImageData( data, DEFAULT_DYZK_SCALE );
-		obj.image = love.graphics.newImage( data );
+		local imageData = love.image.newImageData( fname );
+		
+		analysis = DyzkImageAnalysis:new();
+		analysis:AnalyzeImage( imageData, DEFAULT_DYZK_SCALE );		
+		phDyzk:CopyFromDyzkData( analysis );
+		
+		obj.image = love.graphics.newImage( imageData );
 	else
-		phDyzk:SetRadius( 10 );
+		phDyzk:SetMaxRadius( 10 );
 	end	
 	---------------------------
 	
 	phDyzk:AddCollisionListener( self.OnDyzkCollision, obj );
-	obj.phDyzk = phDyzk;
+	
+	obj.phDyzk 			= phDyzk;
+	obj.dyzkAnalysis 	= analysis;
 	
 	obj._sparks = nil;
 	
@@ -133,13 +143,13 @@ function Dyzk:Draw()
 			end
 		end
 	else
-		g.circle( "fill", phDyzk.x, phDyzk.y, phDyzk:GetRadius(), 20 );
+		g.circle( "fill", phDyzk.x, phDyzk.y, phDyzk:GetMaxRadius(), 20 );
 	end
 	
 	-- Debug graphics
 	if DEBUG_GRAPHICS then
 		-- Collision circle
-		g.circle( "line", phDyzk.x, phDyzk.y, phDyzk:GetRadius(), 20 );
+		g.circle( "line", phDyzk.x, phDyzk.y, phDyzk:GetMaxRadius(), 20 );
 		-- Velocity vector
 		g.line( phDyzk.x, phDyzk.y, 
 				phDyzk.x + phDyzk.vx, phDyzk.y + phDyzk.vy
@@ -157,14 +167,21 @@ end
 
 
 -------------------------------------------------------------------------------
---  Dyzk:GetPhysicsBody : Returns the physics body of the dyzk
+--  Dyzk:OnDyzkCollision : React on dyzk collision
 -------------------------------------------------------------------------------
-function Dyzk:OnDyzkCollision( collisionPoint, collisionNormal )
-	self._sparks = Sparks:new( 
-			collisionPoint.x, collisionPoint.y,
-			collisionNormal
+function Dyzk:OnDyzkCollision( report )
+	
+	-- Draw some friction sparks
+	if report:IsPrimary() then
+		local colX, colY 	= report:GetCollisionPoint();
+		local colNx, colNy	= report:GetCollisionNormal();
+		self._sparks = Sparks:new( 
+			colX, colY,
+			colNx, colNy
 		);
-	self._sparks:SetAnimDuration( 0.08 );
+		self._sparks:SetAnimDuration( 0.08 );
+	end
+	
 end
 
 

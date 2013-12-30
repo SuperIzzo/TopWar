@@ -1,25 +1,21 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PolarVector	= require 'src.math.PolarVector'
 local Vector		= require 'src.math.Vector'
-local MathUtils		= require 'src.math.MathUtils'
+
+local DyzxCollisionReport	= require 'src.physics.DyzxCollisionReport'
 
 local assert 		= _G.assert
 local sqrt			= _G.math.sqrt
-local log			= _G.math.log
-local max			= _G.math.max
-local floor			= _G.math.floor
-local asin			= _G.math.asin
-local pi			= _G.math.pi
-local clamp			= MathUtils.Clamp
+
+
 
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --  Constants
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local EFFECTIVE_ALPHA_THRESHOLD = 125
+
 local RPS_TO_RPM_SCALE			= 9.5493
 
 
@@ -39,7 +35,7 @@ function PhDyzkBody:new()
 	
 	obj._weight 	= 0;
 	obj._jaggedness = 0;
-	obj._radius 	= 0;
+	obj._maxRadius 	= 0;
 	obj._balance	= 0;
 	obj._speed		= 400;
 	
@@ -205,15 +201,15 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetRadius : Returns the radius of the PhDyzkBody
+--  PhDyzkBody:GetMaxRadius : Returns the radius of the PhDyzkBody
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetRadius()
-	return self._radius;
+function PhDyzkBody:GetMaxRadius()
+	return self._maxRadius;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetRadius : Returns the radius of the PhDyzkBody
+--  PhDyzkBody:GetMaxRadius : Returns the radius of the PhDyzkBody
 -------------------------------------------------------------------------------
 function PhDyzkBody:GetBalance()
 	return self._balance;
@@ -243,10 +239,10 @@ end
 -------------------------------------------------------------------------------
 --  PhDyzkBody:SetBalance : Sets the balance of the PhDyzkBody
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetRadius( rad )
+function PhDyzkBody:SetMaxRadius( rad )
 	assert( rad >= 0 )
 	
-	self._radius = rad;
+	self._maxRadius = rad;
 end
 
 
@@ -265,12 +261,12 @@ end
 -------------------------------------------------------------------------------
 function PhDyzkBody:OnDyzkCollision( other, primary )
 
-	-- Ignore if the collision is being handle by other
+	-- Ignore if the collision is being handled by the other
 	if not primary then return end;
 	
 	local x1, y1 = self:GetPosition();
 	local x2, y2 = other:GetPosition();
-	local rad1, rad2 = self:GetRadius(), other:GetRadius();
+	local rad1, rad2 = self:GetMaxRadius(), other:GetMaxRadius();
 	
 	-- Distance is the distance between the centers
 	local distance = math.sqrt((x1-x2)^2 + (y1-y2)^2);
@@ -336,13 +332,20 @@ function PhDyzkBody:OnDyzkCollision( other, primary )
 				) * self._weight / other._weight
 				+ intersectionForce;
 				 
+	-- The RPM damage depends on the collision force, the jagedness of the two dyzx and
+	-- angular velocity of the other top... note that if the two dyzx have opposite spins	
+	-- they will regenerate instead of damaging each other
 	local rpmDmg1 = force1 
 						* other.angVel * (self._jaggedness*0.2 + other._jaggedness*0.8)
 	local rpmDmg2 = force2 
 						* self.angVel * (self._jaggedness*0.8 + other._jaggedness*0.2)
 	
-	self.angVel = self.angVel - rpmDmg1/20 -0.2;
-	other.angVel = other.angVel - rpmDmg2/20 -0.2;
+	-- A couple of fake adjustments 
+	rpmDmg1 = rpmDmg1/10;
+	rpmDmg2 = rpmDmg2/10;
+	
+	self.angVel = self.angVel - rpmDmg1;
+	other.angVel = other.angVel - rpmDmg2;
 	
 	-- Apply the forces as two impulses in direction opposite to the 
 	-- collision normal (to the dyzk centers)
@@ -351,100 +354,50 @@ function PhDyzkBody:OnDyzkCollision( other, primary )
 	other:SetVelocity(	collisionNormal.x*pushBack2,
 						collisionNormal.y*pushBack2 );
 
+	-- All that is left now is to report the collisions to the collision listeners,
+	-- two reports are generated one for the listeners of each of the two dyzx
+	local collisionReport1 = 
+		DyzxCollisionReport:new(
+				self, other, true,
+				xCol, yCol, 
+				collisionNormal.x, collisionNormal.y,
+				rpmDmg1 * RPS_TO_RPM_SCALE, 
+				rpmDmg2 * RPS_TO_RPM_SCALE,
+				pushBack1, pushBack2 );
+				
+	local collisionReport2 = 
+		DyzxCollisionReport:new(
+				other, self, false,
+				xCol, yCol, 
+				-collisionNormal.x, -collisionNormal.y,
+				rpmDmg2 * RPS_TO_RPM_SCALE,
+				rpmDmg1 * RPS_TO_RPM_SCALE, 				
+				pushBack2, pushBack1 );
+	
 	for i=1,#self._collisionListener do
 		local listener = self._collisionListener[i];
-		listener.func( 
-				listener.arg, 
-				{ x=xCol, y=yCol },
-				{ x=collisionNormal.x, y=collisionNormal.y}
-		);
+		listener.func( listener.arg, collisionReport1 );
+	end
+	
+	for i=1,#other._collisionListener do
+		local listener = other._collisionListener[i];
+		listener.func( listener.arg, collisionReport2 );
 	end
 end
 
 
 -------------------------------------------------------------------------------
--- PhDyzkBody:SetFromImageData : Sets the properties of a PhDyzkBody from an image
+--  PhDyzkBody:CopyFromDyzkData : Sets the properties of this dyzk from another
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--  dyzkData can be any object which conforms the dyzk data interface. This
+--  makes the function quite versetile as it can copy from another PhDyzkBody,
+--  Dyzk or DyzkImageAnalysis object.
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetFromImageData( imgData, scale )
-	local scale 	= scale or 1;
-	local imgSize	= Vector:new( imgData:getWidth()*scale, imgData:getHeight()*scale );	
-	local halfSize	= imgSize/2;
-	local radSpan	= halfSize:Length();
-	
-	-- Limit the angle loop to 1 pixel from a specific circle of precision 
-	-- angSpan is an integer number that maps angles to a new range based on
-	-- the radius of precision, as interger 0..360 may leave a lot of holes
-	local radiusOfPrecision = max( halfSize.x, halfSize.y );
-	local angSpan = pi*2 / asin( 1/radiusOfPrecision );
-	
-	local maxRad = 0;
-	local allRads = {};
-	local numPixels = 0;
-	local centerOfMass = Vector:new(0,0);
-	local balanceY = 0;
-	
-	for pxX = 0, imgSize.x-1 do
-		for pxY = 0, imgSize.y-1 do			
-			local _, _, _, a = imgData:getPixel( pxX/scale, pxY/scale );			
-			
-			if a > EFFECTIVE_ALPHA_THRESHOLD then				
-				-- Count the number of non-transparent pixels
-				numPixels = numPixels + 1;
-				
-				-- Accumulate coordinates
-				centerOfMass.x = centerOfMass.x + pxX;
-				centerOfMass.y = centerOfMass.y + pxY;
-			
-				-- Turn into polar coordinates, so that we can collect radiuses
-				local polCoord = PolarVector:new();
-				polCoord:FromCartesian( pxX - halfSize.x, pxY - halfSize.y );
-			
-				-- Compare the max radius
-				if polCoord.r > maxRad then
-					maxRad = polCoord.r;
-				end
-				
-				-- Collect all radiuses
-				local angIdx = floor( polCoord.a/(pi*2) * angSpan );
-				if (not allRads[angIdx]) or (polCoord.r > allRads[angIdx]) then
-					allRads[angIdx] = polCoord.r;
-				end
-			end
-		end
-	end
-
-	-- Sum up jaggedness from all angles
-	-- Logarithms ensure that jagedness is only effetive at the contour
-	local jag = 0;
-	for ang =0, angSpan do
-		local rad = allRads[ang] or 0;
-		
-		-- tolerate a difference of up to 2 pixels
-		local difference = maxRad - rad;
-		difference = difference-2;
-		if difference<0 then difference = 0 end;
-		
-		jag = jag + log( difference + 1);
-	end
-	
-	-- Normalize
-	jag = jag / (angSpan * log(128))
-	jag = clamp( jag, 0, 1 );	
-	
-	-- Calculate center of mass
-	centerOfMass = centerOfMass/numPixels;
-	
-	-- Calculate balance as 1 - the normalized offset of the center of the mass
-	local balance = 1 - (centerOfMass - halfSize):Length()/maxRad;
-	balance = clamp( balance, 0, 1 );
-	
-	-- Normalize ( base unit will be grams, each 1px = 1mg )
-	local weight = numPixels/1000; 	
-	
-	self:SetRadius( maxRad );
-	self:SetJaggedness( jag );
-	self:SetWeight( weight );
-	self:SetBalance( balance );
+function PhDyzkBody:CopyFromDyzkData( dyzkData )
+	self:SetMaxRadius( 		dyzkData:GetMaxRadius() 	);
+	self:SetJaggedness( 	dyzkData:GetJaggedness() 	);
+	self:SetWeight( 		dyzkData:GetWeight() 		);
+	self:SetBalance( 		dyzkData:GetBalance()		);
 end
 
 
