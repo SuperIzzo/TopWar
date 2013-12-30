@@ -70,9 +70,12 @@ function Camera:Update( dt )
 			xMid = xMid + x;
 			yMid = yMid + y;
 		end
+		
+		xMid = xMid/#self._trackedObject*self.xScale;
+		yMid = yMid/#self._trackedObject*self.yScale;
 			
-		self.x = xMid/#self._trackedObject/2 - love.graphics.getWidth()/2;
-		self.y = yMid/#self._trackedObject/2 - love.graphics.getHeight()/2;
+		self.x = xMid - love.graphics.getWidth()/2;
+		self.y = yMid - love.graphics.getHeight()/2;
 	end
 end
 
