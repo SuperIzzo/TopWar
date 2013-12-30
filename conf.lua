@@ -1,6 +1,6 @@
 
 function love.conf( game )
-    game.title 					= "TopWar"
+    game.title 					= "Battle Dyzx"
     game.author 				= "Hristoz S. Stefanov"
     game.url 					= nil
     game.identity 				= nil
