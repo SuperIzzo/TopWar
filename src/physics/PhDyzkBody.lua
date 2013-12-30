@@ -340,9 +340,9 @@ function PhDyzkBody:OnDyzkCollision( other, primary )
 	local rpmDmg2 = force2 
 						* self.angVel * (self._jaggedness*0.8 + other._jaggedness*0.2)
 	
-	-- A couple of fake adjustments 
-	rpmDmg1 = rpmDmg1/10;
-	rpmDmg2 = rpmDmg2/10;
+	-- A couple of fake adjustments
+	rpmDmg1 = rpmDmg1/20;
+	rpmDmg2 = rpmDmg2/20;
 	
 	self.angVel = self.angVel - rpmDmg1;
 	other.angVel = other.angVel - rpmDmg2;

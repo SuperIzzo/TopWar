@@ -75,8 +75,8 @@ end
 function Sparks:Draw()
 	local g = love.graphics;
 	
-	local maxSparkLen = 6;
-	local minSparkLen = 2;
+	local maxSparkLen = 12;
+	local minSparkLen = 4;
 	local sparkLenDif = maxSparkLen - minSparkLen
 	
 	g.setBlendMode( "additive" );
