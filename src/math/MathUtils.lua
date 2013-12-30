@@ -25,6 +25,25 @@ end
 
 
 -------------------------------------------------------------------------------
+--  MathUtils.Warp : warps a value around in range
+-------------------------------------------------------------------------------
+function MathUtils.Warp( x, bot, top )
+	local dif 	= top - bot;
+	local x 	= x;
+	
+	while x > top do
+		x = x - dif;
+	end
+	
+	while x < bot do
+		x = x + dif;
+	end
+	
+	return x;
+end
+
+
+-------------------------------------------------------------------------------
 --  MathUtils.Round : Rounds a number
 -------------------------------------------------------------------------------
 function MathUtils.Round(num, idp)
