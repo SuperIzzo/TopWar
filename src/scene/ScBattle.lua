@@ -49,14 +49,14 @@ function ScBattle:Init()
 
 	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
-		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA004.png");
+		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA001.png");
 		dyzk1.phDyzk.x = 100;
 		dyzk1.phDyzk.y = 100;
 		dyzk1.phDyzk.vx = 10;
 		dyzk1.phDyzk.vy = 10;
 		dyzk1.phDyzk.angVel = 600;
 		
-		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA003.png");
+		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA002.png");
 		dyzk2.phDyzk.x = 1024;
 		dyzk2.phDyzk.y = 1024;
 		dyzk2.phDyzk.vx = -10;
@@ -102,6 +102,10 @@ function ScBattle:Update( dt )
 	for i=1, #self._dyzx do
 		self._dyzx[i]:Update( dt );
 	end
+	
+	for i=1, #self._rpmMeters do
+		self._rpmMeters[i]:Update( dt );
+	end
 end
 
 
@@ -128,7 +132,6 @@ end
 --  ScBattle:Control : Handle input event
 -------------------------------------------------------------------------------
 function ScBattle:Control( control )
-	print( control.id );
 	for i=1, #self._controllers do
 		self._controllers[i]:Control( control );
 	end
