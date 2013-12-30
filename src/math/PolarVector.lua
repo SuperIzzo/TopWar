@@ -12,7 +12,14 @@ local pi				= _G.math.pi
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class PolarVector : a mathematical vector in polar coordinate system 
+--	Class PolarVector : a mathematical vector in polar coordinate system
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--    Polar vectors have two components - angle (a) and radius (r) which 
+--  indicate a point on circle. (a=0, r=0) is the center. The higher `r' is the
+--  further away the point is from the center. `a' indicates the direction of
+--  the displacement in radiants, 0 is (usually) right and pi (~3.14) is left.
+--    PolarVectors can be converted from and to vectors in the Cartesian 
+--  coordinate system.
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local PolarVector =
 {

@@ -10,6 +10,12 @@ local Trigger	 	= require 'src.input.TriggerType'
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class Settings: Game settings management class
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--  The Settings class is best place to put specific or general variables and 
+--  constants that relate to and configure one or more subsystems- i.e.settings
+--  This class will handle loading and saving settings from multiple locations,
+--  default settings, recomended settings and more... 
+--  For the time being though it will be a mess.
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local Settings = {}
 Settings.__index = Settings
@@ -66,7 +72,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Settings:LoadDefaultControls : Loads teh default controls
+--  Settings:LoadDefaultControls : Loads the default controls
 -------------------------------------------------------------------------------
 function Settings:LoadDefaultControls( box )
 	local p1Box = box;
@@ -103,16 +109,16 @@ function Settings:LoadDefaultControls( box )
 	A1:Bind'Key'( ' ', 			Trigger.SWITCH(true)			 		);
 
 	local Left1		= p1Box:CreateControl("Left");
-	Left1:Bind'Control'( 'xAxis',	Trigger.SPRING_TO_SWITCH(false, -2, -0.5)	);
+	Left1:Bind'Control'( 'xAxis',	Trigger.SPRING_TO_SWITCH(true, -2, -0.5)	);
 
 	local Right1	= p1Box:CreateControl("Right");
-	Right1:Bind'Control'( 'xAxis',	Trigger.SPRING_TO_SWITCH(false, 0.5,  2)	);
+	Right1:Bind'Control'( 'xAxis',	Trigger.SPRING_TO_SWITCH(true, 0.5,  2)	);
 
 	local Up1		= p1Box:CreateControl("Up");
-	Up1:Bind'Control'( 'yAxis',		Trigger.SPRING_TO_SWITCH(false, -2, -0.5)	);
+	Up1:Bind'Control'( 'yAxis',		Trigger.SPRING_TO_SWITCH(true, -2, -0.5)	);
 
 	local Down1		= p1Box:CreateControl("Down");
-	Down1:Bind'Control'( 'yAxis',	Trigger.SPRING_TO_SWITCH(false, 0.5,  2)	);
+	Down1:Bind'Control'( 'yAxis',	Trigger.SPRING_TO_SWITCH(true, 0.5,  2)	);
 end
 
 

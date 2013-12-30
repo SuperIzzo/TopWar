@@ -15,6 +15,33 @@ end
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class ControlBox: A collection of controls 
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--    Put simply control boxes are black boxes which react on external triggers
+--  and trough internal filters and tests produce an output signal which can be
+--  fed back into the external system. The intended use for ControlBox is to
+--  create a unified input method where the input from keyboards, joysticks, 
+--  mice and other devices can be converted into logical control signals that
+--  is specific to a game but independent from hardware implementations.
+--    The first step before using a ControlBox is configuring it. This is done
+--  by creating controls and mapping them to external triggering events. 
+--     The following snippet creates a control called "ctrlAction" and binds it
+--  to two events - 'Joy1Button' and 'Key':
+--
+--         local ctrlAction		= box:CreateControl("A");
+--               ctrlAction:Bind'Joy1Button'( 3, Trigger.SWITCH(true) );
+--	             ctrlAction:Bind'Key'( 'Z', Trigger.SWITCH(true) );
+--
+--  The event names are symbolic, they are chosen by the developers. The 1st
+--  argument is an input value and the second is a trigger (also called 
+--  test function). The test function will be called whenever the event is fed
+--  into the box and it will return true if the event is the control is 
+--  triggered by this event.
+--    Events are fed manually to the control box. Their names have to match the
+--  bindings of the controls. The following code illustrates the triggering of
+--  a keypress event for the key 'A':
+--
+--  		box:Trigger( 'Key', "A", true );
+--
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local ControlBox = {}
 ControlBox.__index = ControlBox;
