@@ -151,7 +151,7 @@ function ScSelection:Draw()
 	
 	-- Stats
 	local phDyzk = dyzk:GetPhysicsBody()
-	g.print("radius: " .. round(phDyzk:GetRadius()), 60, 130 );
+	g.print("radius: " .. round(phDyzk:GetMaxRadius()), 60, 130 );
 	g.print("weight: " .. round(phDyzk:GetWeight(), 1) .. "g", 60, 150 );
 	g.print("balance: " .. round(phDyzk:GetBalance()*100) .. "%", 60, 170 );
 	g.print("spike: " .. round(phDyzk:GetJaggedness()*100) .. "%", 60, 190 );
@@ -191,7 +191,7 @@ function ScSelection:Control( control )
 			
 			msg.type = Message.Type.DYZK_DESC
 			msg.dyzk = {}
-			msg.dyzk.radius  = phDyzk:GetRadius();
+			msg.dyzk.radius  = phDyzk:GetMaxRadius()();
 			msg.dyzk.weight  = phDyzk:GetWeight();
 			msg.dyzk.jag 	 = phDyzk:GetJaggedness();
 			msg.dyzk.balance = phDyzk:GetBalance();

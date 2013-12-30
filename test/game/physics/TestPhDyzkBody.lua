@@ -37,7 +37,7 @@ function T: TEST_default_initializes_to_blank()
 
 	assert_equal( 0,		dyzk:GetWeight(), 0.001 );
 	assert_equal( 0,		dyzk:GetJaggedness(), 0.001 );
-	assert_equal( 0,		dyzk:GetRadius(), 0.001 );
+	assert_equal( 0,		dyzk:GetMaxRadius(), 0.001 );
 end
 
 
@@ -66,14 +66,14 @@ end
 
 
 -------------------------------------------------------------------------------
---  TEST_setting_and_retreiving_the_radius_of_a_dyzk
+--  TEST_setting_and_retreiving_the_max_radius_of_a_dyzk
 -------------------------------------------------------------------------------
-function T: TEST_setting_and_retreiving_the_radius_of_a_dyzk()
+function T: TEST_setting_and_retreiving_the_max_radius_of_a_dyzk()
 	local dyzk = PhDyzkBody:new()
 	
-	dyzk:SetRadius( 5.6 );
+	dyzk:SetMaxRadius( 5.6 );
 	
-	assert_equal( 5.6,		dyzk:GetRadius(), 0.001 );
+	assert_equal( 5.6,		dyzk:GetMaxRadius(), 0.001 );
 end
 
 
@@ -99,7 +99,7 @@ function T: TEST_error_when_setting_parameters_in_incorrect_range()
 	assert_error(	function() dyzk:SetWeight( -1 );	end				);
 	
 	-- Radius cannot be negative
-	assert_error(	function() dyzk:SetRadius( -1 );	end				);
+	assert_error(	function() dyzk:SetMaxRadius( -1 );	end				);
 	
 	-- Jaggedness can only be between 0 and 1	
 	assert_error(	function() dyzk:SetJaggedness( -1 ); end			);
@@ -118,7 +118,7 @@ function T: TEST_error_when_setting_weigth_to_anything_other_than_a_number()
 	local setters = 
 	{
 		"SetWeight",
-		"SetRadius",
+		"SetMaxRadius",
 		"SetJaggedness",
 		"SetBalance",
 	}
@@ -139,9 +139,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  TEST_loaded_dyzk_has_correct_radius
+--  TEST_loaded_dyzk_has_correct_max_radius
 -------------------------------------------------------------------------------
-function T: TEST_loaded_dyzk_has_correct_radius()	
+function T: TEST_loaded_dyzk_has_correct_max_radius()	
 	local radTests = 
 	{
 		--[[--  test image				|  radius  |  tolerance  --]]--
@@ -162,7 +162,7 @@ function T: TEST_loaded_dyzk_has_correct_radius()
 		
 		local dyzk = LoadDyzk( imgFile );
 	
-		assert_equal( expectedRad,  	dyzk:GetRadius(), 	tolerance );
+		assert_equal( expectedRad,  	dyzk:GetMaxRadius(), 	tolerance );
 	end
 	
 end
