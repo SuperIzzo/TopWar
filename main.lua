@@ -3,7 +3,6 @@
 --===========================================================================--
 require 'src.strict'
 declare 'loveframes'
---declare 'calledmousefunc'
 require 'src.lib.loveframes'
 
 local Client 		= require 'src.network.Client'
@@ -51,8 +50,12 @@ sceneMgr:SetScene( "Main Menu" );
  
  
 local p1Box = ControlBox:new();
+p1Box.player = 1;
 Settings:LoadDefaultControls( p1Box );
 
+local p2Box = ControlBox:new();
+p2Box.player = 1;
+Settings:LoadDefaultControls( p2Box );
 
 
 -- Control Box Feedback
@@ -63,7 +66,7 @@ local function sceneControl( box, control )
 	-- (they will delagate to objects)
 	sceneMgr:Control
 	{
-		player	= p1Box.player,
+		player	= box.player,
 		id		= control:GetID(),
 		value	= control:GetValue()
 	}
@@ -73,6 +76,7 @@ local function sceneControl( box, control )
 end
 
 p1Box:SetCallback( sceneControl )
+p2Box:SetCallback( sceneControl )
 
 
 
@@ -95,37 +99,45 @@ function love.update( dt )
 		
 		sceneMgr:Network( msg );
 	end
-	--------------------------
-
-	--[[
-	for axis=1, love.joystick.getNumAxes(1) do
-		p1Box:Trigger( "Joy1Axis", axis, love.joystick.getAxis( 1, axis ) );
-	end
-	--]]
+	--------------------------	
 	
 	for key, value in pairs(keys) do
 		p1Box:Trigger( "Key", key, value );
+		p2Box:Trigger( "Key", key, value );
 	end
 
 
 	sceneMgr:Update(dt);
 	
 	p1Box:Trigger( "Update", 1 );
+	p2Box:Trigger( "Update", 1 );
 
-	--[[
-	for i=1, love.joystick.getNumHats(1) do
-		local hat = love.joystick.getHat( 1, i );
+	for joy = 1, love.joystick.getJoystickCount() do		
+		local joystick = love.joystick.getJoysticks()[joy];
 		
-		if prevHat[i] ~= hat then 
-			if prevHat[i] then
-				p1Box:Trigger( "Joy1Hat", prevHat[i] .. i , false );
+		if joystick then
+		
+			for axis=1, joystick:getAxisCount() do
+				p1Box:Trigger( "Joy" .. joy .. "Axis", axis, joystick:getAxis( axis ) );
+				p2Box:Trigger( "Joy" .. joy .. "Axis", axis, joystick:getAxis( axis ) );
 			end
+		
+			for i=1, joystick:getHatCount() do
+				local hat = joystick:getHat( i );
 			
-			prevHat[i] = hat;
-			p1Box:Trigger( "Joy1Hat", hat .. i, true );
+				if prevHat[i] ~= hat then 
+					if prevHat[i] then
+						p1Box:Trigger( "Joy" .. joy .. "Hat", prevHat[i] .. i , false );
+						p2Box:Trigger( "Joy" .. joy .. "Hat", prevHat[i] .. i , false );
+					end
+				
+					prevHat[i] = hat;
+					p1Box:Trigger( "Joy" .. joy .. "Hat", hat .. i, true );
+					p2Box:Trigger( "Joy" .. joy .. "Hat", hat .. i, true );
+				end
+			end
 		end
 	end
-	--]]
 	
 	
 	-- Update GUI
@@ -171,12 +183,14 @@ end
 
 
 function love.joystickpressed( j, but )
-	p1Box:Trigger( "Joy1Button", but, true );
+	p1Box:Trigger( "Joy" .. j:getID() .. "Button", but, true );
+	p2Box:Trigger( "Joy" .. j:getID() .. "Button", but, true );
 end
 
 
 function love.joystickreleased( j, but )
-	p1Box:Trigger( "Joy1Button", but, false );
+	p1Box:Trigger( "Joy" .. j:getID() .. "Button", but, false );
+	p2Box:Trigger( "Joy" .. j:getID() .. "Button", but, false );
 end
 
 

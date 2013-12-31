@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhDyzk 				= require 'src.physics.PhDyzkBody'
+local PhDyzk 				= require 'src.model.DyzkModel'
 local Sparks 				= require 'src.object.Sparks'
 local DyzkImageAnalysis		= require 'src.graphics.DyzkImageAnalysis'
 

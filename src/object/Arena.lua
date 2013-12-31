@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhArena			= require 'src.physics.PhArena'
+local ArenaModel			= require 'src.model.ArenaModel'
 local ImageUtils 		= require 'src.graphics.ImageUtils'
 
 
@@ -20,7 +20,7 @@ function Arena:new( fname )
 	
 	obj.image = nil;
 	
-	local phArena = PhArena:new();
+	local phArena = ArenaModel:new();
 	
 	---------------------------
 	if fname then

@@ -80,9 +80,9 @@ function TestMain:GetSuiteList()
 	{
 		'test.math.TestVector',
 		'test.math.TestPolarVector',
-		'test.game.graphics.TestImageUtils',
-		'test.game.physics.TestPhDyzkBody',
-		'test.game.physics.TestPhArena',
+--		'test.game.graphics.TestImageUtils',
+		'test.game.model.TestDyzkModel',
+		'test.game.model.TestArenaModel',
 	}
 	
 	return list;

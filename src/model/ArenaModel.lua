@@ -15,16 +15,16 @@ local DEFAULT_ZSCALE	= 256;
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class PhArena : The physical data and logic of a battle PhArena
+--	Class ArenaModel : The physical data and logic of a battle arena
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local PhArena = {}
-PhArena.__index = PhArena;
+local ArenaModel = {}
+ArenaModel.__index = ArenaModel;
 
 
 -------------------------------------------------------------------------------
---  PhArena:new : Creates a new PhArena
+--  ArenaModel:new : Creates a new ArenaModel
 -------------------------------------------------------------------------------
-function PhArena:new()
+function ArenaModel:new()
 	local obj = {}
 	
 	obj._depthMask = nil;
@@ -39,25 +39,25 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhArena:SetDepthMask : Sets the depth mask of the PhArena
+--  ArenaModel:SetDepthMask : Sets the depth mask of the ArenaModel
 -------------------------------------------------------------------------------
-function PhArena:SetDepthMask( mask )
+function ArenaModel:SetDepthMask( mask )
 	self._depthMask = mask;
 end
 
 
 -------------------------------------------------------------------------------
---  PhArena:SetNormalMask : Sets the normal mask of the PhArena
+--  ArenaModel:SetNormalMask : Sets the normal mask of the ArenaModel
 -------------------------------------------------------------------------------
-function PhArena:SetNormalMask( mask )
+function ArenaModel:SetNormalMask( mask )
 	self._normalMask = mask;
 end
 
 
 -------------------------------------------------------------------------------
---  PhArena:GetDepth : Returns the depth at point x,y
+--  ArenaModel:GetDepth : Returns the depth at point x,y
 -------------------------------------------------------------------------------
-function PhArena:GetDepth( x, y )
+function ArenaModel:GetDepth( x, y )
 	local result = {};
 	
 	result.x = 0;
@@ -69,9 +69,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhArena:GetNormal : Returns the normal at point x,y
+--  ArenaModel:GetNormal : Returns the normal at point x,y
 -------------------------------------------------------------------------------
-function PhArena:GetNormal( x, y )
+function ArenaModel:GetNormal( x, y )
 	local result = {}
 
 	local normMask = self._normalMask
@@ -104,33 +104,33 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhArena:AddDyzk : Adds a dyzk to the PhArena
+--  ArenaModel:AddDyzk : Adds a dyzk to the ArenaModel
 -------------------------------------------------------------------------------
-function PhArena:AddDyzk( dyzk )
+function ArenaModel:AddDyzk( dyzk )
 	self._dyzx[ #self._dyzx+1 ] = dyzk;
 end
 
 
 -------------------------------------------------------------------------------
---  PhArena:SetScale : Sets the arena scale
+--  ArenaModel:SetScale : Sets the arena scale
 -------------------------------------------------------------------------------
-function PhArena:SetScale(x,y,z)
+function ArenaModel:SetScale(x,y,z)
 	self._xScale, self._yScale, self._zScale  =  x,y,z;
 end
 
 
 -------------------------------------------------------------------------------
---  PhArena:GetScale : Returns the scale of the arena
+--  ArenaModel:GetScale : Returns the scale of the arena
 -------------------------------------------------------------------------------
-function PhArena:GetScale()
+function ArenaModel:GetScale()
 	return self._xScale, self._yScale, self._zScale
 end
 
 
 -------------------------------------------------------------------------------
---  PhArena:Update : Updates the velocity of all dyzx in the PhArena
+--  ArenaModel:Update : Updates the velocity of all dyzx in the ArenaModel
 -------------------------------------------------------------------------------
-function PhArena:Update( dt )
+function ArenaModel:Update( dt )
 	for i = 1, #self._dyzx do
 		local  dyzk = self._dyzx[i];
 		local norm = self:GetNormal( dyzk.x, dyzk.y );
@@ -144,9 +144,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhArena:HandleCollision : Detects collision between tops
+--  ArenaModel:HandleCollision : Detects collision between tops
 -------------------------------------------------------------------------------
-function PhArena:DetectCollision()
+function ArenaModel:DetectCollision()
 	for i = 1, #self._dyzx-1 do
 		for j = i+1, #self._dyzx do
 			local dyzk1 = self._dyzx[i];
@@ -169,4 +169,4 @@ end
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return PhArena
+return ArenaModel

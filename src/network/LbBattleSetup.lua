@@ -2,7 +2,7 @@
 --  Dependencies
 --===========================================================================--
 local Message			= require 'src.network.Message'
-local PhDyzk			= require 'src.physics.PhDyzkBody'
+local PhDyzk			= require 'src.model.DyzkModel'
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--

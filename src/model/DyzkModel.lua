@@ -3,7 +3,7 @@
 --===========================================================================--
 local Vector		= require 'src.math.Vector'
 
-local DyzxCollisionReport	= require 'src.physics.DyzxCollisionReport'
+local DyzxCollisionReport	= require 'src.model.DyzxCollisionReport'
 
 local assert 		= _G.assert
 local sqrt			= _G.math.sqrt
@@ -19,24 +19,24 @@ local sqrt			= _G.math.sqrt
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class PhDyzkBody : The physical data and logic of a spinning PhDyzkBody object
+--	Class DyzkModel : The physical data and logic of a spinning DyzkModel object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local PhDyzkBody = {}
-PhDyzkBody.__index = PhDyzkBody;
+local DyzkModel = {}
+DyzkModel.__index = DyzkModel;
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody constants
+--  DyzkModel constants
 -------------------------------------------------------------------------------
-PhDyzkBody.RPS_TO_RPM_SCALE			= 9.5493
-PhDyzkBody.MAX_NUM_ABILITIES		= 8
+DyzkModel.RPS_TO_RPM_SCALE			= 9.5493
+DyzkModel.MAX_NUM_ABILITIES		= 8
 
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:new : Creates a new PhDyzkBody instance
+--  DyzkModel:new : Creates a new DyzkModel instance
 -------------------------------------------------------------------------------
-function PhDyzkBody:new()
+function DyzkModel:new()
 	local obj = {}
 	
 	obj._weight 	= 0;
@@ -73,9 +73,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:Update : Updates the PhDyzkBody
+--  DyzkModel:Update : Updates the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:Update( dt )
+function DyzkModel:Update( dt )
 	
 	-- Update abilities
 	self:UpdateAbilities( dt );
@@ -113,126 +113,126 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:AddCollisionListener : Updates the PhDyzkBody
+--  DyzkModel:AddCollisionListener : Updates the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:AddCollisionListener( func, arg )
+function DyzkModel:AddCollisionListener( func, arg )
 	self._collisionListener[ #self._collisionListener+1 ] =
 	{ func=func, arg=arg };
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetPosition : Sets the location of the PhDyzkBody
+--  DyzkModel:SetPosition : Sets the location of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetPosition( x, y )
+function DyzkModel:SetPosition( x, y )
 	self.x = x;
 	self.y = y;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetVelocity : Sets the velocity of the PhDyzkBody
+--  DyzkModel:SetVelocity : Sets the velocity of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetVelocity( vx, vy )
+function DyzkModel:SetVelocity( vx, vy )
 	self.vx = vx;
 	self.vy = vy;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetAcceleration : Sets the acceleration of the PhDyzkBody
+--  DyzkModel:SetAcceleration : Sets the acceleration of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetAcceleration( ax, ay )
+function DyzkModel:SetAcceleration( ax, ay )
 	self.ax = ax;
 	self.ay = ay;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetPosition : Returns the location of the PhDyzkBody
+--  DyzkModel:GetPosition : Returns the location of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetPosition()
+function DyzkModel:GetPosition()
 	return self.x, self.y;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetVelocity : Returns the velocity of the PhDyzkBody
+--  DyzkModel:GetVelocity : Returns the velocity of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetVelocity()
+function DyzkModel:GetVelocity()
 	return self.vx, self.vy;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetControlVector : Sets the control vector (forced velocity)
+--  DyzkModel:SetControlVector : Sets the control vector (forced velocity)
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetControlVector( x, y )
+function DyzkModel:SetControlVector( x, y )
 	self._controlVecX = x;
 	self._controlVecY = y;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetControlVector : Returns the control vector
+--  DyzkModel:GetControlVector : Returns the control vector
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetControlVector()
+function DyzkModel:GetControlVector()
 	return self._controlVecX,	self._controlVecY;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetRPM : Returns the angular velocity in revolution per minutes
+--  DyzkModel:GetRPM : Returns the angular velocity in revolution per minutes
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetRPM()
+function DyzkModel:GetRPM()
 	return self:GetAngularVelocity()*self.RPS_TO_RPM_SCALE;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetAngularVelocity : Returns the angular velocity
+--  DyzkModel:GetAngularVelocity : Returns the angular velocity
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetAngularVelocity()
+function DyzkModel:GetAngularVelocity()
 	return self.angVel;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetWeight : Returns the weight of the PhDyzkBody
+--  DyzkModel:GetWeight : Returns the weight of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetWeight()
+function DyzkModel:GetWeight()
 	return self._weight;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetJaggedness : Returns the jaggedness of the PhDyzkBody
+--  DyzkModel:GetJaggedness : Returns the jaggedness of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetJaggedness()
+function DyzkModel:GetJaggedness()
 	return self._jaggedness;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetMaxRadius : Returns the radius of the PhDyzkBody
+--  DyzkModel:GetMaxRadius : Returns the radius of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetMaxRadius()
+function DyzkModel:GetMaxRadius()
 	return self._maxRadius;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetMaxRadius : Returns the radius of the PhDyzkBody
+--  DyzkModel:GetMaxRadius : Returns the radius of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetBalance()
+function DyzkModel:GetBalance()
 	return self._balance;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetWeight : Sets the weight of the PhDyzkBody
+--  DyzkModel:SetWeight : Sets the weight of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetWeight( weigth )
+function DyzkModel:SetWeight( weigth )
 	assert( weigth >= 0 )
 	
 	self._weight = weigth;
@@ -240,9 +240,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetJaggedness : Sets the jaggedness of the PhDyzkBody
+--  DyzkModel:SetJaggedness : Sets the jaggedness of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetJaggedness( jag )
+function DyzkModel:SetJaggedness( jag )
 	assert( jag >= 0 and jag <= 1 )
 	
 	self._jaggedness = jag;
@@ -250,9 +250,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetBalance : Sets the balance of the PhDyzkBody
+--  DyzkModel:SetBalance : Sets the balance of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetMaxRadius( rad )
+function DyzkModel:SetMaxRadius( rad )
 	assert( rad >= 0 )
 	
 	self._maxRadius = rad;
@@ -260,9 +260,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetBalance : Sets the balance of the PhDyzkBody
+--  DyzkModel:SetBalance : Sets the balance of the DyzkModel
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetBalance( balance )
+function DyzkModel:SetBalance( balance )
 	assert( balance >= 0 and balance <= 1)
 	
 	self._balance = balance;
@@ -270,9 +270,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:OnDyzkCollision : Handles dyzk-dyzk collision
+--  DyzkModel:OnDyzkCollision : Handles dyzk-dyzk collision
 -------------------------------------------------------------------------------
-function PhDyzkBody:OnDyzkCollision( other, primary )
+function DyzkModel:OnDyzkCollision( other, primary )
 
 	-- Ignore if the collision is being handled by the other
 	if not primary then return end;
@@ -400,13 +400,13 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:CopyFromDyzkData : Sets the properties of this dyzk from another
+--  DyzkModel:CopyFromDyzkData : Sets the properties of this dyzk from another
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  dyzkData can be any object which conforms the dyzk data interface. This
---  makes the function quite versetile as it can copy from another PhDyzkBody,
+--  makes the function quite versetile as it can copy from another DyzkModel,
 --  Dyzk or DyzkImageAnalysis object.
 -------------------------------------------------------------------------------
-function PhDyzkBody:CopyFromDyzkData( dyzkData )
+function DyzkModel:CopyFromDyzkData( dyzkData )
 	self:SetMaxRadius( 		dyzkData:GetMaxRadius() 	);
 	self:SetJaggedness( 	dyzkData:GetJaggedness() 	);
 	self:SetWeight( 		dyzkData:GetWeight() 		);
@@ -415,25 +415,25 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:SetAbility : Sets a dyzk ability
+--  DyzkModel:SetAbility : Sets a dyzk ability
 -------------------------------------------------------------------------------
-function PhDyzkBody:SetAbility( id, ability )
+function DyzkModel:SetAbility( id, ability )
 	self._abilities[id] = ability;
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:GetAbility : Returns the ability with id
+--  DyzkModel:GetAbility : Returns the ability with id
 -------------------------------------------------------------------------------
-function PhDyzkBody:GetAbility( id )
+function DyzkModel:GetAbility( id )
 	return self._abilities[id];
 end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:ActivateAbility : Activates an ability (passing on/off signal)
+--  DyzkModel:ActivateAbility : Activates an ability (passing on/off signal)
 -------------------------------------------------------------------------------
-function PhDyzkBody:ActivateAbility( id, on )
+function DyzkModel:ActivateAbility( id, on )
 	if self._abilities[id] then
 		self._abilities[id]:Activate( on );
 	end
@@ -441,9 +441,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  PhDyzkBody:UpdateAbilities : Sets a dyzk ability
+--  DyzkModel:UpdateAbilities : Sets a dyzk ability
 -------------------------------------------------------------------------------
-function PhDyzkBody:UpdateAbilities( dt )
+function DyzkModel:UpdateAbilities( dt )
 	for i = 1, self.MAX_NUM_ABILITIES do
 		local ability = self._abilities[i];
 		
@@ -457,4 +457,4 @@ end
 --===========================================================================--
 --  Initialization
 --===========================================================================--
-return PhDyzkBody
+return DyzkModel

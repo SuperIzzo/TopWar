@@ -191,7 +191,7 @@ function ScSelection:Control( control )
 			
 			msg.type = Message.Type.DYZK_DESC
 			msg.dyzk = {}
-			msg.dyzk.radius  = phDyzk:GetMaxRadius()();
+			msg.dyzk.radius  = phDyzk:GetMaxRadius();
 			msg.dyzk.weight  = phDyzk:GetWeight();
 			msg.dyzk.jag 	 = phDyzk:GetJaggedness();
 			msg.dyzk.balance = phDyzk:GetBalance();

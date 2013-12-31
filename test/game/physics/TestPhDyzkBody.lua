@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhDyzkBody 		= require 'src.physics.PhDyzkBody'
+local DyzkModel 		= require 'src.model.DyzkModel'
 local ipairs			= ipairs
 local coroutine			= coroutine
 
@@ -13,12 +13,12 @@ local T = {}
 
 
 -------------------------------------------------------------------------------
---  LoadDyzk : loads and caches PhDyzkBody test images
+--  LoadDyzk : loads and caches DyzkModel test images
 -------------------------------------------------------------------------------
-local loadedDyzx = {}	-- cache loaded PhDyzkBodys
+local loadedDyzx = {}	-- cache loaded DyzkModels
 local function LoadDyzk( dyzkFName )
 	if not loadedDyzx[ dyzkFName ] then
-		local dyzk = PhDyzkBody:new();
+		local dyzk = DyzkModel:new();
 		local dyzkImg = love.image.newImageData( dyzkFName );
 		dyzk:SetFromImageData( dyzkImg );
 		
@@ -33,7 +33,7 @@ end
 --  TEST_default_initializes_to_blank
 -------------------------------------------------------------------------------
 function T: TEST_default_initializes_to_blank()
-	local dyzk = PhDyzkBody:new();
+	local dyzk = DyzkModel:new();
 
 	assert_equal( 0,		dyzk:GetWeight(), 0.001 );
 	assert_equal( 0,		dyzk:GetJaggedness(), 0.001 );
@@ -45,7 +45,7 @@ end
 --  TEST_setting_and_retreiving_the_weight_of_a_dyzk
 -------------------------------------------------------------------------------
 function T: TEST_setting_and_retreiving_the_weight_of_a_dyzk()
-	local dyzk = PhDyzkBody:new()
+	local dyzk = DyzkModel:new()
 	
 	dyzk:SetWeight( 5.6 );
 	
@@ -57,7 +57,7 @@ end
 --  TEST_setting_and_retreiving_the_jaggedness_of_a_dyzk
 -------------------------------------------------------------------------------
 function T: TEST_setting_and_retreiving_the_jaggedness_of_a_dyzk()
-	local dyzk = PhDyzkBody:new()
+	local dyzk = DyzkModel:new()
 	
 	dyzk:SetJaggedness( 0.6 );
 	
@@ -69,7 +69,7 @@ end
 --  TEST_setting_and_retreiving_the_max_radius_of_a_dyzk
 -------------------------------------------------------------------------------
 function T: TEST_setting_and_retreiving_the_max_radius_of_a_dyzk()
-	local dyzk = PhDyzkBody:new()
+	local dyzk = DyzkModel:new()
 	
 	dyzk:SetMaxRadius( 5.6 );
 	
@@ -81,7 +81,7 @@ end
 --  TEST_setting_and_retreiving_the_balance_of_a_dyzk
 -------------------------------------------------------------------------------
 function T: TEST_setting_and_retreiving_the_balance_of_a_dyzk()
-	local dyzk = PhDyzkBody:new()
+	local dyzk = DyzkModel:new()
 	
 	dyzk:SetBalance( 0.6 );
 	
@@ -93,7 +93,7 @@ end
 --  TEST_error_when_setting_parameters_in_incorrect_range
 -------------------------------------------------------------------------------
 function T: TEST_error_when_setting_parameters_in_incorrect_range()
-	local dyzk = PhDyzkBody:new()
+	local dyzk = DyzkModel:new()
 	
 	-- Weight cannot be negative
 	assert_error(	function() dyzk:SetWeight( -1 );	end				);
@@ -122,18 +122,18 @@ function T: TEST_error_when_setting_weigth_to_anything_other_than_a_number()
 		"SetJaggedness",
 		"SetBalance",
 	}
-	local dyzk = PhDyzkBody:new()
+	local dyzk = DyzkModel:new()
 	
 	-- Create a coroutine or testing
 	local co = coroutine.create( function() end )
 	
 	for i, setter in ipairs( setters ) do
-		assert_error( 	function() PhDyzkBody[setter]( PhDyzkBody, 'a' ); end				);
-		assert_error( 	function() PhDyzkBody[setter]( PhDyzkBody, true ); end			);
-		assert_error( 	function() PhDyzkBody[setter]( PhDyzkBody, nil ); end				);
-		assert_error( 	function() PhDyzkBody[setter]( PhDyzkBody, {} ); end				);
-		assert_error( 	function() PhDyzkBody[setter]( PhDyzkBody, function() end ); end	);
-		assert_error( 	function() PhDyzkBody[setter]( PhDyzkBody, co ); end				);
+		assert_error( 	function() DyzkModel[setter]( DyzkModel, 'a' ); end				);
+		assert_error( 	function() DyzkModel[setter]( DyzkModel, true ); end			);
+		assert_error( 	function() DyzkModel[setter]( DyzkModel, nil ); end				);
+		assert_error( 	function() DyzkModel[setter]( DyzkModel, {} ); end				);
+		assert_error( 	function() DyzkModel[setter]( DyzkModel, function() end ); end	);
+		assert_error( 	function() DyzkModel[setter]( DyzkModel, co ); end				);
 	end
 end
 

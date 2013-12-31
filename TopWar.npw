@@ -13,10 +13,10 @@
                 <File name="src\math\PolarVector.lua" />
                 <File name="src\math\MathUtils.lua" />
             </Folder>
-            <Folder name="physics">
-                <File name="src\physics\PhDyzkBody.lua" />
-                <File name="src\physics\PhArena.lua" />
-                <File name="src\physics\DyzxCollisionReport.lua" />
+            <Folder name="model">
+                <File name="src\model\DyzkModel.lua" />
+                <File name="src\model\DyzxCollisionReport.lua" />
+                <File name="src\model\ArenaModel.lua" />
                 <Folder name="abilities">
                     <File name="src\abilities\SABoost.lua" />
                     <File name="src\abilities\SARedirect.lua" />
