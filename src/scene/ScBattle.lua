@@ -9,6 +9,7 @@ local DBC				= require 'src.input.DirectBattleController'
 
 local SABoost			= require 'src.abilities.SABoost'
 local SARedirect		= require 'src.abilities.SARedirect'
+local SAReverseLeap		= require 'src.abilities.SAReverseLeap'
 
 
 
@@ -58,7 +59,7 @@ function ScBattle:Init()
 		dyzk1.phDyzk.vx = 10;
 		dyzk1.phDyzk.vy = 10;
 		dyzk1.phDyzk.angVel = 600;
-		dyzk1.phDyzk:SetAbility( 1, SARedirect:new( dyzk1.phDyzk ) );
+		dyzk1.phDyzk:SetAbility( 1, SAReverseLeap:new( dyzk1.phDyzk ) );
 		
 		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA003.png");
 		dyzk2.phDyzk.x = 2048;
