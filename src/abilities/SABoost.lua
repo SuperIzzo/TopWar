@@ -1,13 +1,14 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local Vector		= require 'src.math.Vector'
+local SpecialAbility	= require 'src.abilities.SpecialAbility'
+local Vector			= require 'src.math.Vector'
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class SABoost: a brief... 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local SABoost = {}
+local SABoost = setmetatable({}, SpecialAbility)
 SABoost.__index = SABoost;
 
 
@@ -15,50 +16,40 @@ SABoost.__index = SABoost;
 --  SABoost:new : Creates a new SABoost
 -------------------------------------------------------------------------------
 function SABoost:new(dyzk, arena)
-	local obj = {}
-		
-	obj._dyzk = dyzk;
-	obj._active = false;
-	
-	
-	obj._initialBoost = 200;	-- impulse
-	obj._continuousBoost = 600;	-- pixels per seconds
+	local obj = SpecialAbility:new(dyzk)
+			
+	obj._initialBoost = 100;	-- impulse
+	obj._continuousBoost = 400;	-- pixels per seconds
 
 	return setmetatable(obj, self);
 end
 
 
 -------------------------------------------------------------------------------
---  SABoost:Activate : activates the ability
+--  SABoost:OnActivationStart : activates the ability
 -------------------------------------------------------------------------------
-function SABoost:Activate( on )	
-	self._active = on;
-	
-	if on then
-		local cx, cy = self._dyzk:GetControlVector();
-		local vx, vy = self._dyzk:GetVelocity();		
+function SABoost:OnActivationStart()	
+	local cx, cy = self.dyzk:GetControlVector();
+	local vx, vy = self.dyzk:GetVelocity();		
 		
-		self._dyzk:SetVelocity( 
-				vx + cx*self._initialBoost, 
-				vy + cy*self._initialBoost );
-	end
+	self.dyzk:SetVelocity( 
+			vx + cx*self._initialBoost, 
+			vy + cy*self._initialBoost );
 end
 
 
 -------------------------------------------------------------------------------
---  SABoost:Update : updates the ability
+--  SABoost:OnActivationUpdate : updates the ability
 -------------------------------------------------------------------------------
-function SABoost:Update( dt )	
-	if self._active then	
-		local cx, cy = self._dyzk:GetControlVector();
-		local vx, vy = self._dyzk:GetVelocity();		
+function SABoost:OnActivationUpdate( dt )	
+	local cx, cy = self.dyzk:GetControlVector();
+	local vx, vy = self.dyzk:GetVelocity();		
 		
-		print( dt );
+	print( dt );
 		
-		self._dyzk:SetVelocity(
-				vx + cx*self._continuousBoost*dt, 
-				vy + cy*self._continuousBoost*dt );
-	end
+	self.dyzk:SetVelocity(
+			vx + cx*self._continuousBoost*dt, 
+			vy + cy*self._continuousBoost*dt );
 end
 
 
