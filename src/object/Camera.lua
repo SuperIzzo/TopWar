@@ -22,7 +22,7 @@ function Camera:new()
 	obj._targetX = 0;
 	obj._targetY = 0;
 	
-	obj._speed = 2;
+	obj._speed = 1.5;
 	
 	return setmetatable( obj, self );
 end
@@ -80,8 +80,6 @@ function Camera:Update( dt )
 		
 		self._targetX = xMid - love.graphics.getWidth()/2;
 		self._targetY = yMid - love.graphics.getHeight()/2;
-		
-		print( self.x, self.y, self._targetX, self._targetY );
 				
 		self.x = self.x - (self.x - self._targetX)*dt * self._speed;
 		self.y = self.y - (self.y - self._targetY)*dt * self._speed;
