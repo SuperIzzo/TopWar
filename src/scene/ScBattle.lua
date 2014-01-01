@@ -59,7 +59,9 @@ function ScBattle:Init()
 		dyzk1.phDyzk.vx = 10;
 		dyzk1.phDyzk.vy = 10;
 		dyzk1.phDyzk.angVel = 600;
-		dyzk1.phDyzk:SetAbility( 1, SAReverseLeap:new( dyzk1.phDyzk ) );
+		dyzk1.phDyzk:SetAbility( 1, SARedirect:new( dyzk1.phDyzk ) );
+		dyzk1.phDyzk:SetAbility( 2, SABoost:new( dyzk1.phDyzk ) );
+		dyzk1.phDyzk:SetAbility( 3, SAReverseLeap:new( dyzk1.phDyzk ) );
 		
 		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA003.png");
 		dyzk2.phDyzk.x = 2048;
@@ -67,6 +69,9 @@ function ScBattle:Init()
 		dyzk2.phDyzk.vx = -10;
 		dyzk2.phDyzk.vy = -10;
 		dyzk2.phDyzk.angVel = 600;
+		dyzk2.phDyzk:SetAbility( 1, SARedirect:new( dyzk2.phDyzk ) );
+		dyzk2.phDyzk:SetAbility( 2, SABoost:new( dyzk2.phDyzk ) );
+		dyzk2.phDyzk:SetAbility( 3, SAReverseLeap:new( dyzk2.phDyzk ) );
 		
 		self._dyzx[1] = dyzk1;
 		self._dyzx[2] = dyzk2;

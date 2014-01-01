@@ -54,7 +54,7 @@ p1Box.player = 1;
 Settings:LoadDefaultControls( p1Box );
 
 local p2Box = ControlBox:new();
-p2Box.player = 1;
+p2Box.player = 2;
 Settings:LoadDefaultControls( p2Box );
 
 
@@ -86,7 +86,6 @@ p2Box:SetCallback( sceneControl )
 
 local prevHat = {}
 
-local keys = {}
 function love.update( dt )
 	
 	---------------------
@@ -100,11 +99,6 @@ function love.update( dt )
 		sceneMgr:Network( msg );
 	end
 	--------------------------	
-	
-	for key, value in pairs(keys) do
-		p1Box:Trigger( "Key", key, value );
-		p2Box:Trigger( "Key", key, value );
-	end
 
 
 	sceneMgr:Update(dt);
@@ -155,7 +149,8 @@ end
 
 
 function love.keypressed( key, unicode )
-	keys[key] = true;
+	p1Box:Trigger( "Key", key, true );
+	p2Box:Trigger( "Key", key, true );
 	
 	-- Handle GUI
 	loveframes.keypressed( key, unicode )
@@ -163,7 +158,8 @@ end
 
 
 function love.keyreleased( key, unicode )
-	keys[key] = false;
+	p1Box:Trigger( "Key", key, false );
+	p2Box:Trigger( "Key", key, false );
 	
 	-- Handle GUI
 	loveframes.keyreleased( key, unicode )
@@ -171,6 +167,7 @@ end
 
 
 function love.mousepressed(x, y, button)
+	
     -- Handle GUI
     loveframes.mousepressed(x, y, button)
 end

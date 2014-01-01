@@ -64,6 +64,7 @@ function DyzkModel:new()
 	
 	-- Abilities
 	obj._abilities = {};
+	obj._globalCooldownTimer = 0;
 	
 	-- Extra information
 	obj.metaData = {}
@@ -77,7 +78,7 @@ end
 -------------------------------------------------------------------------------
 function DyzkModel:Update( dt )
 	
-	-- Update abilities
+	-- Update abilities		
 	self:UpdateAbilities( dt );
 	
 	-- Cap the control vector to a magnitude of 1
@@ -98,6 +99,7 @@ function DyzkModel:Update( dt )
 	self.vx = self.vx + controlVec.x*self._speed*dt;
 	self.vy = self.vy + controlVec.y*self._speed*dt;
 	
+	--print( self.x )
 	-- Update position based on velocity
 	self.x = self.x + self.vx*dt;
 	self.y = self.y + self.vy*dt;
@@ -418,6 +420,10 @@ end
 --  DyzkModel:SetAbility : Sets a dyzk ability
 -------------------------------------------------------------------------------
 function DyzkModel:SetAbility( id, ability )
+	if ability and ability.OnDyzkCollision then
+		self:AddCollisionListener( ability.OnDyzkCollision, ability );
+	end
+	
 	self._abilities[id] = ability;
 end
 
@@ -444,6 +450,15 @@ end
 --  DyzkModel:UpdateAbilities : Sets a dyzk ability
 -------------------------------------------------------------------------------
 function DyzkModel:UpdateAbilities( dt )
+	-- Update the global cooldown
+	if self._globalCooldownTimer > 0 then
+		self._globalCooldownTimer = self._globalCooldownTimer - dt;
+	end
+	if self._globalCooldownTimer < 0 then
+		self._globalCooldownTimer = 0;
+	end	
+	
+	-- Then update each individual ability
 	for i = 1, self.MAX_NUM_ABILITIES do
 		local ability = self._abilities[i];
 		
@@ -451,6 +466,22 @@ function DyzkModel:UpdateAbilities( dt )
 			ability:Update( dt );
 		end;
 	end
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:GetGlobalCooldown : Returns the global cooldown time
+-------------------------------------------------------------------------------
+function DyzkModel:GetGlobalCooldown()
+	return self._globalCooldownTimer;
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:SetGlobalCooldown : Sets the global cooldown
+-------------------------------------------------------------------------------
+function DyzkModel:SetGlobalCooldown( cd )
+	self._globalCooldownTimer = cd;
 end
 
 

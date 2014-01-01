@@ -18,8 +18,12 @@
                 <File name="src\model\DyzxCollisionReport.lua" />
                 <File name="src\model\ArenaModel.lua" />
                 <Folder name="abilities">
+                    <File name="src\abilities\SpecialAbility.lua" />
+                    <File name="src\abilities\ABILITY_TEMPLATE.lua" />
                     <File name="src\abilities\SABoost.lua" />
                     <File name="src\abilities\SARedirect.lua" />
+                    <File name="src\abilities\SAReverseLeap.lua" />
+                    <File name="src\abilities\SAStone.lua" />
                 </Folder>
             </Folder>
             <Folder name="graphics">

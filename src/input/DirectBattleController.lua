@@ -46,6 +46,18 @@ function BattleController:Control( control )
 		if control.id == "A" then
 			self._dyzk:ActivateAbility( 1, control.value );
 		end
+		
+		if control.id == "B" then
+			self._dyzk:ActivateAbility( 2, control.value );
+		end
+		
+		if control.id == "X" then
+			self._dyzk:ActivateAbility( 3, control.value );
+		end
+		
+		if control.id == "Y" then
+			self._dyzk:ActivateAbility( 4, control.value );
+		end
 	end
 end
 
