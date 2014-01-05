@@ -60,7 +60,7 @@ function ImageUtils.DepthToNormalMap( inDepthData, outNormData )
 
 	-- Process every pixel from the input image
 	-- We poduce an image that is 4 rows and 4 colums smaller
-	for x = 0, height-2 do	
+	for x = 0, width-2 do	
 		local C1 = inDepthData:getPixel( x, 0 );
 		local C0 = C1;
 		columnB[-1] = columnB[0];
