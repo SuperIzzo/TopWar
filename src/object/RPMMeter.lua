@@ -13,7 +13,12 @@ local round 		= MathUtils.Round
 local RPMDamageAnim = {}
 RPMDamageAnim.__index = RPMDamageAnim;
 
+
+-------------------------------------------------------------------------------
+--  RPMDamageAnim constants
+-------------------------------------------------------------------------------
 RPMDamageAnim.DISPLAY_TIME = 1.2;
+
 
 -------------------------------------------------------------------------------
 --  RPMDamageAnim:new : Creates a new RPMDamageAnim
