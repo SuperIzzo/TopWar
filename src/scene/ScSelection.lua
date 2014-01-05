@@ -28,6 +28,8 @@ function ScSelection:new()
 	table.insert( dyzkList, "DyzkAA002" );
 	table.insert( dyzkList, "DyzkAA003" );
 	table.insert( dyzkList, "DyzkAA004" );
+	table.insert( dyzkList, "DyzkAA005" );
+	table.insert( dyzkList, "DyzkAA006" );
 	
 	local dyzx = {}
 	obj._dyzx = dyzx
@@ -165,7 +167,7 @@ function ScSelection:Control( control )
 	--print( "Control: ", control.id, control.value )
 
 	if 	control.player == 1 and not control.value then
-
+	
 		if control.id == "Left" then
 			self._selection = self._selection-1;
 			if self._selection<1 then
