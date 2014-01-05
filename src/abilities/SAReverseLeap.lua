@@ -13,11 +13,17 @@ SAReverseLeap.__index = SAReverseLeap;
 
 
 -------------------------------------------------------------------------------
+--  SAReverseLeap constants
+-------------------------------------------------------------------------------
+SAReverseLeap.cooldown		= 10;
+
+
+-------------------------------------------------------------------------------
 --  SAReverseLeap:new : Creates a new SAReverseLeap
 -------------------------------------------------------------------------------
 function SAReverseLeap:new(dyzk, arena)
 	local obj = SpecialAbility:new(dyzk)
-		
+	
 	obj._leapDistance = 600;
 
 	return setmetatable(obj, self);
