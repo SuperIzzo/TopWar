@@ -89,7 +89,11 @@ end
 function Vector:Unit()
 	local len = self:Length();
 	
-	return Vector:new( self.x/len, self.y/len );
+	if len>0 then
+		return Vector:new( self.x/len, self.y/len ), len;
+	else
+		return Vector:new(0,0), len;
+	end
 end
 
 
