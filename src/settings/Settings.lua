@@ -81,28 +81,28 @@ function Settings:LoadDefaultControls( box )
 
 	local xAxis	= box:CreateControl("xAxis");
 	xAxis:SetValue(0);
-	xAxis:Bind'Joy1Axis'( 1, 	Trigger.SLIDER(false) 						);
-	xAxis:Bind'Key'( 'a', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
-	xAxis:Bind'Key'( 'd', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
+	xAxis:Bind'Joy1Axis'( 1, 	Trigger.SLIDER(false) 						);	
 	xAxis:Bind'Joy1Hat'( 'l1', Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
 	xAxis:Bind'Joy1Hat'( 'lu1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
 	xAxis:Bind'Joy1Hat'( 'ld1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
 	xAxis:Bind'Joy1Hat'( 'r1', Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	xAxis:Bind'Joy1Hat'( 'ru1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
 	xAxis:Bind'Joy1Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+	xAxis:Bind'Key'( 'a', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+	xAxis:Bind'Key'( 'd', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	xAxis:Bind'Update'( 1, 	Trigger.ALWAYS() 						);
 
 	local yAxis	= box:CreateControl("yAxis");
 	yAxis:SetValue(0);
 	yAxis:Bind'Joy1Axis'( 2, 	Trigger.SLIDER(false) 					);
-	yAxis:Bind'Key'( 'w', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
-	yAxis:Bind'Key'( 's', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	yAxis:Bind'Joy1Hat'( 'u1', Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
 	yAxis:Bind'Joy1Hat'( 'ru1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
 	yAxis:Bind'Joy1Hat'( 'lu1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
 	yAxis:Bind'Joy1Hat'( 'd1', Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	yAxis:Bind'Joy1Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
 	yAxis:Bind'Joy1Hat'( 'ld1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+	yAxis:Bind'Key'( 'w', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+	yAxis:Bind'Key'( 's', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	yAxis:Bind'Update'( 1, 	Trigger.ALWAYS() 						);
 
 	local A		= box:CreateControl("A");
@@ -117,7 +117,7 @@ function Settings:LoadDefaultControls( box )
 	X:Bind'Joy1Button'( 1,		Trigger.SWITCH(true)					);
 	
 	local Y		= box:CreateControl("Y");
-	Y:Bind'Joy1Button'( 1,		Trigger.SWITCH(true)					);
+	Y:Bind'Joy1Button'( 2,		Trigger.SWITCH(true)					);
 
 	local Left		= box:CreateControl("Left");
 	Left:Bind'Control'( 'xAxis',	Trigger.SPRING_TO_SWITCH(true, -2, -0.5)	);
@@ -144,6 +144,8 @@ function Settings:LoadDefaultControls( box )
 	xAxis:Bind'Joy2Hat'( 'r1', Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	xAxis:Bind'Joy2Hat'( 'ru1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
 	xAxis:Bind'Joy2Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+	xAxis:Bind'Key'( 'left', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+	xAxis:Bind'Key'( 'right', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	xAxis:Bind'Update'( 1, 	Trigger.ALWAYS() 						);
 
 	local yAxis	= box:CreateControl("yAxis");
@@ -155,6 +157,8 @@ function Settings:LoadDefaultControls( box )
 	yAxis:Bind'Joy2Hat'( 'd1', Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	yAxis:Bind'Joy2Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
 	yAxis:Bind'Joy2Hat'( 'ld1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+	yAxis:Bind'Key'( 'up', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
+	yAxis:Bind'Key'( 'down', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	yAxis:Bind'Update'( 1, 	Trigger.ALWAYS() 						);
 
 	
@@ -168,7 +172,7 @@ function Settings:LoadDefaultControls( box )
 	X:Bind'Joy2Button'( 1,		Trigger.SWITCH(true)					);
 	
 	local Y		= box:CreateControl("Y");
-	Y:Bind'Joy2Button'( 1,		Trigger.SWITCH(true)					);
+	Y:Bind'Joy2Button'( 2,		Trigger.SWITCH(true)					);
 
 	
 	local Left		= box:CreateControl("Left");
