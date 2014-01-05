@@ -12,6 +12,15 @@ SpecialAbility.__index = SpecialAbility;
 
 
 -------------------------------------------------------------------------------
+--  SpecialAbility constants (a couple of defaults)
+-------------------------------------------------------------------------------
+SpecialAbility.cooldown 				= 1;
+SpecialAbility.globalCooldown 			= 0.3;
+SpecialAbility.effectDuration			= 0;
+SpecialAbility.activationHold			= 1/0;  -- = +INF
+
+
+-------------------------------------------------------------------------------
 --  SpecialAbility:new : Creates a new special ability
 -------------------------------------------------------------------------------
 function SpecialAbility:new(dyzk, arena)
@@ -21,11 +30,6 @@ function SpecialAbility:new(dyzk, arena)
 	obj.active 					= false;
 	obj._activationDown			= false;
 	
-	-- Timer settings
-	obj.cooldown 				= 0;
-	obj.globalCooldown 			= 1;
-	obj.effectDuration			= 0;
-	obj.activationHold			= 1/0;
 	
 	-- Timer variables
 	obj._cooldownTimer 			= 0;
@@ -50,6 +54,14 @@ end
 -------------------------------------------------------------------------------
 function SpecialAbility:GetCooldown()
 	return self._cooldownTimer;
+end
+
+
+-------------------------------------------------------------------------------
+--  SpecialAbility:GetCooldownPeriod : returns the cooldown period
+-------------------------------------------------------------------------------
+function SpecialAbility:GetCooldownPeriod()
+	return self.cooldown;
 end
 
 
