@@ -29,7 +29,7 @@ DyzkModel.__index = DyzkModel;
 --  DyzkModel constants
 -------------------------------------------------------------------------------
 DyzkModel.RPS_TO_RPM_SCALE			= 9.5493
-DyzkModel.MAX_NUM_ABILITIES		= 8
+DyzkModel.MAX_NUM_ABILITIES			= 8
 
 
 
@@ -43,7 +43,8 @@ function DyzkModel:new()
 	obj._jaggedness = 0;
 	obj._maxRadius 	= 0;
 	obj._balance	= 0;
-	obj._speed		= 400;
+	obj._speed		= nil;
+	obj._spin		= 1;
 	
 	obj.x = 0;
 	obj.y = 0;
@@ -65,6 +66,11 @@ function DyzkModel:new()
 	-- Abilities
 	obj._abilities = {};
 	obj._globalCooldownTimer = 0;
+	obj._globalCooldownPeriod = 0;
+	
+	-- Damage
+	obj._damageTimer = 0;
+	obj._damageTimeGap = 0.2;	-- 0.1 seconds of invulnerability
 	
 	-- Extra information
 	obj.metaData = {}
@@ -91,7 +97,7 @@ function DyzkModel:Update( dt )
 	end;
 	
 	-- Update velocity based on acceleration and velocity decay 
-	local velWeight = 1 - self._friction*dt;	
+	local velWeight = 1 - self._friction*dt;
 	self.vx = self.vx*velWeight + self.ax*dt;
 	self.vy = self.vy*velWeight + self.ay*dt;
 	
@@ -105,12 +111,20 @@ function DyzkModel:Update( dt )
 	self.y = self.y + self.vy*dt;
 	
 	-- Update angular velocity and angle
-	self.angVel = self.angVel - dt*0.1;
+	self.angVel = self.angVel - dt*(1.1 - self:GetBalance())/((self:GetMaxRadius()/128)^2);
 	self.ang = self.ang + self.angVel*dt;	
 	
 	-- Reset the control vector
 	self._controlVecX = 0;
-	self._controlVecY = 0;	
+	self._controlVecY = 0;
+	
+	
+	-- Timers...
+	if self._damageTimer > 0 then
+		self._damageTimer = self._damageTimer - dt;
+	else
+		self._damageTimer = 0;
+	end
 end
 
 
@@ -238,6 +252,11 @@ function DyzkModel:SetWeight( weigth )
 	assert( weigth >= 0 )
 	
 	self._weight = weigth;
+	
+	if not self._speed then		
+		self._speed = (50/weigth)^2 * 200;
+		print(weigth .. "=" .. self._speed);
+	end
 end
 
 
@@ -305,8 +324,15 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	
 	local speed1 = vel1:Length();
 	local speed2 = vel2:Length();
-	local dir1 = vel1/speed1;
-	local dir2 = vel2/speed2;
+	local dir1 = Vector:new(0,0);
+	local dir2 = Vector:new(0,0);
+	
+	if speed1>0 then
+		dir1 = vel1/speed1;
+	end
+	if speed2>0 then
+		dir2 = vel2/speed2;
+	end
 	
 	-- Motion direction to collision normal dot product
 	-- tell us which direction the dyzk is hit from in respect
@@ -318,7 +344,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	-- facingTerm is how much do the two dyzx face each other
 	-- safe arc is a modifier which increases or decreases the
 	-- pushback negation area (higher is safer)
-	local safeArc = 0.6
+	local safeArc = 0.2
 	local facingTerm = dirNormDot1*dirNormDot2 * safeArc;
 	
 	-- Force is calculated such that, if a dyzk is striken from the
@@ -350,16 +376,39 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	-- The RPM damage depends on the collision force, the jagedness of the two dyzx and
 	-- angular velocity of the other top... note that if the two dyzx have opposite spins	
 	-- they will regenerate instead of damaging each other
-	local rpmDmg1 = force1 
-						* other.angVel * (self._jaggedness*0.2 + other._jaggedness*0.8)
-	local rpmDmg2 = force2 
-						* self.angVel * (self._jaggedness*0.8 + other._jaggedness*0.2)
+	local rpmDmg1 = 0
+	local rpmDmg2 = 0;
+	if self._damageTimer <= 0 then
+		-- RPM damage formula for dyzk 1
+		local jagFactor = self._jaggedness*0.3 + other._jaggedness*0.7;
+		local staticDamage = other.angVel * jagFactor * other:GetMaxRadius()/16 * other._weight/(self._weight^2);
+		local kineticDamage = jagFactor * (speed2/8)^2 * force1 * other._weight/(self._weight^2);
+		rpmDmg1 = staticDamage + kineticDamage;
+		
+		-- reset the damage timer
+		if rpmDmg1 > 0.01 or rpmDmg1 < -0.01 then
+			self._damageTimer = self._damageTimeGap;
+		end
+	end
+	if other._damageTimer <= 0 then	
+		-- RPM damage formula for dyzk 2
+		local jagFactor = self._jaggedness*0.7 + other._jaggedness*0.3;
+		local staticDamage = self.angVel * jagFactor * self:GetMaxRadius()/16 * self._weight/(other._weight^2);
+		local kineticDamage = jagFactor * (speed1/8)^2 * force2 * self._weight/(other._weight^2) ;
+		rpmDmg2 = staticDamage + kineticDamage;
+		
+		-- reset the damage timer
+		if rpmDmg2 > 0.01 or rpmDmg2 < -0.01 then
+			other._damageTimer = other._damageTimeGap;
+		end
+	end
 	
 	-- A couple of fake adjustments
-	rpmDmg1 = rpmDmg1/20;
-	rpmDmg2 = rpmDmg2/20;
+	rpmDmg1 = rpmDmg1/40;
+	rpmDmg2 = rpmDmg2/40;
 	
-	self.angVel = self.angVel - rpmDmg1;
+	-- Apply the damage
+	self.angVel = self.angVel 	- rpmDmg1;
 	other.angVel = other.angVel - rpmDmg2;
 	
 	-- Apply the forces as two impulses in direction opposite to the 
@@ -470,7 +519,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkModel:GetGlobalCooldown : Returns the global cooldown time
+--  DyzkModel:GetGlobalCooldown : Returns the global cooldown time left
 -------------------------------------------------------------------------------
 function DyzkModel:GetGlobalCooldown()
 	return self._globalCooldownTimer;
@@ -478,10 +527,19 @@ end
 
 
 -------------------------------------------------------------------------------
+--  DyzkModel:GetGlobalCooldownPeriod : Returns the global cooldown time period
+-------------------------------------------------------------------------------
+function DyzkModel:GetGlobalCooldownPeriod()
+	return self._globalCooldownPeriod;
+end
+
+
+-------------------------------------------------------------------------------
 --  DyzkModel:SetGlobalCooldown : Sets the global cooldown
 -------------------------------------------------------------------------------
 function DyzkModel:SetGlobalCooldown( cd )
-	self._globalCooldownTimer = cd;
+	self._globalCooldownTimer 	= cd;
+	self._globalCooldownPeriod	= cd;
 end
 
 
