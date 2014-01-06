@@ -46,6 +46,7 @@
                 <File name="src\object\Camera.lua" />
                 <File name="src\object\Sparks.lua" />
                 <File name="src\object\RPMMeter.lua" />
+                <File name="src\object\AbilityGadget.lua" />
             </Folder>
             <Folder name="scenes">
                 <File name="src\scene\SceneManager.lua" />

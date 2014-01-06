@@ -54,7 +54,13 @@ function ScBattleSetup:Update( dt )
 	if client:IsAuthentic() then
 	
 		if not self._dyzkInfoStatus then
-			client:Send( NetUtils.NewDyzkDescMsg( self._dyzx[1].phDyzk, 1 ) );
+			client:Send( 
+				NetUtils.NewDyzkDescMsg( 
+					self._dyzx[1].phDyzk, 
+					"data/dyzx/DyzkAA004.png", 
+					1 
+				) 
+			);
 			
 			self._dyzkInfoStatus = "sent"
 		end

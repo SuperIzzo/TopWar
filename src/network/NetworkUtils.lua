@@ -85,7 +85,7 @@ end
 -------------------------------------------------------------------------------
 --  NetworkUtils.NewDyzkDescMsg : Sends a dyzk description
 -------------------------------------------------------------------------------
-function NetworkUtils.NewDyzkDescMsg( dyzk, player )
+function NetworkUtils.NewDyzkDescMsg( dyzk, image, player )
 	local msg = Message:new();
 
 	msg:SetType( Message.Type.DYZK_DESC )
@@ -96,6 +96,7 @@ function NetworkUtils.NewDyzkDescMsg( dyzk, player )
 	msg.dyzkDesc.jaggedness	= dyzk:GetJaggedness();
 	msg.dyzkDesc.weight 	= dyzk:GetWeight();
 	msg.dyzkDesc.balance 	= dyzk:GetBalance();
+	msg.dyzkDesc.image 		= image;
 
 	return msg;
 end
