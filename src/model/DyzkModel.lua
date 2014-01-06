@@ -130,13 +130,6 @@ function DyzkModel:Update( dt )
 	else
 		self._damageTimer = 0;
 	end
-	
-	-- Timers...
-	if self._pushbackTimer > 0 then
-		self._pushbackTimer = self._pushbackTimer - dt;
-	else
-		self._pushbackTimer = 0;
-	end
 end
 
 
@@ -356,7 +349,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	-- facingTerm is how much do the two dyzx face each other
 	-- safe arc is a modifier which increases or decreases the
 	-- pushback negation area (higher is safer)
-	local safeArc = 0
+	local safeArc = 0.6
 	local facingTerm = dirNormDot1*dirNormDot2 * safeArc;
 	
 	-- Force is calculated such that, if a dyzk is striken from the
@@ -380,26 +373,16 @@ function DyzkModel:OnDyzkCollision( other, primary )
 					(1 + (self._jaggedness*0.7 + other._jaggedness*0.3)*0.2)
 					+ (1 - self._balance*0.7 + other._balance*0.3) * 2
 				) * weightRatio *4;
-		   
-	if self._pushbackTimer <= 0 or pushBack1 > self._lastPushback then
-		self._lastPushback = pushBack1;
-		self._pushbackTimer = self._pushbackTimeGap;
-		
-		-- Apply the forces as two impulses in direction opposite to the 
-		-- collision normal (to the dyzk centers)
-		self:SetVelocity(	vel1.x*weightRatio -collisionNormal.x*pushBack1*(1-weightRatio),
-							vel1.y*weightRatio -collisionNormal.y*pushBack1*(1-weightRatio));	
-	end
-	
-	if other._pushbackTimer <= 0 or pushBack2 > other._lastPushback then
-		other._lastPushback = pushBack2;
-		other._pushbackTimer = other._pushbackTimeGap;
+		  
+	-- Apply the forces as two impulses in direction opposite to the 
+	-- collision normal (to the dyzk centers)
+	self:SetVelocity(	vel1.x*weightRatio -collisionNormal.x*pushBack1*(1-weightRatio),
+						vel1.y*weightRatio -collisionNormal.y*pushBack1*(1-weightRatio));
 				
-		other:SetVelocity(	vel2.x*(1-weightRatio) + collisionNormal.x*pushBack2*weightRatio,
-							vel2.x*(1-weightRatio) + collisionNormal.y*pushBack2*weightRatio );
-	end
+	other:SetVelocity(	vel2.x*(1-weightRatio) + collisionNormal.x*pushBack2*weightRatio,
+						vel2.x*(1-weightRatio) + collisionNormal.y*pushBack2*weightRatio );
 		
-	local intersectionAmount = (radDistance+8-distance);	
+	local intersectionAmount = (radDistance+6-distance);	
 	if intersectionAmount > 0 then
 		self:SetPosition( 	x1 - collisionNormal.x * intersectionAmount * (1-weightRatio),
 							y1 - collisionNormal.y * intersectionAmount * (1-weightRatio) )
