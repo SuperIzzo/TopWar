@@ -72,6 +72,11 @@ function DyzkModel:new()
 	obj._damageTimer = 0;
 	obj._damageTimeGap = 0.2;	-- 0.1 seconds of invulnerability
 	
+	-- Pushback
+	obj._pushbackTimer = 0;
+	obj._pushbackTimeGap = 0.4;	-- 0.1 seconds of invulnerability
+	obj._lastPushback	= 0;
+	
 	-- Extra information
 	obj.metaData = {}
 	
@@ -124,6 +129,13 @@ function DyzkModel:Update( dt )
 		self._damageTimer = self._damageTimer - dt;
 	else
 		self._damageTimer = 0;
+	end
+	
+	-- Timers...
+	if self._pushbackTimer > 0 then
+		self._pushbackTimer = self._pushbackTimer - dt;
+	else
+		self._pushbackTimer = 0;
 	end
 end
 
@@ -307,7 +319,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	local radDistance = rad1+rad2;
 	
 	-- Ratio is the ratio between the two radiuses
-	local ratio = rad1/radDistance;
+	local ratio = rad2/radDistance;
 	
 	-- The collision point
 	local xCol, yCol = x1*ratio+x2*(1-ratio), y1*ratio+y2*(1-ratio);
@@ -344,17 +356,15 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	-- facingTerm is how much do the two dyzx face each other
 	-- safe arc is a modifier which increases or decreases the
 	-- pushback negation area (higher is safer)
-	local safeArc = 0.2
+	local safeArc = 0
 	local facingTerm = dirNormDot1*dirNormDot2 * safeArc;
 	
 	-- Force is calculated such that, if a dyzk is striken from the
 	-- side it takes the most damage, if the two dyzx face each other
 	-- directly they will stop and take almost no damage
-	local force1 = math.max(0,dirNormDot2-facingTerm)
-	local force2 = math.max(0,dirNormDot1-facingTerm)
-	
-	-- Term to move out of intersection
-	local intersectionForce = ((radDistance+5)/distance)^4*10;
+	local force1 = math.max(0, math.min(1, dirNormDot2-facingTerm) )
+	local force2 = math.max(0, math.min(1, dirNormDot1-facingTerm) )
+	local weightRatio = self._weight/(self._weight + other._weight)
 	
 	local pushBack1 = 
 				(
@@ -362,16 +372,41 @@ function DyzkModel:OnDyzkCollision( other, primary )
 					speed2 * 
 					(1 + (self._jaggedness*0.3 + other._jaggedness*0.7)*0.2)
 					+ (1 - self._balance*0.3 + other._balance*0.7) * 2
-				) * other._weight / self._weight
-				+ intersectionForce;
+				) * (1-weightRatio) *4;
 	local pushBack2 =
 				(
 					force2 *
 					speed1 * 
 					(1 + (self._jaggedness*0.7 + other._jaggedness*0.3)*0.2)
 					+ (1 - self._balance*0.7 + other._balance*0.3) * 2
-				) * self._weight / other._weight
-				+ intersectionForce;
+				) * weightRatio *4;
+		   
+	if self._pushbackTimer <= 0 or pushBack1 > self._lastPushback then
+		self._lastPushback = pushBack1;
+		self._pushbackTimer = self._pushbackTimeGap;
+		
+		-- Apply the forces as two impulses in direction opposite to the 
+		-- collision normal (to the dyzk centers)
+		self:SetVelocity(	vel1.x*weightRatio -collisionNormal.x*pushBack1*(1-weightRatio),
+							vel1.y*weightRatio -collisionNormal.y*pushBack1*(1-weightRatio));	
+	end
+	
+	if other._pushbackTimer <= 0 or pushBack2 > other._lastPushback then
+		other._lastPushback = pushBack2;
+		other._pushbackTimer = other._pushbackTimeGap;
+				
+		other:SetVelocity(	vel2.x*(1-weightRatio) + collisionNormal.x*pushBack2*weightRatio,
+							vel2.x*(1-weightRatio) + collisionNormal.y*pushBack2*weightRatio );
+	end
+		
+	local intersectionAmount = (radDistance+8-distance);	
+	if intersectionAmount > 0 then
+		self:SetPosition( 	x1 - collisionNormal.x * intersectionAmount * (1-weightRatio),
+							y1 - collisionNormal.y * intersectionAmount * (1-weightRatio) )
+							
+		other:SetPosition( 	x2 + collisionNormal.x * intersectionAmount * (weightRatio),
+							y2 + collisionNormal.y * intersectionAmount * (weightRatio) )
+	end
 				 
 	-- The RPM damage depends on the collision force, the jagedness of the two dyzx and
 	-- angular velocity of the other top... note that if the two dyzx have opposite spins	
@@ -409,14 +444,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	
 	-- Apply the damage
 	self.angVel = self.angVel 	- rpmDmg1;
-	other.angVel = other.angVel - rpmDmg2;
-	
-	-- Apply the forces as two impulses in direction opposite to the 
-	-- collision normal (to the dyzk centers)
-	self:SetVelocity(	-collisionNormal.x*pushBack1,
-						-collisionNormal.y*pushBack1 );
-	other:SetVelocity(	collisionNormal.x*pushBack2,
-						collisionNormal.y*pushBack2 );
+	other.angVel = other.angVel - rpmDmg2;	
 
 	-- All that is left now is to report the collisions to the collision listeners,
 	-- two reports are generated one for the listeners of each of the two dyzx
