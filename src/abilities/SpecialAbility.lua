@@ -2,6 +2,8 @@
 --  Dependencies
 --===========================================================================--
 local Vector		= require 'src.math.Vector'
+local Timer			= require 'src.util.Timer'
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -32,9 +34,9 @@ function SpecialAbility:new(dyzk, arena)
 	
 	
 	-- Timer variables
-	obj._cooldownTimer 			= 0;
-	obj._activationHoldTimer	= 0;
-	obj._effectTimer			= 0;
+	obj._cooldownTimer 			= Timer:new();
+	obj._activationHoldTimer	= Timer:new();
+	obj._effectTimer			= Timer:new();
 	
 
 	return setmetatable(obj, self);
@@ -45,7 +47,7 @@ end
 --  SpecialAbility:SetCooldown : resets the cooldown timer
 -------------------------------------------------------------------------------
 function SpecialAbility:SetCooldown( cd )
-	self._cooldownTimer = cd;
+	self._cooldownTimer:Reset( cd );
 end
 
 
@@ -53,7 +55,7 @@ end
 --  SpecialAbility:GetCooldown : returns the remaining cooldown time
 -------------------------------------------------------------------------------
 function SpecialAbility:GetCooldown()
-	return self._cooldownTimer;
+	return self._cooldownTimer:GetTimeLeft();
 end
 
 
@@ -81,7 +83,7 @@ function SpecialAbility:Activate( on )
 						
 			self.active 				= true;
 			self._activationDown 		= true;
-			self._activationHoldTimer	= self.activationHold;
+			self._activationHoldTimer:Reset( self.activationHold );
 			
 			self:OnActivationStart();
 		end;		
@@ -90,7 +92,7 @@ function SpecialAbility:Activate( on )
 
 		self:OnActivationEnd();	
 		
-		self._effectTimer = self.effectDuration;
+		self._effectTimer:Reset( self.effectDuration );
 	end
 	
 end
@@ -101,29 +103,21 @@ end
 -------------------------------------------------------------------------------
 function SpecialAbility:Update( dt )
 	
-	if self._cooldownTimer > 0 then
-		self._cooldownTimer = self._cooldownTimer - dt;
-	end	
-	if self._cooldownTimer < 0 then
-		self._cooldownTimer = 0;
-	end
+	self._cooldownTimer:Update( dt );
 	
 	-- A complicated if-then-else tree to handle possible all ability states
-	if self._activationHoldTimer > 0 then
-		self._activationHoldTimer = self._activationHoldTimer - dt;
+	if not self._activationHoldTimer:IsRunning() then
+		self._activationHoldTimer:Update( dt );
 	
-		if self._activationHoldTimer <= 0 then
-			self._activationHoldTimer = 0;
+		if self._activationHoldTimer:IsStopped() then
 			self:Activate( false )
 		elseif self._activationDown then
 			self:OnActivationUpdate( dt );
 		end		
-	elseif self._effectTimer > 0 then
-		self._effectTimer = self._effectTimer - dt;	
+	elseif self._effectTimer:IsRunning() then
+		self._effectTimer:Update( dt );
 		
-		if self._effectTimer <= 0 then
-			self._effectTimer = 0;			
-			
+		if self._effectTimer:IsStopped() then
 			self:OnDeactivation()
 			self.active = false;
 		else

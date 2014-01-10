@@ -65,27 +65,29 @@ function ScBattle:Init()
 
 	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
-		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA006.png");
-		dyzk1.phDyzk.x = 1048;
-		dyzk1.phDyzk.y = 1048;
-		dyzk1.phDyzk.vx = 10;
-		dyzk1.phDyzk.vy = 10;
-		dyzk1.phDyzk.angVel = 10000/(dyzk1.phDyzk:GetWeight()^0.8 * dyzk1.phDyzk:GetMaxRadius()  /64);
-		dyzk1.phDyzk:SetAbility( 1, SARedirect:new( dyzk1.phDyzk ) );
-		dyzk1.phDyzk:SetAbility( 2, SABoost:new( dyzk1.phDyzk ) );
-		dyzk1.phDyzk:SetAbility( 3, SAReverseLeap:new( dyzk1.phDyzk ) );
-		dyzk1.phDyzk:SetAbility( 4, SAStone:new( dyzk1.phDyzk ) );
+		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA003.png");
+		local model1 = dyzk1:GetModel();		
+		model1.x = 1048;
+		model1.y = 1048;
+		model1.vx = 10;
+		model1.vy = 10;		
+		model1:SetAbility( 1, SARedirect:new( model1 ) );
+		model1:SetAbility( 2, SABoost:new( model1 ) );
+		model1:SetAbility( 3, SAReverseLeap:new( model1 ) );
+		model1:SetAbility( 4, SAStone:new( model1 ) );
+		model1:Spin(0.2);
 		
 		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA003.png");
-		dyzk2.phDyzk.x = 2048;
-		dyzk2.phDyzk.y = 2048;
-		dyzk2.phDyzk.vx = -10;
-		dyzk2.phDyzk.vy = -10;
-		dyzk2.phDyzk.angVel = 10000/(dyzk2.phDyzk:GetWeight()^0.8 * dyzk2.phDyzk:GetMaxRadius()  /64);
-		dyzk2.phDyzk:SetAbility( 1, SARedirect:new( dyzk2.phDyzk ) );
-		dyzk2.phDyzk:SetAbility( 2, SABoost:new( dyzk2.phDyzk ) );
-		dyzk2.phDyzk:SetAbility( 3, SAReverseLeap:new( dyzk2.phDyzk ) );
-		dyzk2.phDyzk:SetAbility( 4, SAStone:new( dyzk2.phDyzk ) );
+		local model2 = dyzk2:GetModel();
+		model2.x = 2048;
+		model2.y = 2048;
+		model2.vx = -10;
+		model2.vy = -10;
+		model2:SetAbility( 1, SARedirect:new( model2 ) );
+		model2:SetAbility( 2, SABoost:new( model2 ) );
+		model2:SetAbility( 3, SAReverseLeap:new( model2 ) );
+		model2:SetAbility( 4, SAStone:new( model2 ) );
+		model2:Spin(-1);
 		
 		self._dyzx[1] = dyzk1;
 		self._dyzx[2] = dyzk2;
@@ -96,19 +98,19 @@ function ScBattle:Init()
 		local dyzk = self._dyzx[i];
 		
 		self._arena:AddDyzk( dyzk );
-		self._camera:AddTrackObject( dyzk:GetPhysicsBody() );
-		self._controllers[i] = DBC:new(i, dyzk:GetPhysicsBody());
+		self._camera:AddTrackObject( dyzk:GetModel() );
+		self._controllers[i] = DBC:new(i, dyzk:GetModel());
 		
 		local rpmCoord = RPMCoords[i]
 		if rpmCoord then
 			self._rpmMeters[i] = 
-				RPMMeter:new( dyzk:GetPhysicsBody(), rpmCoord.x, rpmCoord.y );
+				RPMMeter:new( dyzk:GetModel(), rpmCoord.x, rpmCoord.y );
 		end		
 		
 		local abilityCoord = AbilityCoords[i]
 		if abilityCoord then
 			self._abilityGadgets[i] = 
-				AbilityGadget:new( dyzk:GetPhysicsBody(), abilityCoord.x, abilityCoord.y );
+				AbilityGadget:new( dyzk:GetModel(), abilityCoord.x, abilityCoord.y );
 		end	
 	end
 end

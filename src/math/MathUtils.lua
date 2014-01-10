@@ -44,6 +44,19 @@ end
 
 
 -------------------------------------------------------------------------------
+--  MathUtils.Sign : Returns the sign of a number.
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--  The function returns 1, -1 or 0 based on the sign of the number.
+-------------------------------------------------------------------------------
+function MathUtils.Sign( x )
+	if x>0 then		return  1
+	elseif x<0 then	return -1
+	else			return  0;
+	end
+end
+
+
+-------------------------------------------------------------------------------
 --  MathUtils.Round : Rounds a number
 -------------------------------------------------------------------------------
 function MathUtils.Round(num, idp)

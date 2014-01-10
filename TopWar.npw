@@ -13,10 +13,15 @@
                 <File name="src\math\PolarVector.lua" />
                 <File name="src\math\MathUtils.lua" />
             </Folder>
+            <Folder name="util">
+                <File name="src\util\Timer.lua" />
+                <File name="src\util\Announcer.lua" />
+            </Folder>
             <Folder name="model">
+                <File name="src\model\ArenaModel.lua" />
                 <File name="src\model\DyzkModel.lua" />
                 <File name="src\model\DyzxCollisionReport.lua" />
-                <File name="src\model\ArenaModel.lua" />
+                <File name="src\model\DyzkCollision.lua" />
                 <Folder name="abilities">
                     <File name="src\abilities\SpecialAbility.lua" />
                     <File name="src\abilities\ABILITY_TEMPLATE.lua" />

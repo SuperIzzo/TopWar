@@ -142,7 +142,7 @@ end
 --  Arena:AddDyzk : Adds a dyzk to the arena
 -------------------------------------------------------------------------------
 function Arena:AddDyzk( dyzk )
-	self.phArena:AddDyzk( dyzk.phDyzk );
+	self.phArena:AddDyzk( dyzk:GetModel() );
 end
 
 

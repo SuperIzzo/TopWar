@@ -245,6 +245,25 @@ function DyzkImageAnalysis:GetJaggedness()
 end
 
 
+-------------------------------------------------------------------------------
+--  DyzkImageAnalysis:GetSpeed : Returns the control speed
+-------------------------------------------------------------------------------
+function DyzkImageAnalysis:GetSpeed()	
+	return (50/self:GetWeight())^2 * 200;
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkImageAnalysis:GetMaxAngularVelocity : Returns the maximal speed
+-------------------------------------------------------------------------------
+function DyzkImageAnalysis:GetMaxAngularVelocity()
+	local weightFactor = self:GetWeight()^0.8;
+	local radiusFactor = self:GetMaxRadius()/64;
+	
+	return 10000/( weightFactor * radiusFactor);
+end
+
+
 --===========================================================================--
 --  Initialization
 --===========================================================================--

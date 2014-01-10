@@ -35,7 +35,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Sparks:Update : Updates the sparks animation counter
+--  Sparks:Update : Updates the rpm meter animation counter
 -------------------------------------------------------------------------------
 function RPMDamageAnim:Update( dt )
 	if not self:IsAnimOver() then
@@ -75,17 +75,17 @@ RPMMeter.__index = RPMMeter
 -------------------------------------------------------------------------------
 --  RPMMeter:new : Creates a new meter
 -------------------------------------------------------------------------------
-function RPMMeter:new( dyzk, x, y )
+function RPMMeter:new( dyzkModel, x, y )
 	local obj = {};
 	
-	obj.dyzk = dyzk;
+	obj.dyzkModel = dyzkModel;
 	obj.x	 = x;
 	obj.y	 = y;
 	
 	obj.animations = {};
 	
 	-- Sign up for collision reports
-	dyzk:AddCollisionListener( self.OnDyzkCollision, obj );
+	dyzkModel:AddCollisionListener( self.OnDyzkCollision, obj );
 	
 	return setmetatable( obj, self )
 end
@@ -105,7 +105,7 @@ end
 --  RPMMeter:Draw : Draws the meter
 -------------------------------------------------------------------------------
 function RPMMeter:Draw()
-	love.graphics.print("" .. round(self.dyzk:GetRPM()), self.x, self.y);
+	love.graphics.print("" .. round( self.dyzkModel:GetRPM()), self.x, self.y);
 	
 	for i= 1, #self.animations do
 		local anim = self.animations[i];

@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local PhDyzk 				= require 'src.model.DyzkModel'
+local DyzkModel 			= require 'src.model.DyzkModel'
 local Sparks 				= require 'src.object.Sparks'
 local DyzkImageAnalysis		= require 'src.graphics.DyzkImageAnalysis'
 
@@ -67,7 +67,7 @@ Dyzk.__index = Dyzk;
 -------------------------------------------------------------------------------
 function Dyzk:new( fname )
 	local obj = {}
-	local phDyzk = PhDyzk:new();
+	local model = DyzkModel:new();
 	
 	obj.image = nil;
 	local analysis = nil;
@@ -78,17 +78,17 @@ function Dyzk:new( fname )
 		
 		analysis = DyzkImageAnalysis:new();
 		analysis:AnalyzeImage( imageData, DEFAULT_DYZK_SCALE );		
-		phDyzk:CopyFromDyzkData( analysis );
+		model:CopyFromDyzkData( analysis );
 		
 		obj.image = love.graphics.newImage( imageData );
 	else
-		phDyzk:SetMaxRadius( 10 );
+		model:SetMaxRadius( 10 );
 	end	
 	---------------------------
 	
-	phDyzk:AddCollisionListener( self.OnDyzkCollision, obj );
+	model:AddCollisionListener( self.OnDyzkCollision, obj );
 	
-	obj.phDyzk 			= phDyzk;
+	obj.model 			= model;
 	obj.dyzkAnalysis 	= analysis;
 	
 	obj._sparks = nil;
@@ -101,7 +101,7 @@ end
 --  Dyzk:Update : Updates the Dyzk
 -------------------------------------------------------------------------------
 function Dyzk:Update( dt )
-	self.phDyzk:Update( dt );
+	self.model:Update( dt );
 	
 	if self._sparks then
 		self._sparks:Update( dt );
@@ -114,17 +114,17 @@ end
 -------------------------------------------------------------------------------
 function Dyzk:Draw()
 	local g = love.graphics
-	local phDyzk = self.phDyzk;
+	local model = self.model;
 	
 	if self.image then
 		-- Set spin blur
 		if spinBlurShader then
 			g.setShader( spinBlurShader );
-			spinBlurShader:send("angle", self.phDyzk:GetAngularVelocity()/60 );
+			spinBlurShader:send("angle", self.model:GetAngularVelocity()/60 );
 		end
 		
 		-- Draw the image
-		g.draw( self.image, phDyzk.x, phDyzk.y, phDyzk.ang,
+		g.draw( self.image, model.x, model.y, model.ang,
 				DEFAULT_DYZK_SCALE, DEFAULT_DYZK_SCALE,
 				self.image:getWidth()/2, self.image:getHeight()/2
 			  );
@@ -143,26 +143,26 @@ function Dyzk:Draw()
 			end
 		end
 	else
-		g.circle( "fill", phDyzk.x, phDyzk.y, phDyzk:GetMaxRadius(), 20 );
+		g.circle( "fill", model.x, model.y, model:GetMaxRadius(), 20 );
 	end
 	
 	-- Debug graphics
 	if DEBUG_GRAPHICS then
 		-- Collision circle
-		g.circle( "line", phDyzk.x, phDyzk.y, phDyzk:GetMaxRadius(), 20 );
+		g.circle( "line", model.x, model.y, model:GetMaxRadius(), 20 );
 		-- Velocity vector
-		g.line( phDyzk.x, phDyzk.y, 
-				phDyzk.x + phDyzk.vx, phDyzk.y + phDyzk.vy
+		g.line( model.x, model.y, 
+				model.x + model.vx, model.y + model.vy
 			  );
 	end
 end
 
 
 -------------------------------------------------------------------------------
---  Dyzk:GetPhysicsBody : Returns the physics body of the dyzk
+--  Dyzk:GetModel : Returns the physics body of the dyzk
 -------------------------------------------------------------------------------
-function Dyzk:GetPhysicsBody()
-	return self.phDyzk;
+function Dyzk:GetModel()
+	return self.model;
 end
 
 
