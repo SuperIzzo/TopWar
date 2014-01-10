@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="12.2">
+  <zoom_level>9</zoom_level>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>63</x>
+      <y>81</y>
+      <w>405</w>
+      <h>360</h>
+    </coordinates>
+    <panel_attributes>bg=orange</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>270</x>
+      <y>252</y>
+      <w>108</w>
+      <h>99</h>
+    </coordinates>
+    <panel_attributes>Battle Dyzk
+Circle
+bg=cyan</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>207</x>
+      <y>108</y>
+      <w>99</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>Dyzk Collection</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>27</x>
+      <y>45</y>
+      <w>90</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>All Dyzx</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Note</type>
+    <coordinates>
+      <x>540</x>
+      <y>171</y>
+      <w>297</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>The problem of dyzk sets may seem like an easy
+one. There is a world that consists of an infinite
+amount of dyzx. Each player has a collection of
+dyzx. Each player can also has a subcollection of
+dyzx which he choses from when he/she battles.
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

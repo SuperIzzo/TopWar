@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="12.2">
+  <zoom_level>11</zoom_level>
+  <element>
+    <type>com.umlet.element.Package</type>
+    <coordinates>
+      <x>66</x>
+      <y>110</y>
+      <w>495</w>
+      <h>308</h>
+    </coordinates>
+    <panel_attributes>Unassigned Actions
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>77</x>
+      <y>154</y>
+      <w>176</w>
+      <h>77</h>
+    </coordinates>
+    <panel_attributes>Browse
+dyzk collection
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>176</x>
+      <y>231</y>
+      <w>132</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>Select dyzk for
+battle
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>88</x>
+      <y>297</y>
+      <w>132</w>
+      <h>77</h>
+    </coordinates>
+    <panel_attributes>Manage 
+battle dyzx</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>264</x>
+      <y>308</y>
+      <w>132</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>Start Battle
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.UseCase</type>
+    <coordinates>
+      <x>319</x>
+      <y>176</y>
+      <w>132</w>
+      <h>77</h>
+    </coordinates>
+    <panel_attributes>Add new dyzk 
+to the collection
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

@@ -1,0 +1,8 @@
+GUI design is never an easy task as it requires a lot of imaginations and logic. Since GUI put the abstract design in 
+specifics a lot of the holes I have left will now need filling, so this file will probably become very big.
+
+First thing we need to do is describe what screens the users need to be able to see and when. This stage will involve
+describing the game flow.
+
+For now designing just the local games...
+Player -> 

@@ -1,5 +1,22 @@
+1. Dyzk Collections
+2. Battle Dyzx
+3. Custom Dyzx
+4. Dyzk Sharing
+
+
+1. Dyzk Collections
+-------------------------------------------------
+Dyzx are organised in collections. Each player has their own collection in which they can add or remove dyzx as they please.
+There are no theoretical limits to how big a collection can be.
+Each dyzk is stored online
+
+
+
+
+
+
 Dyzks are stored on the server, players can have a specific number of original uploaded dyzks
-(maybe around 30) the dyzk authentication is done on the server, but at the time of the upload
+(maybe around 3) the dyzk authentication is done on the server, but at the time of the upload
 statistics are then stored and reused, during a multiplayer game a bad copy of the image is sent
 to each client (filtered and artificially nurfed so that it cannot be "stolen").
 

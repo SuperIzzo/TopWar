@@ -85,7 +85,8 @@
             <File name="docs\Colors.txt" />
             <File name="docs\Spirit.txt" />
             <File name="docs\Network.txt" />
-            <File name="docs\Dyzk Networking.txt" />
+            <File name="docs\Dyzk Collections.txt" />
+            <File name="docs\GUI.txt" />
         </Folder>
         <Folder name="test">
             <Folder name="lib">
