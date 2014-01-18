@@ -120,6 +120,14 @@ end
 
 
 -------------------------------------------------------------------------------
+--  DyzkImageAnalysis:GetImageID : Returns the image id (empty for now)
+-------------------------------------------------------------------------------
+function DyzkImageAnalysis:GetDyzkID()
+	return "";
+end
+
+
+-------------------------------------------------------------------------------
 --  DyzkImageAnalysis:GetOriginalImageSize : Returns the image size (prescaled)
 -------------------------------------------------------------------------------
 function DyzkImageAnalysis:GetOriginalImageSize()
