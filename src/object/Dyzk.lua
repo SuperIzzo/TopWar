@@ -79,6 +79,7 @@ function Dyzk:new( fname )
 		analysis = DyzkImageAnalysis:new();
 		analysis:AnalyzeImage( imageData, DEFAULT_DYZK_SCALE );		
 		model:CopyFromDyzkData( analysis );
+		model:SetDyzkID( fname );
 		
 		obj.image = love.graphics.newImage( imageData );
 	else
