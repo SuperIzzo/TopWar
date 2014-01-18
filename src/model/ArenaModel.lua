@@ -2,6 +2,7 @@
 --  Dependencies
 --===========================================================================--
 local MathUtils 		= require 'src.math.MathUtils'
+local Array 			= require 'src.util.Array'
 
 local clamp				= MathUtils.Clamp;
 local bilerp			= MathUtils.Bilerp;
@@ -112,6 +113,27 @@ end
 
 
 -------------------------------------------------------------------------------
+--  ArenaModel:RemoveDyzk : Removes a dyzk to the ArenaModel
+-------------------------------------------------------------------------------
+function ArenaModel:RemoveDyzk( dyzk )
+	Array.RemoveFirst( self._dyzx, dyzk );
+end
+
+
+-------------------------------------------------------------------------------
+--  ArenaModel:Dyzx : Returns an iterator to all dyzx in the arena
+-------------------------------------------------------------------------------
+function ArenaModel:Dyzx()
+	local i = 0;
+	
+	return function ()
+		i=i+1;
+		return self._dyzx[i];
+	end	
+end
+
+
+-------------------------------------------------------------------------------
 --  ArenaModel:SetScale : Sets the arena scale
 -------------------------------------------------------------------------------
 function ArenaModel:SetScale(x,y,z)
@@ -148,15 +170,15 @@ end
 -------------------------------------------------------------------------------
 function ArenaModel:DetectCollision()
 	for i = 1, #self._dyzx-1 do
-		for j = i+1, #self._dyzx do
+		for j = i+1, #self._dyzx do			
 			local dyzk1 = self._dyzx[i];
 			local dyzk2 = self._dyzx[j];
-			
+
 			local x1, y1 = dyzk1:GetPosition();
 			local x2, y2 = dyzk2:GetPosition();
 			local rad1 = dyzk1:GetMaxRadius();
 			local rad2 = dyzk2:GetMaxRadius();
-			
+
 			if sqrt((x1-x2)^2 + (y1-y2)^2) < (rad1+rad2) then
 				dyzk1:OnDyzkCollision( dyzk2, true );
 				dyzk2:OnDyzkCollision( dyzk1, false );

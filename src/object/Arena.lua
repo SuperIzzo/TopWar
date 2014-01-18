@@ -4,6 +4,8 @@
 local ArenaModel			= require 'src.model.ArenaModel'
 local ImageUtils 			= require 'src.graphics.ImageUtils'
 
+local Array					= require 'src.util.Array'
+
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --  Lighting shader
@@ -69,12 +71,14 @@ Arena.__index = Arena;
 -------------------------------------------------------------------------------
 function Arena:new( imgFileName, maskFileName, normFileName )
 	local obj = {}
-	
+			
 	obj.image = nil;
-	
-	local phArena = ArenaModel:new();
+	obj.model = ArenaModel:new();
+	obj.dyzx = {};
 	
 	---------------------------
+	local model = obj.model;
+	
 	if imgFileName and maskFileName then
 		local depthMap  = love.image.newImageData( maskFileName );
 		local normalMap
@@ -95,17 +99,23 @@ function Arena:new( imgFileName, maskFileName, normFileName )
 			ImageUtils.DepthToNormalMap( depthMap, normalMap )
 		end
 		
-		phArena:SetDepthMask( depthMap );
-		phArena:SetNormalMask( normalMap );
+		model:SetDepthMask( depthMap );
+		model:SetNormalMask( normalMap );
 		
 		obj.normalMap 	= love.graphics.newImage( normalMap );
 		obj.image 		= love.graphics.newImage( imgFileName );
 	end
 	---------------------------
 	
-	obj.phArena = phArena;
-	
 	return setmetatable( obj, self );
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:GetModel : Returns the model of the arena
+-------------------------------------------------------------------------------
+function Arena:GetModel()
+	return self.model;
 end
 
 
@@ -113,7 +123,7 @@ end
 --  Arena:Draw : Draws the arena
 -------------------------------------------------------------------------------
 function Arena:Draw()
-	local xScale, yScale = self.phArena:GetScale();
+	local xScale, yScale = self.model:GetScale();
 	
 	if lightingShader then
 		love.graphics.setShader( lightingShader );
@@ -133,8 +143,8 @@ end
 -------------------------------------------------------------------------------
 --  Arena:Update : Updates the arena
 -------------------------------------------------------------------------------
-function Arena:Update(dt)
-	self.phArena:Update(dt);
+function Arena:Update( dt )
+	self.model:Update( dt );
 end
 
 
@@ -142,7 +152,33 @@ end
 --  Arena:AddDyzk : Adds a dyzk to the arena
 -------------------------------------------------------------------------------
 function Arena:AddDyzk( dyzk )
-	self.phArena:AddDyzk( dyzk:GetModel() );
+	self.dyzx[ #self.dyzx+1 ] = dyzk;
+	self.model:AddDyzk( dyzk:GetModel() );
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:RemoveDyzk : Removes a dyzk from the arena
+-------------------------------------------------------------------------------
+function Arena:RemoveDyzk( dyzk )
+	self.model:RemoveDyzk( dyzk:GetModel() );
+	Array.RemoveFirst( self.dyzx, dyzk );	
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:Dyzx : Returns an iterator to all dyzx objects in the arena
+-------------------------------------------------------------------------------
+function Arena:Dyzx()
+	local idx = 0;
+	
+	return function()
+		if idx<#self.dyzx then
+			idx = idx+1;
+			return self.dyzx[ idx ];
+		end
+	end
+	
 end
 
 
@@ -150,7 +186,7 @@ end
 --  Arena:AddDyzk : Adds a dyzk to the arena
 -------------------------------------------------------------------------------
 function Arena:SetScale( x, y, z )
-	self.phArena:SetScale(x,y,z);
+	self.model:SetScale(x,y,z);
 end
 
 
