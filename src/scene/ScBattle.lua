@@ -1,19 +1,21 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+local MathUtils			= require 'src.math.MathUtils'
 local Arena				= require 'src.object.Arena'
 local Dyzk				= require 'src.object.Dyzk'
 local Camera			= require 'src.object.Camera'
 local RPMMeter			= require 'src.object.RPMMeter'
 local AbilityGadget		= require 'src.object.AbilityGadget'
 local DBC				= require 'src.input.DirectBattleController'
+local AIBC				= require 'src.input.AIBattleController'
 
 local SABoost			= require 'src.abilities.SABoost'
 local SARedirect		= require 'src.abilities.SARedirect'
 local SAReverseLeap		= require 'src.abilities.SAReverseLeap'
 local SAStone			= require 'src.abilities.SAStone'
 
-
+local sign				= MathUtils.Sign
 
 local RPMCoords = 
 {
@@ -65,19 +67,20 @@ function ScBattle:Init()
 
 	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
-		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA003.png");
+		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA002.png");
 		local model1 = dyzk1:GetModel();		
 		model1.x = 1048;
 		model1.y = 1048;
 		model1.vx = 10;
 		model1.vy = 10;		
-		model1:SetAbility( 1, SARedirect:new( model1 ) );
-		model1:SetAbility( 2, SABoost:new( model1 ) );
-		model1:SetAbility( 3, SAReverseLeap:new( model1 ) );
-		model1:SetAbility( 4, SAStone:new( model1 ) );
-		model1:Spin(0.2);
+		model1:SetAbility( 1, SARedirect:new( model1 ) 		);
+		model1:SetAbility( 2, SABoost:new( model1 ) 		);
+		model1:SetAbility( 3, SAReverseLeap:new( model1 )	);
+		model1:SetAbility( 4, SAStone:new( model1 ) 		);
+		model1:Spin(1);
+		self._dyzx[1] = dyzk1;
 		
-		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA003.png");
+		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA001.png");
 		local model2 = dyzk2:GetModel();
 		model2.x = 2048;
 		model2.y = 2048;
@@ -87,10 +90,47 @@ function ScBattle:Init()
 		model2:SetAbility( 2, SABoost:new( model2 ) );
 		model2:SetAbility( 3, SAReverseLeap:new( model2 ) );
 		model2:SetAbility( 4, SAStone:new( model2 ) );
-		model2:Spin(-1);
-		
-		self._dyzx[1] = dyzk1;
+		model2:Spin(1);
 		self._dyzx[2] = dyzk2;
+		
+		local dyzk = Dyzk:new("data/dyzx/DyzkAA003.png");
+		local model = dyzk:GetModel();
+		model.x = 3048;
+		model.y = 3048;
+		model.vx = -10;
+		model.vy = -10;
+		model:SetAbility( 1, SARedirect:new( model ) );
+		model:SetAbility( 2, SABoost:new( model ) );
+		model:SetAbility( 3, SAReverseLeap:new( model ) );
+		model:SetAbility( 4, SAStone:new( model ) );
+		model:Spin(1);
+		self._dyzx[3] = dyzk;
+		
+		dyzk = Dyzk:new("data/dyzx/DyzkAA005.png");
+		model = dyzk:GetModel();
+		model.x = 1048;
+		model.y = 3048;
+		model.vx = 10;
+		model.vy = -10;
+		model:SetAbility( 1, SARedirect:new( model ) );
+		model:SetAbility( 2, SABoost:new( model ) );
+		model:SetAbility( 3, SAReverseLeap:new( model ) );
+		model:SetAbility( 4, SAStone:new( model ) );
+		model:Spin(1);
+		self._dyzx[4] = dyzk;
+		
+		dyzk = Dyzk:new("data/dyzx/DyzkAA004.png");
+		model = dyzk:GetModel();
+		model.x = 3048;
+		model.y = 1048;
+		model.vx = -10;
+		model.vy = 10;
+		model:SetAbility( 1, SARedirect:new( model ) );
+		model:SetAbility( 2, SABoost:new( model ) );
+		model:SetAbility( 3, SAReverseLeap:new( model ) );
+		model:SetAbility( 4, SAStone:new( model ) );
+		model:Spin(1);
+		self._dyzx[5] = dyzk;
 	end
 
 
@@ -99,7 +139,12 @@ function ScBattle:Init()
 		
 		self._arena:AddDyzk( dyzk );
 		self._camera:AddTrackObject( dyzk:GetModel() );
-		self._controllers[i] = DBC:new(i, dyzk:GetModel());
+		
+		if i<2 then
+			self._controllers[i] = DBC:new(i, dyzk:GetModel());		
+		else			
+			self._controllers[i] = self:ConstructAIController( dyzk )
+		end
 		
 		local rpmCoord = RPMCoords[i]
 		if rpmCoord then
@@ -131,13 +176,32 @@ function ScBattle:Update( dt )
 	self._camera:Update( dt );
 	self._arena:Update( dt );
 	
-	for i=1, #self._dyzx do
-		self._dyzx[i]:Update( dt );
+	-- Update the controllers
+	for i=1, #self._controllers do
+		self._controllers[i]:Update( dt );
+	end
+	
+	local dyzxForRemoval = nil
+	for dyzk in self._arena:Dyzx() do				
+		dyzk:Update( dt );
+		
+		-- Flag dyzx that need removing from the arena
+		if not dyzk:GetModel():IsSpinning() then
+			dyzxForRemoval = dyzxForRemoval or {};
+			table.insert( dyzxForRemoval, dyzk );
+		end		
+	end
+	
+	-- If any dyzx need removing do it now
+	if dyzxForRemoval then
+		for _, dyzk in ipairs( dyzxForRemoval ) do			
+			self._arena:RemoveDyzk( dyzk );
+		end
 	end
 	
 	for i=1, #self._rpmMeters do
 		self._rpmMeters[i]:Update( dt );
-	end	
+	end
 end
 
 
@@ -146,10 +210,10 @@ end
 -------------------------------------------------------------------------------
 function ScBattle:Draw()
 	self._camera:Draw();
-	self._arena:Draw();
+	self._arena:Draw();	
 	
-	for i=1, #self._dyzx do
-		self._dyzx[i]:Draw();
+	for dyzk in self._arena:Dyzx() do
+		dyzk:Draw();
 	end
 	
 	self._camera:PostDraw();
@@ -173,6 +237,18 @@ function ScBattle:Control( control )
 	end
 end
 
+
+-------------------------------------------------------------------------------
+--  ScBattle:Control : Handle input event
+-------------------------------------------------------------------------------
+function ScBattle:ConstructAIController( dyzk )
+	local ai = AIBC:new( nil, dyzk:GetModel(), self._arena:GetModel() );
+	
+	local AIChasing	= require 'src.ai.AIChasing'	
+	ai:AddBehaviour( AIChasing:new() );
+	
+	return ai;
+end
 
 --===========================================================================--
 --  Initialization
