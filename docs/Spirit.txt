@@ -1,23 +1,10 @@
 Spirits
 ---------------------------------
-Go and read the thing in Colors.txt, this is the same basic idea refined a bit 
-and made more colorful :)
+It is impossible to prevent client side hacks, and those include skill hacks. Skill hacks are essentially 
+when the player uses software solutions to control their ingame avatar and appear more skilled than they really
+are. For instance a skill hack in FPS may be a bot who always does a headshot.
 
-Color can be useed for lots of cool stuff there is an image based rogramming language 
-(it is called Piet). Tops are subjected to physics and are mostly controlled by physical 
-forces, 
-
-3x3 kernel
-1. calculate avg intensity
-2. from the 9 pixels pick the one with maximum
-3. f = abs(avg - px) * randfactor * dot current direction
-4. update current direction
-
-This will essentially walk intensity shapes i.e. high contrast lines, useful for lines 
-circles, curves etc... imagine the reader as a dot traversing the image, it will occasionally
-chose random directions, when all intensities are the same it will take a random choice
-but it will also be influence by its current direction.
-
-If clors are in YUV space then Y would be the intensit it follows, U and V will provide
-different function
-
+In this game real skill will be hard to substitute (at least I hope so), but to make things more fair hacks will
+be available to everyone in the form of AI support modules that will define various behaviours (and to flavor things 
+up they will be called spirits). Spirits will have full information about the state of the game on the client machine
+and they will be allowed to fire controller signals 
