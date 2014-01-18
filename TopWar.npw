@@ -5,8 +5,124 @@
         <File name="conf.lua" />
         <Folder name="src">
             <File name="src\strict.lua" />
+            <File name="src\Game.lua" />
             <Folder name="lib">
                 <File name="src\lib\bintable.lua" />
+                <Folder name="loveframes">
+                    <File name="src\lib\loveframes\debug.lua" />
+                    <File name="src\lib\loveframes\init.lua" />
+                    <File name="src\lib\loveframes\readme.md" />
+                    <File name="src\lib\loveframes\skins.lua" />
+                    <File name="src\lib\loveframes\templates.lua" />
+                    <File name="src\lib\loveframes\util.lua" />
+                    <Folder name="objects">
+                        <Folder name="internal">
+                            <Folder name="columnlist">
+                                <File name="src\lib\loveframes\objects\internal\columnlist\columnlistarea.lua" />
+                                <File name="src\lib\loveframes\objects\internal\columnlist\columnlistheader.lua" />
+                                <File name="src\lib\loveframes\objects\internal\columnlist\columnlistrow.lua" />
+                            </Folder>
+                            <Folder name="multichoice">
+                                <File name="src\lib\loveframes\objects\internal\multichoice\multichoicelist.lua" />
+                                <File name="src\lib\loveframes\objects\internal\multichoice\multichoicerow.lua" />
+                            </Folder>
+                            <Folder name="scrollable">
+                                <File name="src\lib\loveframes\objects\internal\scrollable\scrollarea.lua" />
+                                <File name="src\lib\loveframes\objects\internal\scrollable\scrollbar.lua" />
+                                <File name="src\lib\loveframes\objects\internal\scrollable\scrollbody.lua" />
+                                <File name="src\lib\loveframes\objects\internal\scrollable\scrollbutton.lua" />
+                            </Folder>
+                            <File name="src\lib\loveframes\objects\internal\closebutton.lua" />
+                            <File name="src\lib\loveframes\objects\internal\linenumberspanel.lua" />
+                            <File name="src\lib\loveframes\objects\internal\menuoption.lua" />
+                            <File name="src\lib\loveframes\objects\internal\modalbackground.lua" />
+                            <File name="src\lib\loveframes\objects\internal\sliderbutton.lua" />
+                            <File name="src\lib\loveframes\objects\internal\tabbutton.lua" />
+                            <File name="src\lib\loveframes\objects\internal\tooltip.lua" />
+                        </Folder>
+                        <File name="src\lib\loveframes\objects\base.lua" />
+                        <File name="src\lib\loveframes\objects\button.lua" />
+                        <File name="src\lib\loveframes\objects\checkbox.lua" />
+                        <File name="src\lib\loveframes\objects\collapsiblecategory.lua" />
+                        <File name="src\lib\loveframes\objects\columnlist.lua" />
+                        <File name="src\lib\loveframes\objects\form.lua" />
+                        <File name="src\lib\loveframes\objects\frame.lua" />
+                        <File name="src\lib\loveframes\objects\grid.lua" />
+                        <File name="src\lib\loveframes\objects\image.lua" />
+                        <File name="src\lib\loveframes\objects\imagebutton.lua" />
+                        <File name="src\lib\loveframes\objects\list.lua" />
+                        <File name="src\lib\loveframes\objects\menu.lua" />
+                        <File name="src\lib\loveframes\objects\multichoice.lua" />
+                        <File name="src\lib\loveframes\objects\numberbox.lua" />
+                        <File name="src\lib\loveframes\objects\panel.lua" />
+                        <File name="src\lib\loveframes\objects\progressbar.lua" />
+                        <File name="src\lib\loveframes\objects\slider.lua" />
+                        <File name="src\lib\loveframes\objects\tabs.lua" />
+                        <File name="src\lib\loveframes\objects\text.lua" />
+                        <File name="src\lib\loveframes\objects\textinput.lua" />
+                    </Folder>
+                    <Folder name="skins">
+                        <Folder name="Blue">
+                            <Folder name="images">
+                                <Folder name="gradients">
+                                    <File name="src\lib\loveframes\skins\Blue\images\gradients\button-down.png" />
+                                    <File name="src\lib\loveframes\skins\Blue\images\gradients\button-hover.png" />
+                                    <File name="src\lib\loveframes\skins\Blue\images\gradients\button-nohover.png" />
+                                    <File name="src\lib\loveframes\skins\Blue\images\gradients\button-unclickable.png" />
+                                    <File name="src\lib\loveframes\skins\Blue\images\gradients\frame-body.png" />
+                                    <File name="src\lib\loveframes\skins\Blue\images\gradients\frame-topbar.png" />
+                                    <File name="src\lib\loveframes\skins\Blue\images\gradients\progressbar.png" />
+                                </Folder>
+                                <File name="src\lib\loveframes\skins\Blue\images\arrow-down.png" />
+                                <File name="src\lib\loveframes\skins\Blue\images\arrow-left.png" />
+                                <File name="src\lib\loveframes\skins\Blue\images\arrow-right.png" />
+                                <File name="src\lib\loveframes\skins\Blue\images\arrow-up.png" />
+                                <File name="src\lib\loveframes\skins\Blue\images\close.png" />
+                                <File name="src\lib\loveframes\skins\Blue\images\collapse.png" />
+                                <File name="src\lib\loveframes\skins\Blue\images\expand.png" />
+                                <File name="src\lib\loveframes\skins\Blue\images\multichoice-arrow.png" />
+                            </Folder>
+                            <File name="src\lib\loveframes\skins\Blue\skin.lua" />
+                        </Folder>
+                        <Folder name="Orange">
+                            <Folder name="images">
+                                <Folder name="gradients">
+                                    <File name="src\lib\loveframes\skins\Orange\images\gradients\button-down.png" />
+                                    <File name="src\lib\loveframes\skins\Orange\images\gradients\button-hover.png" />
+                                    <File name="src\lib\loveframes\skins\Orange\images\gradients\button-nohover.png" />
+                                    <File name="src\lib\loveframes\skins\Orange\images\gradients\button-unclickable.png" />
+                                    <File name="src\lib\loveframes\skins\Orange\images\gradients\frame-body.png" />
+                                    <File name="src\lib\loveframes\skins\Orange\images\gradients\frame-topbar.png" />
+                                    <File name="src\lib\loveframes\skins\Orange\images\gradients\progressbar.png" />
+                                </Folder>
+                                <File name="src\lib\loveframes\skins\Orange\images\arrow-down.png" />
+                                <File name="src\lib\loveframes\skins\Orange\images\arrow-left.png" />
+                                <File name="src\lib\loveframes\skins\Orange\images\arrow-right.png" />
+                                <File name="src\lib\loveframes\skins\Orange\images\arrow-up.png" />
+                                <File name="src\lib\loveframes\skins\Orange\images\close.png" />
+                                <File name="src\lib\loveframes\skins\Orange\images\collapse.png" />
+                                <File name="src\lib\loveframes\skins\Orange\images\expand.png" />
+                                <File name="src\lib\loveframes\skins\Orange\images\multichoice-arrow.png" />
+                            </Folder>
+                            <File name="src\lib\loveframes\skins\Orange\skin.lua" />
+                        </Folder>
+                    </Folder>
+                    <Folder name="templates">
+                        <File name="src\lib\loveframes\templates\base.lua" />
+                    </Folder>
+                    <Folder name="third-party">
+                        <File name="src\lib\loveframes\third-party\middleclass.lua" />
+                    </Folder>
+                    <Folder name="docs">
+                        <File name="src\lib\loveframes\changelog.txt" />
+                        <File name="src\lib\loveframes\license.txt" />
+                    </Folder>
+                </Folder>
+                <Folder name="slaxml">
+                    <File name="src\lib\slaxml\slaxml.lua" />
+                    <File name="src\lib\slaxml\slaxdom.lua" />
+                    <File name="src\lib\slaxml\README.md" />
+                </Folder>
             </Folder>
             <Folder name="math">
                 <File name="src\math\Vector.lua" />
@@ -16,12 +132,17 @@
             <Folder name="util">
                 <File name="src\util\Timer.lua" />
                 <File name="src\util\Announcer.lua" />
+                <File name="src\util\Array.lua" />
+                <File name="src\util\Set.lua" />
             </Folder>
             <Folder name="model">
+                <File name="src\model\Player.lua" />
                 <File name="src\model\ArenaModel.lua" />
                 <File name="src\model\DyzkModel.lua" />
+                <File name="src\model\DyzkCollection.lua" />
                 <File name="src\model\DyzxCollisionReport.lua" />
                 <File name="src\model\DyzkCollision.lua" />
+                <File name="src\model\DBDyzx.lua" />
                 <Folder name="abilities">
                     <File name="src\abilities\SpecialAbility.lua" />
                     <File name="src\abilities\ABILITY_TEMPLATE.lua" />
@@ -44,6 +165,11 @@
                 <File name="src\input\TriggerType.lua" />
                 <File name="src\input\DirectBattleController.lua" />
                 <File name="src\input\NetworkBattleController.lua" />
+                <File name="src\input\AIBattleController.lua" />
+            </Folder>
+            <Folder name="ai">
+                <File name="src\ai\AIBehaviourBase.lua" />
+                <File name="src\ai\AIChasing.lua" />
             </Folder>
             <Folder name="object">
                 <File name="src\object\Dyzk.lua" />
@@ -55,10 +181,11 @@
             </Folder>
             <Folder name="scenes">
                 <File name="src\scene\SceneManager.lua" />
+                <File name="src\scene\ScMainMenu.lua" />
                 <File name="src\scene\ScBattle.lua" />
                 <File name="src\scene\ScBattleSetup.lua" />
                 <File name="src\scene\ScSelection.lua" />
-                <File name="src\scene\ScMainMenu.lua" />
+                <File name="src\scene\ScPlayerSetup.lua" />
             </Folder>
             <Folder name="network">
                 <File name="src\network\NetworkBase.lua" />
