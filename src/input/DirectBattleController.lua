@@ -25,6 +25,14 @@ end
 
 
 -------------------------------------------------------------------------------
+--  BattleController:Update : Updates the controller
+-------------------------------------------------------------------------------
+function BattleController:Update( dt )
+	-- DO NOTHING
+end
+
+
+-------------------------------------------------------------------------------
 --  BattleController:Control : Handles controls
 -------------------------------------------------------------------------------
 function BattleController:Control( control )
