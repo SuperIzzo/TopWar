@@ -5,16 +5,15 @@ local SceneManager			= require 'src.scene.SceneManager';
 local Client 				= require 'src.network.Client'
 local NetUtils 				= require 'src.network.NetworkUtils'
 local ControlBox 			= require 'src.input.ControlBox'
-local Trigger	 			= require 'src.input.TriggerType'
 local Settings				= require 'src.settings.Settings'
 local Player				= require 'src.model.Player'
+local DBDyzx				= require 'src.model.DBDyzx'
 
 
 
-
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class Game: A central class for he game
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local Game = {}
 Game.__index = Game;
 
@@ -31,7 +30,11 @@ Game.MAX_NUM_PLAYERS = 8;
 local function Game_new()
 	local obj = {}
 	
-	obj._players = {}
+	obj._players 		= {}
+	obj._database		= DBDyzx:new();
+	obj._eventHandlers 	= {}
+	obj._mouseX			= 0; 
+	obj._mouseY			= 0;
 
 	return setmetatable(obj, Game);
 end
@@ -47,12 +50,113 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Game:Run : The game loop (essentially a modified love.run)
+-------------------------------------------------------------------------------
+function Game:Run( arg )
+	
+	-- Randomise the the pseudorandom number generators
+	if love.math then
+		love.math.setRandomSeed(os.time())
+    end
+	
+	if love.event then
+        love.event.pump()
+    end
+
+    self:Init()
+	
+    -- We don't want the first frame's dt to include time taken by love.load.
+    if love.timer then love.timer.step() end
+
+    local dt = 0
+	local running = true;
+	
+    -- Main loop time.
+    while running do
+        -- Process events.
+        if love.event then
+            love.event.pump()
+            for event ,arg1, arg2, arg3, arg4 in love.event.poll() do
+                if event == "quit" then
+                    running = self:Quit();
+				else
+					local handler = self._eventHandlers[event];
+					
+					if handler then
+						handler(self, arg1, arg2, arg3, arg4);
+					end
+				end
+            end
+        end
+
+        -- Update dt, as we'll be passing it to update
+        if love.timer then
+            love.timer.step()
+            dt = love.timer.getDelta()
+        end
+
+        -- Call update and draw
+        self:Update(dt) -- will pass 0 if love.timer is disabled
+
+        if love.window and love.graphics and love.window.isCreated() then
+            love.graphics.clear()
+            love.graphics.origin()
+            
+			self:Draw()
+			
+            love.graphics.present()
+        end
+
+        if love.timer then 
+			love.timer.sleep(0.001)
+		end		
+    end
+	
+	self:ShutDown();
+end
+
+
+-------------------------------------------------------------------------------
+--  Game:GetDyzkDatabase : Returns the dyzk database
+-------------------------------------------------------------------------------
+function Game:GetDyzkDatabase()
+	return self._database;
+end
+
+
+-------------------------------------------------------------------------------
 --  Game:Init : Initialises the game
 -------------------------------------------------------------------------------
 function Game:Init()
+	self:InitSelf();
+	self:InitDatabase();
 	self:InitPlayers();
-	self:InitControls()
-	self:InitScenes()
+	self:InitControls();
+	self:InitGraphics();
+	self:InitScenes();
+end
+
+
+-------------------------------------------------------------------------------
+--  Game:InitSelf : Initialise internal general game related stuff
+-------------------------------------------------------------------------------
+function Game:InitSelf()
+	-- Initialise event handlers
+	self._eventHandlers[ "keypressed" ]			= self.KeyPressed;
+	self._eventHandlers[ "keyreleased" ]		= self.KeyReleased;
+	self._eventHandlers[ "mousepressed" ]		= self.MousePressed;
+	self._eventHandlers[ "mousereleased" ]		= self.MouseReleased;
+	self._eventHandlers[ "joystickpressed" ]	= self.JoystickPressed;
+	self._eventHandlers[ "joystickreleased" ]	= self.JoystickReleased;
+end
+
+
+-------------------------------------------------------------------------------
+--  Game:InitDatabase : Initialises the database
+-------------------------------------------------------------------------------
+function Game:InitDatabase()
+	self._database:SetFilePath( love.filesystem.getSaveDirectory() .. "/" );
+	self._database:Load();
 end
 
 
@@ -85,15 +189,12 @@ function Game:InitControls()
 		
 		-- Send controls to the scene managers, it will delegate to the active scenes
 		-- (they will delagate to objects)
-		sceneMgr:Control
-		{
-			player	= box.player,
-			id		= control:GetID(),
-			value	= control:GetValue()
-		}
+		sceneMgr:Control( control );
 		
 		-- Return the control back to the box (so that it can trigger other controls)
 		box:Trigger( "Control", control:GetID(), control:GetValue() );
+		
+		print( control:GetID(), control:GetValue() );
 	end
 
 	p1Box:SetCallback( sceneControl )
@@ -106,25 +207,64 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Game:InitGraphics : Initialises the windows and the graphics
+-------------------------------------------------------------------------------
+function Game:InitGraphics()
+	local windowFlags = {}
+	
+	windowFlags.resizable = true;
+	--windowFlags.fullscreen = true;
+	
+	love.window.setMode( 800, 600, windowFlags );
+end
+
+
+-------------------------------------------------------------------------------
 --  Game:InitScenes : Initialises the scenes
 -------------------------------------------------------------------------------
 function Game:InitScenes()	
 	local sceneMgr = SceneManager:GetInstance();
 
-
 	local ScMainMenu 		= require("src.scene.ScMainMenu");
 	local ScBattle 			= require("src.scene.ScBattle");
-	local ScBattleSetup 	= require("src.scene.ScBattleSetup");
-	local ScSelection 		= require("src.scene.ScSelection");
-	local ScPlayerSetup 	= require("src.scene.ScPlayerSetup");
+	local ScCollection	 	= require("src.scene.ScCollection");
 
 	sceneMgr:AddScene( "Main Menu"		, ScMainMenu:new()			);
 	sceneMgr:AddScene( "Battle"			, ScBattle:new()			);
-	sceneMgr:AddScene( "BattleSetup"	, ScBattleSetup:new()		);
-	sceneMgr:AddScene( "Selection"		, ScSelection:new()			);
-	sceneMgr:AddScene( "Players"		, ScPlayerSetup:new()		);
+	sceneMgr:AddScene( "Collection"		, ScCollection:new()		);
 
 	sceneMgr:SetScene( "Main Menu" );
+end
+
+
+-------------------------------------------------------------------------------
+--  Game:ShutDown : Deinitialise the game
+-------------------------------------------------------------------------------
+function Game:ShutDown()
+	-- shutdown the audio
+	if love.audio then
+		love.audio.stop()
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  Game:UpdateMouse : Updates the mouse
+-------------------------------------------------------------------------------
+function Game:UpdateMouse()
+	local mouseX, mouseY = love.mouse.getPosition();
+	
+	if self._mouseX ~= mouseX then
+		self._mouseX = mouseX;
+		self.p1Box:Trigger( "MousePos", 'x', mouseX );
+		self.p2Box:Trigger( "MousePos", 'x', mouseX );
+	end
+	
+	if self._mouseY ~= mouseY then
+		self._mouseY = mouseY;
+		self.p1Box:Trigger( "MousePos", 'y', mouseY );
+		self.p2Box:Trigger( "MousePos", 'y', mouseY );
+	end	
 end
 
 
@@ -148,6 +288,8 @@ function Game:Update( dt )
 	end
 	--------------------------	
 
+	-- Handle mouse events and update as needed
+	self:UpdateMouse();
 
 	sceneMgr:Update(dt);
 	
@@ -180,6 +322,9 @@ function Game:Update( dt )
 			end
 		end
 	end
+	
+	-- Update the GUI
+	--loveframes.update(dt);
 end
 
 
@@ -193,11 +338,25 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Game:Quit : Handle game quit events
+-------------------------------------------------------------------------------
+function Game:Quit()
+	local abort = false;
+	
+	return abort;
+end
+
+
+-------------------------------------------------------------------------------
 --  Game:Keypressed : Receives keypressed events
 -------------------------------------------------------------------------------
 function Game:KeyPressed( key, unicode )	
 	self.p1Box:Trigger( "Key", key, true );
 	self.p2Box:Trigger( "Key", key, true );
+	
+	if key == "escape" then
+		love.event.push( "quit" );
+	end
 end
 
 
@@ -214,7 +373,8 @@ end
 --  Game:MousePressed : Receives mousepressed events
 -------------------------------------------------------------------------------
 function Game:MousePressed( x, y, button )
-	
+	self.p1Box:Trigger( "MouseBtn", button, true );
+	self.p2Box:Trigger( "MouseBtn", button, true );
 end
 
 
@@ -222,7 +382,8 @@ end
 --  Game:MouseReleased : Receives mousereleased events
 -------------------------------------------------------------------------------
 function Game:MouseReleased( x, y, button )
-	
+	self.p1Box:Trigger( "MouseBtn", button, false );
+	self.p2Box:Trigger( "MouseBtn", button, false );
 end
 
 
