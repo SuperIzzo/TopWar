@@ -5,6 +5,7 @@ local Vector				= require 'src.math.Vector'
 local MathUtils				= require 'src.math.MathUtils'
 local Announcer				= require 'src.util.Announcer'
 local Timer					= require 'src.util.Timer'
+local DyzkData				= require 'src.model.DyzkData'
 local DyzxCollisionReport	= require 'src.model.DyzxCollisionReport'
 
 local assert 				= _G.assert
@@ -26,7 +27,7 @@ local CollisionConfigurationConstants =
 	-- arc on each dyzk becomes, in effect resulting in more frequent events
 	-- where the dyzx stop at each other and battle in close range.
 	-- Note: Use with care as it violates some conventional physics laws.
-	PUSHBACK_NEGATION_ARC = 0.6;
+	PUSHBACK_NEGATION_ARC = 0.2;
 	
 	-- The pushback impulse is partially determined by the jaggedness of the
 	-- two dyzx. The pushback ratio determines what parts are taken from the
@@ -46,13 +47,14 @@ local CollisionConfigurationConstants =
 	-- the balances be taken. 1 means that the balance of the attacking dyzk 
 	-- will be used only; 0.5 means half of the attacking plus half of the 
 	-- defending; 0 - entirely the defending.
-	PUSHBACK_BALANCE_RATIO = 0.7;
+	PUSHBACK_BALANCE_RATIO = 0.65;
 	
 	-- Disbalanced dyzks shift from short to long radius, but they they also
 	-- shift their center of mass which has far greater impact on the pushback
 	-- than the periferal jaggedness of the dyzk, especially if the dyzk is
 	-- heavy.
-	PUSHBACK_BALANCE_EFFECT = 2;
+	PUSHBACK_BALANCE_EFFECT_MIN = 2;
+	PUSHBACK_BALANCE_EFFECT_MAX = 16;
 	
 	
 	PUSHBACK_MULTIPLIER = 4;
@@ -64,7 +66,7 @@ local colConfig = CollisionConfigurationConstants -- Shorthand name
 --	Class DyzkModel : The physical data and logic of a spinning DyzkModel object
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local DyzkModel = {}
-DyzkModel.__index = DyzkModel;
+DyzkModel.__index = setmetatable(DyzkModel, DyzkData);
 
 
 -------------------------------------------------------------------------------
@@ -80,16 +82,7 @@ DyzkModel.MAX_NUM_ABILITIES			= 8
 -------------------------------------------------------------------------------
 function DyzkModel:new()
 	local obj = {}
-	
-	obj._dyzkID	= "";
-	obj._weight 	= 0;
-	obj._jaggedness = 0;
-	obj._maxRadius 	= 0;
-	obj._balance	= 0;
-	obj._speed		= 0;
-	obj._maxAngVel	= 0;
-	obj._spin		= 0;
-	
+		
 	obj.x = 0;
 	obj.y = 0;
 	obj.vx = 0;
@@ -97,8 +90,9 @@ function DyzkModel:new()
 	obj.ax = 0;
 	obj.ay = 0;
 	
-	obj.ang = 0;
-	obj.angVel = 0;
+	obj.ang 	= 0;
+	obj.angVel 	= 0;
+	obj._spin	= 0;
 	
 	obj._friction	= 0.01;	
 	obj._collisionAnnouncer = Announcer:new()
@@ -187,8 +181,17 @@ end
 --  DyzkModel:SetControlVector : Sets the control vector (forced velocity)
 -------------------------------------------------------------------------------
 function DyzkModel:SetControlVector( x, y )
-	self._controlVecX = x;
-	self._controlVecY = y;
+	-- Cap the control vector to a magnitude of 1
+	local controlVec 			= Vector:new( x, y );
+	local controlVecMagnitude 	= controlVec:Length()
+	
+	if controlVecMagnitude > 1 then
+		controlVec.x = controlVec.x/controlVecMagnitude;
+		controlVec.y = controlVec.y/controlVecMagnitude;
+	end;
+
+	self._controlVecX = controlVec.x;
+	self._controlVecY = controlVec.y;
 end
 
 
@@ -205,132 +208,6 @@ end
 -------------------------------------------------------------------------------
 function DyzkModel:GetRPM()
 	return self:GetAngularVelocity()*self.RPS_TO_RPM_SCALE;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:SetDyzkID : Sets a unique dyzk ID for the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:SetDyzkID( dyzkID )
-	assert( type(dyzkID) == "string" )
-	
-	self._dyzkID = dyzkID;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:GetDyzkID : Returns the dyzkID of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:GetDyzkID()
-	return self._dyzkID;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:SetWeight : Sets the weight of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:SetWeight( weigth )
-	assert( weigth >= 0 )
-	
-	self._weight = weigth;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:GetWeight : Returns the weight of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:GetWeight()
-	return self._weight;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:SetJaggedness : Sets the jaggedness of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:SetJaggedness( jag )
-	assert( jag >= 0 and jag <= 1 )
-	
-	self._jaggedness = jag;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:GetJaggedness : Returns the jaggedness of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:GetJaggedness()
-	return self._jaggedness;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:SetBalance : Sets the balance of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:SetMaxRadius( rad )
-	assert( rad >= 0 )
-	
-	self._maxRadius = rad;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:GetMaxRadius : Returns the radius of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:GetMaxRadius()
-	return self._maxRadius;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:SetBalance : Sets the balance of the DyzkModel
--------------------------------------------------------------------------------
-function DyzkModel:SetBalance( balance )
-	assert( balance >= 0 and balance <= 1)
-	
-	self._balance = balance;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:GetBalance : Returns the balance if the dyzk
--------------------------------------------------------------------------------
-function DyzkModel:GetBalance()
-	return self._balance;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:SetSpeed : Sets the control speed of the dyzk
--------------------------------------------------------------------------------
-function DyzkModel:SetSpeed( speed )
-	assert( speed >= 0 )
-	
-	self._speed = speed;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:GetSpeed : Returns the control speed of the dyzk
--------------------------------------------------------------------------------
-function DyzkModel:GetSpeed()
-	return self._speed;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:SetMaxAngularVelocity : Sets the max angular velocity of the dyzk
--------------------------------------------------------------------------------
-function DyzkModel:SetMaxAngularVelocity( angVel )
-	assert( angVel >= 0 )
-	
-	self._maxAngVel = angVel;
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:GetMaxAngularVelocity : Returns the maximal dyzk angular velocity
--------------------------------------------------------------------------------
-function DyzkModel:GetMaxAngularVelocity()
-	return self._maxAngVel;
 end
 
 
@@ -400,16 +277,7 @@ function DyzkModel:Update( dt )
 	self._damageTimer:Update( dt );
 	
 	-- Update abilities		
-	self:UpdateAbilities( dt );
-	
-	-- Cap the control vector to a magnitude of 1
-	local controlVec = Vector:new( self._controlVecX, self._controlVecY );
-	local controlVecMagnitude = controlVec:Length()
-	
-	if controlVecMagnitude > 1 then
-		controlVec.x = controlVec.x/controlVecMagnitude;
-		controlVec.y = controlVec.y/controlVecMagnitude;
-	end;
+	self:UpdateAbilities( dt );	
 	
 	-- Update velocity based on acceleration and velocity decay 
 	local velWeight = 1 - self._friction*dt;
@@ -417,16 +285,16 @@ function DyzkModel:Update( dt )
 	self.vy = self.vy*velWeight + self.ay*dt;
 	
 	-- Update velocity based on eternal control vector
-	self.vx = self.vx + controlVec.x*self._speed*dt;
-	self.vy = self.vy + controlVec.y*self._speed*dt;
+	local speed = self:GetSpeed() * dt;
+	self.vx = self.vx + self._controlVecX*speed;
+	self.vy = self.vy + self._controlVecY*speed;
 	
-	--print( self.x )
 	-- Update position based on velocity
 	self.x = self.x + self.vx*dt;
 	self.y = self.y + self.vy*dt;
 	
 	-- Update angular velocity and angle
-	local angDecay = dt*(1.1 - self:GetBalance()) / ((self:GetMaxRadius()/128)^2);
+	local angDecay = dt*(1.1 - self:GetBalance()^4) / ((self:GetMaxRadius()/128)^2);
 	self.angVel = self.angVel - sign(self._spin)*angDecay;
 	self.ang = self.ang + self.angVel*dt;	
 	
@@ -501,31 +369,37 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	local force1 = math.max(0, math.min(1, dirNormDot2-facingTerm) )
 	local force2 = math.max(0, math.min(1, dirNormDot1-facingTerm) )
 	
+	local weight1, weight2 		= self:GetWeight(), 	other:GetWeight()
+	local jag1, jag2	 		= self:GetJaggedness(), other:GetJaggedness()
+	local bal1, bal2	 		= self:GetBalance(), 	other:GetBalance()
 	
 	--------------------------------
 	-- Pushback
 	--------------
-	local weightRatio = self._weight/(self._weight + other._weight)	
+	local weightRatio = weight1/(weight1 + weight2)	
 	
 	local jagednessFactor1 =
-		1 +	(   other._jaggedness * colConfig.PUSHBACK_JAG_RATIO
-			  + self._jaggedness * ( 1-colConfig.PUSHBACK_JAG_RATIO ) )
+		1 +	(   jag2 * colConfig.PUSHBACK_JAG_RATIO
+			  + jag1 * ( 1-colConfig.PUSHBACK_JAG_RATIO ) )
 		* colConfig.PUSHBACK_JAG_EFFECT;
 		
 	local jagednessFactor2 =
-		1 +	(   self._jaggedness * colConfig.PUSHBACK_JAG_RATIO
-			  + other._jaggedness * ( 1-colConfig.PUSHBACK_JAG_RATIO ) )
+		1 +	(   jag1 * colConfig.PUSHBACK_JAG_RATIO
+			  + jag2 * ( 1-colConfig.PUSHBACK_JAG_RATIO ) )
 		* colConfig.PUSHBACK_JAG_EFFECT;
-		
+	
+	local pb_low = colConfig.PUSHBACK_BALANCE_EFFECT_MIN;
+	local pb_high = colConfig.PUSHBACK_BALANCE_EFFECT_MAX;
+	local pb_range = pb_high - pb_low;
 	local balanceFactor1 = 
-		1 - (	other._balance * colConfig.PUSHBACK_BALANCE_RATIO 
-				+ self._balance * (1 - colConfig.PUSHBACK_BALANCE_RATIO) ) 
-		* colConfig.PUSHBACK_BALANCE_EFFECT;
+		1 - (	bal2 * colConfig.PUSHBACK_BALANCE_RATIO 
+				+ bal1 * (1 - colConfig.PUSHBACK_BALANCE_RATIO) ) 
+		*  (pb_low + pb_range*math.random());
 		
 	local balanceFactor2 = 
-		1 - (	self._balance * colConfig.PUSHBACK_BALANCE_RATIO 
-				+ other._balance * (1 - colConfig.PUSHBACK_BALANCE_RATIO) ) 
-		* colConfig.PUSHBACK_BALANCE_EFFECT;
+		1 - (	bal1 * colConfig.PUSHBACK_BALANCE_RATIO 
+				+ bal2 * (1 - colConfig.PUSHBACK_BALANCE_RATIO) ) 
+		* (pb_low + pb_range*math.random());
 	
 	local pushBack1  =  colConfig.PUSHBACK_MULTIPLIER *
 		( force1*speed2*jagednessFactor1 + balanceFactor1 ) * (1-weightRatio);
@@ -561,12 +435,12 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	local rpmDmg2 = 0;
 	if self._damageTimer:IsStopped() then
 		-- RPM damage formula for dyzk 1
-		local jagFactor = self._jaggedness*0.3 + other._jaggedness*0.7;
-		local staticDamage = (self.angVel + other.angVel) * jagFactor * other:GetMaxRadius()/32 * other._weight/(self._weight^2);
+		local jagFactor = jag1*0.3 + jag2*0.7;
+		local staticDamage = (self.angVel + other.angVel) * jagFactor * other:GetMaxRadius()/32 * weight2/(weight1^2);
 		
 		local kineticDamage = 0;
 		if speed2>10 then  
-			kineticDamage = jagFactor * (speed2/8)^2 * force1 * other._weight/(self._weight^2) * sign(self.angVel);
+			kineticDamage = jagFactor * (speed2/8)^2 * force1 * weight2/(weight1^2) * sign(self.angVel);
 		end
 		
 		rpmDmg1 = staticDamage + kineticDamage;	
@@ -578,12 +452,12 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	end
 	if other._damageTimer:IsStopped() then	
 		-- RPM damage formula for dyzk 2
-		local jagFactor = self._jaggedness*0.7 + other._jaggedness*0.3;
-		local staticDamage = (self.angVel + other.angVel) * jagFactor * self:GetMaxRadius()/32 * self._weight/(other._weight^2);
+		local jagFactor = jag1*0.7 + jag2*0.3;
+		local staticDamage = (self.angVel + other.angVel) * jagFactor * self:GetMaxRadius()/32 * weight1/(weight2^2);
 		
 		local kineticDamage = 0;
 		if speed1>10 then  
-			kineticDamage = jagFactor * (speed1/8)^2 * force2 * self._weight/(other._weight^2) * sign(other.angVel);		
+			kineticDamage = jagFactor * (speed1/8)^2 * force2 * weight1/(weight2^2) * sign(other.angVel);		
 		end
 		
 		rpmDmg2 = staticDamage + kineticDamage;
@@ -624,24 +498,6 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	
 	self._collisionAnnouncer:Announce( collisionReport1 );
 	other._collisionAnnouncer:Announce( collisionReport2 );
-end
-
-
--------------------------------------------------------------------------------
---  DyzkModel:CopyFromDyzkData : Sets the properties of this dyzk from another
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
---  dyzkData can be any object which conforms the dyzk data interface. This
---  makes the function quite versetile as it can copy from another DyzkModel,
---  Dyzk or DyzkImageAnalysis object.
--------------------------------------------------------------------------------
-function DyzkModel:CopyFromDyzkData( dyzkData )
-	self:SetDyzkID( 				dyzkData:GetDyzkID() 				);
-	self:SetMaxRadius( 				dyzkData:GetMaxRadius() 			);
-	self:SetJaggedness( 			dyzkData:GetJaggedness() 			);
-	self:SetWeight( 				dyzkData:GetWeight() 				);
-	self:SetBalance( 				dyzkData:GetBalance()				);
-	self:SetSpeed( 					dyzkData:GetSpeed()					);
-	self:SetMaxAngularVelocity( 	dyzkData:GetMaxAngularVelocity()	);
 end
 
 

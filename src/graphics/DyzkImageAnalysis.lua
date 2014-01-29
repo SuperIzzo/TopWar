@@ -4,6 +4,7 @@
 local Vector		= require 'src.math.Vector'
 local PolarVector	= require 'src.math.PolarVector'
 local MathUtils		= require 'src.math.MathUtils'
+local DyzkData		= require 'src.model.DyzkData'
 
 local max			= math.max
 local log			= math.log
@@ -18,7 +19,7 @@ local warp			= MathUtils.Warp
 --	Class DyzkImageAnalysis: a brief... 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local DyzkImageAnalysis = {}
-DyzkImageAnalysis.__index = DyzkImageAnalysis;
+DyzkImageAnalysis.__index = setmetatable( DyzkImageAnalysis, DyzkData );
 
 
 -------------------------------------------------------------------------------
@@ -268,7 +269,7 @@ function DyzkImageAnalysis:GetMaxAngularVelocity()
 	local weightFactor = self:GetWeight()^0.8;
 	local radiusFactor = self:GetMaxRadius()/64;
 	
-	return 10000/( weightFactor * radiusFactor);
+	return 5000/( weightFactor * radiusFactor);
 end
 
 
