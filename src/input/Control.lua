@@ -1,8 +1,6 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local TriggerType 		= require 'src.input.TriggerType'
-
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -70,19 +68,19 @@ end
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  Binds the control to an event class and a specific input
 --    usage: 	
--- 			control:Bind'Event'( <input> [, trigger] )
+-- 			control:Bind'Event'( <input>, <trigger> )
 --    e.g:
---			control:Bind'KeyboardKey'( "W" );
+--			control:Bind'KeyboardKey'( "W", BinaryButton.Trigger() );
 --
---  'trigger' is an optional parameter which defines how the control
---  will react to events, defaults to a SWITCH
+--  'trigger' is a function that takes a control and the new value as input
+--  it returns true or false
 -------------------------------------------------------------------------------
 function Control:Bind( event )
 	return function( input, trigger )
 		self._bindings[event] = self._bindings[event] or {};
 		self._bindings[event][input] = 
 			{
-				trigger = trigger or TriggerType.SWITCH();
+				trigger = trigger;
 			};
 	end
 end
