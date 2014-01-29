@@ -34,8 +34,8 @@ end
 -------------------------------------------------------------------------------
 --  DyzkCollection:AddDyzk : Creates a new DyzkCollection
 -------------------------------------------------------------------------------
-function DyzkCollection:Dyzk( dyzk )
-	self._dyzx:Add( dyzk );
+function DyzkCollection:Dyzx( dyzk )
+	return self._dyzx:Add( dyzk );
 end
 
 
