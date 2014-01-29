@@ -3,7 +3,7 @@ function love.conf( game )
     game.title 					= "Battle Dyzx"
     game.author 				= "Hristoz S. Stefanov"
     game.url 					= nil
-    game.identity 				= nil
+    game.identity 				= "Battle Dyzx"
     game.version				= "0.9.0"
     game.console				= true
     game.release 				= false
