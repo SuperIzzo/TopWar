@@ -56,6 +56,8 @@ function ScBattle:new()
 	obj._camera = Camera:new();
 	obj._camera:SetScale( 0.25, 0.25 );
 	
+	obj._skipUpdate = 0;
+	
 	return setmetatable( obj, self );
 end
 
@@ -67,12 +69,12 @@ function ScBattle:Init()
 
 	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
-		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA002.png");
+		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA007b.png");
 		local model1 = dyzk1:GetModel();		
 		model1.x = 1048;
 		model1.y = 1048;
 		model1.vx = 10;
-		model1.vy = 10;		
+		model1.vy = 10;
 		model1:SetAbility( 1, SARedirect:new( model1 ) 		);
 		model1:SetAbility( 2, SABoost:new( model1 ) 		);
 		model1:SetAbility( 3, SAReverseLeap:new( model1 )	);
@@ -104,9 +106,9 @@ function ScBattle:Init()
 		model:SetAbility( 3, SAReverseLeap:new( model ) );
 		model:SetAbility( 4, SAStone:new( model ) );
 		model:Spin(1);
-		self._dyzx[3] = dyzk;
+		--self._dyzx[3] = dyzk;
 		
-		dyzk = Dyzk:new("data/dyzx/DyzkAA005.png");
+		dyzk = Dyzk:new("data/dyzx/DyzkAA002.png");
 		model = dyzk:GetModel();
 		model.x = 1048;
 		model.y = 3048;
@@ -117,7 +119,7 @@ function ScBattle:Init()
 		model:SetAbility( 3, SAReverseLeap:new( model ) );
 		model:SetAbility( 4, SAStone:new( model ) );
 		model:Spin(1);
-		self._dyzx[4] = dyzk;
+		--self._dyzx[4] = dyzk;
 		
 		dyzk = Dyzk:new("data/dyzx/DyzkAA004.png");
 		model = dyzk:GetModel();
@@ -130,7 +132,7 @@ function ScBattle:Init()
 		model:SetAbility( 3, SAReverseLeap:new( model ) );
 		model:SetAbility( 4, SAStone:new( model ) );
 		model:Spin(1);
-		self._dyzx[5] = dyzk;
+		--self._dyzx[5] = dyzk;
 	end
 
 
@@ -141,7 +143,7 @@ function ScBattle:Init()
 		self._camera:AddTrackObject( dyzk:GetModel() );
 		
 		if i<2 then
-			self._controllers[i] = DBC:new(i, dyzk:GetModel());		
+			self._controllers[i] = DBC:new(i, dyzk:GetModel(), self._camera );		
 		else			
 			self._controllers[i] = self:ConstructAIController( dyzk )
 		end
@@ -158,6 +160,11 @@ function ScBattle:Init()
 				AbilityGadget:new( dyzk:GetModel(), abilityCoord.x, abilityCoord.y );
 		end	
 	end
+	
+	-- Skip a few update events before we start the game...
+	-- This is a hack to ensure that there are no huge time deltas
+	-- during the first frame(s) of the game, while we are loading up
+	self._skipUpdate = 5;
 end
 
 
@@ -173,6 +180,13 @@ end
 --  ScBattle:Update : Updates the scene
 -------------------------------------------------------------------------------
 function ScBattle:Update( dt )
+	
+	-- Skip frames if we are not ready
+	if self._skipUpdate>0 then
+		self._skipUpdate = self._skipUpdate-1;
+		return;
+	end
+	
 	self._camera:Update( dt );
 	self._arena:Update( dt );
 	
