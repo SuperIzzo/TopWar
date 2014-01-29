@@ -47,7 +47,7 @@ function ScMainMenu:Init()
 	self.giantDyzk = self.giantDyzk or
 		love.graphics.newImage( "data/gui/IceDyzk.png" );
 		
-	love.graphics.setBackgroundColor( 5, 30, 40, 1 );
+	love.graphics.setBackgroundColor( 5, 30, 40);
 	
 	self.particle1 	= love.graphics.newImage( "data/gui/ice_particle.png");
 	self.skin = BlueIceSkin:new();
