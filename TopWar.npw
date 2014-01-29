@@ -138,6 +138,7 @@
             <Folder name="model">
                 <File name="src\model\Player.lua" />
                 <File name="src\model\ArenaModel.lua" />
+                <File name="src\model\DyzkData.lua" />
                 <File name="src\model\DyzkModel.lua" />
                 <File name="src\model\DyzkCollection.lua" />
                 <File name="src\model\DyzxCollisionReport.lua" />
@@ -162,10 +163,16 @@
             <Folder name="input">
                 <File name="src\input\ControlBox.lua" />
                 <File name="src\input\Control.lua" />
-                <File name="src\input\TriggerType.lua" />
+                <File name="src\input\TriggerType_old.lua" />
                 <File name="src\input\DirectBattleController.lua" />
                 <File name="src\input\NetworkBattleController.lua" />
                 <File name="src\input\AIBattleController.lua" />
+                <Folder name="trigger">
+                    <File name="src\input\trigger\DigitalAxis.lua" />
+                    <File name="src\input\trigger\BinaryButton.lua" />
+                    <File name="src\input\trigger\AnalogueButton.lua" />
+                    <File name="src\input\trigger\AnalogueAxis.lua" />
+                </Folder>
             </Folder>
             <Folder name="ai">
                 <File name="src\ai\AIBehaviourBase.lua" />
@@ -178,14 +185,23 @@
                 <File name="src\object\Sparks.lua" />
                 <File name="src\object\RPMMeter.lua" />
                 <File name="src\object\AbilityGadget.lua" />
+                <Folder name="gui">
+                    <File name="src\gui\NavGraph.lua" />
+                    <File name="src\gui\Button.lua" />
+                    <File name="src\gui\BlueIceSkin.lua" />
+                    <File name="src\gui\GUI.lua" />
+                </Folder>
             </Folder>
             <Folder name="scenes">
                 <File name="src\scene\SceneManager.lua" />
                 <File name="src\scene\ScMainMenu.lua" />
+                <File name="src\scene\ScCollection.lua" />
                 <File name="src\scene\ScBattle.lua" />
-                <File name="src\scene\ScBattleSetup.lua" />
-                <File name="src\scene\ScSelection.lua" />
-                <File name="src\scene\ScPlayerSetup.lua" />
+                <Folder name="misc">
+                    <File name="src\scene\ScBattleSetup.lua" />
+                    <File name="src\scene\ScSelection.lua" />
+                    <File name="src\scene\ScPlayerSetup.lua" />
+                </Folder>
             </Folder>
             <Folder name="network">
                 <File name="src\network\NetworkBase.lua" />
