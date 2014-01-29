@@ -64,6 +64,19 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Camera:ScreenToWorld : Transforms screen to world coodrdiantes
+-------------------------------------------------------------------------------
+function Camera:ScreenToWorld( x,y )
+	local wX, wY;
+	
+	wX = (x + self.x)/self.xScale
+	wY = (y + self.y)/self.yScale
+	
+	return wX, wY;
+end
+
+
+-------------------------------------------------------------------------------
 --  Camera:Update : Updates the camera
 -------------------------------------------------------------------------------
 function Camera:Update( dt )
