@@ -7,57 +7,6 @@ local ImageUtils 			= require 'src.graphics.ImageUtils'
 local Array					= require 'src.util.Array'
 
 
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---  Lighting shader
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local lightingShader;
-if love.graphics.isSupported( "shader" ) then
-	lightingShader = love.graphics.newShader[[
-	uniform Image normalMap;
-	uniform vec3 lightPos;
-	
-	vec4 blur( Image texture, vec2 coords, float span )
-	{
-		vec4 a = 	texture2D( texture, coords );
-		vec4 b1 = 	texture2D( texture, coords - vec2(0.0f,  span) );
-		vec4 b2 = 	texture2D( texture, coords - vec2(0.0f, -span) );
-		vec4 b3 = 	texture2D( texture, coords - vec2(span,  0.0f) );
-		vec4 b4 = 	texture2D( texture, coords - vec2(-span, 0.0f) );
-		vec4 c1 = 	texture2D( texture, coords - vec2(span,  span) );
-		vec4 c2 = 	texture2D( texture, coords - vec2(span, -span) );
-		vec4 c3 = 	texture2D( texture, coords - vec2(-span, span) );
-		vec4 c4 = 	texture2D( texture, coords - vec2(-span,-span) );
-		
-		return (a*4.0f + b1*2.0f + b2*2.0f + b3*2.0f + b4*2.0f + c1 + c2 + c3 + c4)/16.0f;
-	}
-	
-	vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords )
-	{
-		vec4 diffuse = texture2D( texture, texture_coords );
-		
-		/*
-		vec4 blur0 = blur( normalMap, texture_coords, 1.0f/1024.0f );
-		vec4 blur1 = blur( normalMap, texture_coords, 1.5f/1024.0f )*3;
-		vec4 blur2 = blur( normalMap, texture_coords, 3.0f/1024.0f )*2;
-		vec4 blur3 = blur( normalMap, texture_coords, 4.5f/1024.0f )*1.5;
-		vec4 blur4 = blur( normalMap, texture_coords, 6.5f/1024.0f );
-		vec4 blur5 = blur( normalMap, texture_coords, 9.0f/1024.0f )*0.5;
-		vec4 blur6 = blur( normalMap, texture_coords, 9.0f/1024.0f )*0.25;
-		
-		vec3 normalVec = normalize( (blur0+blur1+blur2+blur3+blur4+blur5+blur6).xyz );
-		*/
-		vec3 normalVec = normalize( texture2D( normalMap, texture_coords ).xyz );
-		
-		vec3 lightVec = normalize( vec3(10.0f,-5.0f,2.0f));
-		
-		float i = dot( normalVec, lightVec ) * 1.0f;
-		
-		return vec4( diffuse.x * i, diffuse.y * i, diffuse.z * i, diffuse.w );
-	}
-	]]
-end
-
-
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class Arena : An arena game object
@@ -71,6 +20,8 @@ Arena.__index = Arena;
 -------------------------------------------------------------------------------
 function Arena:new( imgFileName, maskFileName, normFileName )
 	local obj = {}
+	
+	self:_InitOneTime();
 			
 	obj.image = nil;
 	obj.model = ArenaModel:new();
@@ -112,6 +63,26 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Arena:_InitOneTime : Loads common resoources
+-------------------------------------------------------------------------------
+function Arena:_InitOneTime()
+	if self._classInitialised then
+		return
+	end
+	self._classInitialised = true;
+	
+	if love.graphics.isSupported( "shader" ) then
+		local shaderCode = love.filesystem.read( "data/gfx/shaders/lighting.frag" );
+		local ok, shader = pcall( love.graphics.newShader, shaderCode );
+		
+		if ok then
+			self._lightingShader = shader;
+		end	
+	end
+end
+
+
+-------------------------------------------------------------------------------
 --  Arena:GetModel : Returns the model of the arena
 -------------------------------------------------------------------------------
 function Arena:GetModel()
@@ -125,16 +96,16 @@ end
 function Arena:Draw()
 	local xScale, yScale = self.model:GetScale();
 	
-	if lightingShader then
-		love.graphics.setShader( lightingShader );
-		lightingShader:send("normalMap",  self.normalMap );
+	if self._lightingShader then
+		love.graphics.setShader( self._lightingShader );
+		self._lightingShader:send("normalMap",  self.normalMap );
 		--lightingShader:send("lightPos",  self.normalMap );
 	end
 	
 	love.graphics.draw( self.image, 0, 0, 0, xScale, yScale );
 	
 	-- Unset spin blur
-	if lightingShader then
+	if self._lightingShader then
 		love.graphics.setShader( nil );
 	end
 end

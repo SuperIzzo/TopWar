@@ -12,47 +12,7 @@ local DyzkImageAnalysis		= require 'src.graphics.DyzkImageAnalysis'
 --	Constants
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local DEFAULT_DYZK_SCALE = 1
-local DEBUG_GRAPHICS	 = false
-
-
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---  Spin blush shader
---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
-local spinBlurShader;
-if love.graphics.isSupported( "shader" ) then
-	spinBlurShader = love.graphics.newShader[[
-	uniform float angle;
-	#define NUM_ROTATIONS 30
-	
-	vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords )
-	{
-		//float angle = 1.8;
-		
-		vec2 center = vec2( 0.5, 0.5 );
-		vec2 relPos = texture_coords - center;
-		vec4 finalColor = vec4( 0.0, 0.0, 0.0, 0.0 );
-		
-		float progression = 0;
-		
-		for( int i=0; i<NUM_ROTATIONS; i++ )
-		{
-			float angleFract = -angle*float(i)/float(NUM_ROTATIONS);
-			float cs = cos( angleFract );
-			float sn = sin( angleFract );
-			vec2 newPos = vec2( relPos.x*cs - relPos.y*sn, relPos.x*sn + relPos.y*cs );
-			newPos += center;
-			
-			vec4 tex = texture2D( texture, newPos );
-			float rate = pow(float(i),1.2) * (tex.a +0.4);
-			progression = progression + rate;
-			finalColor += tex * rate;
-		}
-		
-		return finalColor/progression;
-	}
-	]]
-end
-
+local DEBUG_GRAPHICS	 = true
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -67,6 +27,11 @@ Dyzk.__index = Dyzk;
 -------------------------------------------------------------------------------
 function Dyzk:new( fname )
 	local obj = {}
+	
+	-- Initialise the class
+	Dyzk:_InitOneTime();
+	
+	
 	local model = DyzkModel:new();
 	
 	obj.image = nil;
@@ -79,7 +44,6 @@ function Dyzk:new( fname )
 		analysis = DyzkImageAnalysis:new();
 		analysis:AnalyzeImage( imageData, DEFAULT_DYZK_SCALE );		
 		model:CopyFromDyzkData( analysis );
-		model:SetDyzkID( fname );
 		
 		obj.image = love.graphics.newImage( imageData );
 	else
@@ -99,9 +63,54 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Dyzk:_InitOneTime : Loads common resoources
+-------------------------------------------------------------------------------
+local MathUtils = require "src.math.MathUtils"
+local clamp		= MathUtils.Clamp;
+local function changePitch( inSoundData, outSoundData, scale )
+	for i = 1, inSoundData:getSampleCount() do
+		local sample = inSoundData:getSample(i);
+		local newSample = clamp( sample * scale * math.random(), -1, 1 );
+		outSoundData:setSample( i, newSample );
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  Dyzk:_InitOneTime : Loads common resoources
+-------------------------------------------------------------------------------
+function Dyzk:_InitOneTime()
+	if self._classInitialised then
+		return
+	end
+	
+	self._classInitialised = true;
+
+	-- Load the cling sound effect
+	self._sfxClings = {};
+	self._sfxClings[1] = love.audio.newSource( "data/sfx/metallic-cling1.ogg" );
+	
+	if love.graphics.isSupported( "shader" ) then
+		local shaderCode = love.filesystem.read( "data/gfx/shaders/spin-blur.frag" );
+		local ok, shader = pcall( love.graphics.newShader, shaderCode );
+		
+		if ok then
+			self._spinBlurShader = shader;
+		end
+	end
+	
+end
+
+
+-------------------------------------------------------------------------------
 --  Dyzk:Update : Updates the Dyzk
 -------------------------------------------------------------------------------
 function Dyzk:Update( dt )
+	if DEBUG_GRAPHICS then
+		-- cache this for later
+		self._controlVecX, self._controlVecY = self.model:GetControlVector()
+	end
+	
 	self.model:Update( dt );
 	
 	if self._sparks then
@@ -119,9 +128,9 @@ function Dyzk:Draw()
 	
 	if self.image then
 		-- Set spin blur
-		if spinBlurShader then
-			g.setShader( spinBlurShader );
-			spinBlurShader:send("angle", self.model:GetAngularVelocity()/60 );
+		if self._spinBlurShader then
+			g.setShader( self._spinBlurShader );
+			self._spinBlurShader:send("angle", self.model:GetAngularVelocity()/60 );
 		end
 		
 		-- Draw the image
@@ -131,7 +140,7 @@ function Dyzk:Draw()
 			  );
 		
 		-- Unset spin blur
-		if spinBlurShader then
+		if self._spinBlurShader then
 			love.graphics.setShader( nil );
 		end
 		
@@ -149,12 +158,30 @@ function Dyzk:Draw()
 	
 	-- Debug graphics
 	if DEBUG_GRAPHICS then
+		local restoreColor = {love.graphics.getColor( 255, 0, 0 )};
+		
+		
+		local x,y 		= model:GetPosition();
+		local vx, vy 	= model:GetVelocity();
+		local cx, cy	= self._controlVecX, self._controlVecY;
+		local speed 	= model:GetSpeed();		
+		
+		love.graphics.setColor( 0, 130, 255, 200 );
+		
 		-- Collision circle
-		g.circle( "line", model.x, model.y, model:GetMaxRadius(), 20 );
+		g.circle( "line", x, y, model:GetMaxRadius(), 20 );
+		
 		-- Velocity vector
-		g.line( model.x, model.y, 
-				model.x + model.vx, model.y + model.vy
-			  );
+		g.line( x, y, x + vx, y + vy );
+		
+		-- Control vector
+		if cx then
+			love.graphics.setColor( 0, 255, 0, 200 );
+			g.line( x, y, x+cx*speed, y+cy*speed );
+		end
+		
+		-- Restore the color as it was
+		love.graphics.setColor( restoreColor );
 	end
 end
 
@@ -180,7 +207,10 @@ function Dyzk:OnDyzkCollision( report )
 			colX, colY,
 			colNx, colNy
 		);
-		self._sparks:SetAnimDuration( 0.08 );
+		self._sparks:SetAnimDuration( 0.1 );
+		
+		local clingIdx = math.random( #self._sfxClings ); 
+		love.audio.play( self._sfxClings[clingIdx] );
 	end
 	
 end
