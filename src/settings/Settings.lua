@@ -1,10 +1,13 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local ControlBox 	= require 'src.input.ControlBox'
-local Trigger	 	= require 'src.input.TriggerType'
+local ControlBox 		= require 'src.input.ControlBox'
+local DigitalAxis		= require 'src.input.trigger.DigitalAxis'
+local BinaryButton		= require 'src.input.trigger.BinaryButton'
+local AnalogueButton	= require 'src.input.trigger.AnalogueButton'
+local AnalogueAxis		= require 'src.input.trigger.AnalogueAxis'
 
--- Note: Separate in multiple classes when it grows - raphics, input, sound...
+-- Note: Separate in multiple classes when it grows - graphics, input, sound...
 
 
 
@@ -78,16 +81,85 @@ function Settings:LoadDefaultControls( box )
 
 	-- player 1
 	if box.player and box.player==1 then
+		
+		-- Setup the triggers (some can be reused on multiple controls)
+		local digitalAxisX 			= DigitalAxis:new();
+		local digitalAxisY 			= DigitalAxis:new();
+		local negAxisTrigger		= AnalogueButton:new( -2, -0.5 );
+		local posAxisTrigger		= AnalogueButton:new( 0.5,  2 );
+		local anlgAxisTrigger		= AnalogueAxis:new()
+		local binButtonTrigger		= BinaryButton:new();
+		
+		digitalAxisX:SetOffValue(0)
+		digitalAxisY:SetOffValue(0)
+		
+		
+		local xAxis = box:CreateControl("xAxis");
+		xAxis:SetValue(0);
+		xAxis:Bind'Key'( 'a', digitalAxisX:TriggerOn(-1) );
+		xAxis:Bind'Key'( 'd', digitalAxisX:TriggerOn( 1) );
 
+		local yAxis	= box:CreateControl("yAxis");
+		yAxis:SetValue(0);
+		yAxis:Bind'Key'( 'w', digitalAxisY:TriggerOn(-1) );
+		yAxis:Bind'Key'( 's', digitalAxisY:TriggerOn( 1) );
+		
+		local Left				= box:CreateControl("Left");
+		Left:SetValue( false );
+		Left:Bind'Control'( 'xAxis',	negAxisTrigger:Trigger()	);
+
+		local Right				= box:CreateControl("Right");		
+		Right:SetValue( false );
+		Right:Bind'Control'( 'xAxis',	posAxisTrigger:Trigger()	);
+
+		local Up				= box:CreateControl("Up");		
+		Up:SetValue( false );
+		Up:Bind'Control'( 'yAxis',		negAxisTrigger:Trigger() 	);
+
+		local Down				= box:CreateControl("Down");
+		Down:SetValue( false );
+		Down:Bind'Control'( 'yAxis',	posAxisTrigger:Trigger()	);
+
+
+		local xPoint			= box:CreateControl( "xPoint" )
+		xPoint:SetValue( 0 );
+		xPoint:Bind'MousePos'( 'x',		anlgAxisTrigger:Trigger()	);
+
+		local yPoint			= box:CreateControl( "yPoint" )
+		yPoint:SetValue( 0 );
+		yPoint:Bind'MousePos'( 'y',		anlgAxisTrigger:Trigger()	);
+
+		local Click				= box:CreateControl( "Click" )
+		Click:SetValue( false );
+		Click:Bind'MouseBtn'( 'l',		binButtonTrigger:Trigger()	);
+	
+	
+		local A					= box:CreateControl( "A" )
+		A:SetValue( false );
+		A:Bind'Key'( 'kp1',				binButtonTrigger:Trigger()	);
+		
+		local B					= box:CreateControl( "B" )
+		B:SetValue( false );
+		B:Bind'Key'( 'kp2',				binButtonTrigger:Trigger()	);
+		
+		local X					= box:CreateControl( "X" )
+		X:SetValue( false );
+		X:Bind'Key'( 'kp3',				binButtonTrigger:Trigger()	);
+		
+		local Y					= box:CreateControl( "Y" )
+		Y:SetValue( false );
+		Y:Bind'Key'( 'kp4',				binButtonTrigger:Trigger()	);
+
+	--[[
 	local xAxis	= box:CreateControl("xAxis");
 	xAxis:SetValue(0);
-	xAxis:Bind'Joy1Axis'( 1, 	Trigger.SLIDER(false) 						);	
+	xAxis:Bind'Joy1Axis'( 1, 	Trigger.SLIDER(false) 					);	
 	xAxis:Bind'Joy1Hat'( 'l1', Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
-	xAxis:Bind'Joy1Hat'( 'lu1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
-	xAxis:Bind'Joy1Hat'( 'ld1',Trigger.SWITCH_TO_SPRING(false, -1, 0)  );
+	xAxis:Bind'Joy1Hat'( 'lu1',Trigger.SWITCH_TO_SPRING(false, -1, 0)	);
+	xAxis:Bind'Joy1Hat'( 'ld1',Trigger.SWITCH_TO_SPRING(false, -1, 0)	);
 	xAxis:Bind'Joy1Hat'( 'r1', Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
-	xAxis:Bind'Joy1Hat'( 'ru1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
-	xAxis:Bind'Joy1Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)  );
+	xAxis:Bind'Joy1Hat'( 'ru1',Trigger.SWITCH_TO_SPRING(false,  1, 0)	);
+	xAxis:Bind'Joy1Hat'( 'rd1',Trigger.SWITCH_TO_SPRING(false,  1, 0)	);
 	xAxis:Bind'Key'( 'a', 		Trigger.SWITCH_TO_SPRING(false, -1, 0) 	);
 	xAxis:Bind'Key'( 'd', 		Trigger.SWITCH_TO_SPRING(false,  1, 0) 	);
 	xAxis:Bind'Update'( 1, 	Trigger.ALWAYS() 						);
@@ -187,6 +259,7 @@ function Settings:LoadDefaultControls( box )
 	local Down		= box:CreateControl("Down");
 	Down:Bind'Control'( 'yAxis',	Trigger.SPRING_TO_SWITCH(true, 0.5,  2)	);
 	
+	--]]
 	end
 end
 
