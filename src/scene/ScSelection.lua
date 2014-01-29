@@ -1,12 +1,15 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+local Game				= require 'src.Game'
 local Dyzk				= require 'src.object.Dyzk'
 local ScBattle			= require 'src.scene.ScBattle'
 local SceneManager		= require 'src.scene.SceneManager'
 local MathUtils 		= require 'src.math.MathUtils'
 local Message			= require 'src.network.Message'
 local Client			= require 'src.network.Client'
+
+local DBDyzx			= require 'src.model.DBDyzx'
 
 local round 			= MathUtils.Round
 
@@ -22,22 +25,26 @@ function ScSelection:new()
 
 	local obj = {}
 	
-	local dyzkList = {}
+	obj._dyzx	= {}
+	obj._selection = 1;
 	
-	table.insert( dyzkList, "DyzkAA001" );
-	table.insert( dyzkList, "DyzkAA002" );
-	table.insert( dyzkList, "DyzkAA003" );
-	table.insert( dyzkList, "DyzkAA004" );
-	table.insert( dyzkList, "DyzkAA005" );
-	table.insert( dyzkList, "DyzkAA006" );
+	local dyzx	= obj._dyzx
+	local game	= Game:GetInstance()
+	local database = game:GetDyzkDatabase();
 	
-	local dyzx = {}
-	obj._dyzx = dyzx
-	for i, name in ipairs( dyzkList ) do
-		dyzx[i] = Dyzk:new( "data/dyzx/"..name..".png" );
+	for dyzkEntry in database:Entries() do
+		local imageFileName = dyzkEntry:GetImageName();
+		dyzx[ #dyzx+1 ] = Dyzk:new( imageFileName );
+		
+		--local dbEntry = obj._db:AddEntry( dyzx[i]:GetModel() );
+		--dbEntry:SetImageName( imageFileName );
 	end
 	
-	obj._selection = 1;
+	dyzx[ #dyzx+1 ] = Dyzk:new( "data/dyzx/DyzkAA007.png" );
+	dyzx[ #dyzx+1 ] = Dyzk:new( "data/dyzx/DyzkAA007a.png" );
+	dyzx[ #dyzx+1 ] = Dyzk:new( "data/dyzx/DyzkAA007b.png" );
+		
+	--obj._db:Store();
 	
 	return setmetatable( obj, self );
 end
@@ -152,7 +159,7 @@ function ScSelection:Draw()
 	
 	
 	-- Stats
-	local phDyzk = dyzk:GetPhysicsBody()
+	local phDyzk = dyzk:GetModel()
 	g.print("radius: " .. round(phDyzk:GetMaxRadius()), 60, 130 );
 	g.print("weight: " .. round(phDyzk:GetWeight(), 1) .. "g", 60, 150 );
 	g.print("balance: " .. round(phDyzk:GetBalance()*100) .. "%", 60, 170 );
