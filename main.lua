@@ -47,71 +47,12 @@ client:Send( NetUtils.NewHandshakeMsg() );
 ----------------------------------------------
 
 
-local game = Game:GetInstance();
-
-
-function love.load()
-	game:Init();
-end
-
-function love.update( dt )	
-	game:Update( dt );
+function love.run()
 	
-	-- Update GUI
-	loveframes.update(dt);
+	local game = Game:GetInstance();
+	game:Run( arg )
+
 end
-
-
-function love.draw()
-	game:Draw()
-	
-	-- Draw GUI
-	loveframes.draw();	
-end
-
-
-function love.keypressed( key, unicode )
-	game:KeyPressed( key, unicode );
-		
-	-- Handle GUI
-	loveframes.keypressed( key, unicode )
-end
-
-
-function love.keyreleased( key, unicode )
-	game:KeyReleased( key, unicode );
-	
-	-- Handle GUI
-	loveframes.keyreleased( key, unicode )
-end
-
-
-function love.mousepressed(x, y, button)
-	game:MousePressed(x, y, button)
-	
-    -- Handle GUI
-    loveframes.mousepressed(x, y, button)
-end
-
- 
-function love.mousereleased(x, y, button)
-	game:MouseReleased(x, y, button)
-	
-    -- Handle GUI
-    loveframes.mousereleased(x, y, button)
-end
-
-
-function love.joystickpressed( j, but )
-	game:JoystickPressed( j, but )
-end
-
-
-function love.joystickreleased( j, but )
-	game:JoystickReleased( j, but )
-end
-
-
 
 
 --Shape affects physical traits - speed, weight, attack
