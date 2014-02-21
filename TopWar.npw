@@ -128,6 +128,7 @@
                 <File name="src\math\Vector.lua" />
                 <File name="src\math\PolarVector.lua" />
                 <File name="src\math\MathUtils.lua" />
+                <File name="src\math\BSpline.lua" />
             </Folder>
             <Folder name="util">
                 <File name="src\util\Timer.lua" />
@@ -151,11 +152,14 @@
                     <File name="src\abilities\SARedirect.lua" />
                     <File name="src\abilities\SAReverseLeap.lua" />
                     <File name="src\abilities\SAStone.lua" />
+                    <File name="src\abilities\SADash.lua" />
                 </Folder>
             </Folder>
             <Folder name="graphics">
                 <File name="src\graphics\ImageUtils.lua" />
                 <File name="src\graphics\DyzkImageAnalysis.lua" />
+                <File name="src\graphics\ImageData.lua" />
+                <File name="src\graphics\Light.lua" />
             </Folder>
             <Folder name="settings">
                 <File name="src\settings\Settings.lua" />
@@ -177,6 +181,8 @@
             <Folder name="ai">
                 <File name="src\ai\AIBehaviourBase.lua" />
                 <File name="src\ai\AIChasing.lua" />
+                <File name="src\ai\AIRandom.lua" />
+                <File name="src\ai\AIArenaAvoidance.lua" />
             </Folder>
             <Folder name="object">
                 <File name="src\object\Dyzk.lua" />
@@ -186,19 +192,25 @@
                 <File name="src\object\RPMMeter.lua" />
                 <File name="src\object\AbilityGadget.lua" />
                 <Folder name="gui">
-                    <File name="src\gui\NavGraph.lua" />
-                    <File name="src\gui\Button.lua" />
-                    <File name="src\gui\BlueIceSkin.lua" />
                     <File name="src\gui\GUI.lua" />
+                    <File name="src\gui\NavGraph.lua" />
+                    <Folder name="skin">
+                        <File name="src\gui\BlueIceSkin.lua" />
+                    </Folder>
+                    <Folder name="object">
+                        <File name="src\gui\BaseObject.lua" />
+                        <File name="src\gui\Button.lua" />
+                        <File name="src\gui\Panel.lua" />
+                    </Folder>
                 </Folder>
             </Folder>
             <Folder name="scenes">
                 <File name="src\scene\SceneManager.lua" />
                 <File name="src\scene\ScMainMenu.lua" />
+                <File name="src\scene\ScBattleSetup.lua" />
                 <File name="src\scene\ScCollection.lua" />
                 <File name="src\scene\ScBattle.lua" />
                 <Folder name="misc">
-                    <File name="src\scene\ScBattleSetup.lua" />
                     <File name="src\scene\ScSelection.lua" />
                     <File name="src\scene\ScPlayerSetup.lua" />
                 </Folder>
