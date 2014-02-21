@@ -65,6 +65,8 @@ function ArenaModel:GetDepth( x, y )
 	result.y = 0;
 	result.z = 0;
 	
+	print( "WARNING: Unimplemented function ArenaModel:GetDepth" );
+	
 	return result;
 end
 
@@ -79,26 +81,33 @@ function ArenaModel:GetNormal( x, y )
 
 	local width = normMask:getWidth();
 	local height = normMask:getHeight();
+		
+	local x = x/self._xScale
+	local y = y/self._yScale
 	
-	local x = clamp( x/self._xScale, 0, width-2);
-	local y = clamp( y/self._yScale, 0, height-2);
-	local ax, ay = floor(x), floor(y);
-	local bx, by = ax+1, ay+1;
-	local t1, t2 = x - ax, y - ay;
-	
-	local n00_x, n00_y, n00_z = normMask:getPixel(ax,ay);
-	local n01_x, n01_y, n01_z = normMask:getPixel(ax,by);
-	local n10_x, n10_y, n10_z = normMask:getPixel(bx,ay);
-	local n11_x, n11_y, n11_z = normMask:getPixel(bx,by);
-	
-	local nx = bilerp( n00_x, n01_x, n10_x, n11_x, t1, t2 );
-	local ny = bilerp( n00_y, n01_y, n10_y, n11_y, t1, t2 );
-	local nz = bilerp( n00_z, n01_z, n10_z, n11_z, t1, t2 );
-	
-	
-	result.x = (nx-127)/255;
-	result.y = (ny-127)/255;
-	result.z = (nz-127)/255;
+	if x>=0 and x<=width-2 and y>=0 and y<=height-2 then
+		local ax, ay = floor(x), floor(y);
+		local bx, by = ax+1, ay+1;
+		local t1, t2 = x - ax, y - ay;
+		
+		local n00_x, n00_y, n00_z = normMask:getPixel(ax,ay);
+		local n01_x, n01_y, n01_z = normMask:getPixel(ax,by);
+		local n10_x, n10_y, n10_z = normMask:getPixel(bx,ay);
+		local n11_x, n11_y, n11_z = normMask:getPixel(bx,by);
+		
+		local nx = bilerp( n00_x, n01_x, n10_x, n11_x, t1, t2 );
+		local ny = bilerp( n00_y, n01_y, n10_y, n11_y, t1, t2 );
+		local nz = bilerp( n00_z, n01_z, n10_z, n11_z, t1, t2 );
+		
+		
+		result.x = (nx-127)/255;
+		result.y = (ny-127)/255;
+		result.z = nz/255;
+	else
+		result.x = 0;
+		result.y = 0;
+		result.z = 0;
+	end
 	
 	return result;
 end
@@ -117,6 +126,14 @@ end
 -------------------------------------------------------------------------------
 function ArenaModel:RemoveDyzk( dyzk )
 	Array.RemoveFirst( self._dyzx, dyzk );
+end
+
+
+-------------------------------------------------------------------------------
+--  ArenaModel:RemoveAllDyzx : Removes all dyzx from the arena
+-------------------------------------------------------------------------------
+function ArenaModel:RemoveAllDyzx()
+	self._dyzx = {}
 end
 
 
@@ -150,15 +167,47 @@ end
 
 
 -------------------------------------------------------------------------------
+--  ArenaModel:GetSize : Returns the size of the arena (scaled)
+-------------------------------------------------------------------------------
+function ArenaModel:GetSize()
+	local width = self._normalMask:getWidth();
+	local height = self._normalMask:getHeight();
+	
+	return self._xScale*width, self._yScale*height, 255*self._zScale;
+end
+
+
+-------------------------------------------------------------------------------
+--  ArenaModel:SetSize : Sets the size of the arena (scaling it)
+-------------------------------------------------------------------------------
+function ArenaModel:SetSize( w, h, d )
+	self._xScale = w/self._normalMask:getWidth();
+	self._yScale = h/self._normalMask:getHeight();
+	self._zScale = d/255;
+end
+
+
+-------------------------------------------------------------------------------
 --  ArenaModel:Update : Updates the velocity of all dyzx in the ArenaModel
 -------------------------------------------------------------------------------
 function ArenaModel:Update( dt )
+	local dyzxOut;
+	
 	for i = 1, #self._dyzx do
-		local  dyzk = self._dyzx[i];
+		local dyzk = self._dyzx[i];
 		local norm = self:GetNormal( dyzk.x, dyzk.y );
 		
-		local zScale = DEFAULT_ZSCALE * self._zScale
-		dyzk:SetAcceleration( norm.x * zScale, norm.y * zScale );
+		if norm.x == 0 and norm.y == 0 and norm.z == 0 then
+			dyzxOut = dyzxOut or Array:new();
+			dyzxOut:Add( dyzk );
+		else		
+			local zScale = DEFAULT_ZSCALE * self._zScale
+			dyzk:SetAcceleration( norm.x * zScale, norm.y * zScale );
+		end
+	end
+	
+	if dyzxOut then
+		self:AnnounceOut( dyzxOut );
 	end
 	
 	self:DetectCollision();
@@ -166,7 +215,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  ArenaModel:HandleCollision : Detects collision between tops
+--  ArenaModel:DetectCollision : Detects collision between tops
 -------------------------------------------------------------------------------
 function ArenaModel:DetectCollision()
 	for i = 1, #self._dyzx-1 do
@@ -184,6 +233,17 @@ function ArenaModel:DetectCollision()
 				dyzk2:OnDyzkCollision( dyzk1, false );
 			end
 		end
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  ArenaModel:AnnounceOut : Announces arena out events
+-------------------------------------------------------------------------------
+function ArenaModel:AnnounceOut( dyzx )
+	for i = 1, #dyzx do	
+		local dyzk = dyzx[i];
+		dyzk:OnArenaOut();
 	end
 end
 
