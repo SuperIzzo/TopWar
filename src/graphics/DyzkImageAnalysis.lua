@@ -105,7 +105,6 @@ function DyzkImageAnalysis:AnalyzeImage( imgData, scale )
 		end
 	end
 	
-	
 	-- Calculate center of mass
 	centerOfMass = centerOfMass/numOpaquePixels;	
 	
@@ -258,7 +257,7 @@ end
 --  DyzkImageAnalysis:GetSpeed : Returns the control speed
 -------------------------------------------------------------------------------
 function DyzkImageAnalysis:GetSpeed()	
-	return (50/self:GetWeight())^2 * 200;
+	return (50/self:GetWeight())^2 * 400;
 end
 
 
@@ -266,10 +265,10 @@ end
 --  DyzkImageAnalysis:GetMaxAngularVelocity : Returns the maximal speed
 -------------------------------------------------------------------------------
 function DyzkImageAnalysis:GetMaxAngularVelocity()
-	local weightFactor = self:GetWeight()^0.8;
+	local weightFactor = self:GetWeight();
 	local radiusFactor = self:GetMaxRadius()/64;
 	
-	return 5000/( weightFactor * radiusFactor);
+	return 10000/( weightFactor * radiusFactor);
 end
 
 
