@@ -16,10 +16,10 @@ Array.__index = Array
 
 
 -------------------------------------------------------------------------------
---  Array.FindFirst : Finds the index of the first matched item in tab
+--  Array.new : Creates a new array
 -------------------------------------------------------------------------------
-function Array:new()
-	local obj = {}
+function Array:new( obj )
+	local obj = obj or {}
 	
 	return setmetatable( obj, self );
 end
