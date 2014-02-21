@@ -193,8 +193,6 @@ function Game:InitControls()
 		
 		-- Return the control back to the box (so that it can trigger other controls)
 		box:Trigger( "Control", control:GetID(), control:GetValue() );
-		
-		print( control:GetID(), control:GetValue() );
 	end
 
 	p1Box:SetCallback( sceneControl )
@@ -323,6 +321,8 @@ function Game:Update( dt )
 		end
 	end
 	
+	
+	love.window.setTitle( "Battle Dyzx - " .. love.timer.getFPS() );
 	-- Update the GUI
 	--loveframes.update(dt);
 end
