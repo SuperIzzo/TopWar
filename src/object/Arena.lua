@@ -3,8 +3,10 @@
 --===========================================================================--
 local ArenaModel			= require 'src.model.ArenaModel'
 local ImageUtils 			= require 'src.graphics.ImageUtils'
+local ImageData 			= require 'src.graphics.ImageData'
 
 local Array					= require 'src.util.Array'
+local Vector				= require 'src.math.Vector'
 
 
 
@@ -31,30 +33,30 @@ function Arena:new( imgFileName, maskFileName, normFileName )
 	local model = obj.model;
 	
 	if imgFileName and maskFileName then
-		local depthMap  = love.image.newImageData( maskFileName );
-		local normalMap
+	
+		obj.image 		= love.graphics.newImage( imgFileName );
+	
+	
+		local tempDepthMap  = love.image.newImageData( maskFileName );
+		local normalMap;
 		
-		if normFileName then
-			local rawNormalMap = love.image.newImageData( normFileName );
-			
-			normalMap = love.image.newImageData( 
-					rawNormalMap:getWidth(), 
-					rawNormalMap:getHeight() );
-			
-			ImageUtils.NormalizeImage( rawNormalMap, normalMap );
-		else
-			normalMap = love.image.newImageData( 
-					depthMap:getWidth(), 
-					depthMap:getHeight() );
-					
-			ImageUtils.DepthToNormalMap( depthMap, normalMap )
-		end
+		local depthMap = ImageData:new( 
+			tempDepthMap:getWidth()*2, 
+			tempDepthMap:getHeight()*2 
+		);
+		
+		normalMap = love.image.newImageData( 
+			depthMap:getWidth(), 
+			depthMap:getHeight() 
+		);
+		
+		ImageUtils.ScaleImage( tempDepthMap, depthMap, 5 );
+		ImageUtils.DepthToNormalMap( depthMap, normalMap )
 		
 		model:SetDepthMask( depthMap );
 		model:SetNormalMask( normalMap );
 		
 		obj.normalMap 	= love.graphics.newImage( normalMap );
-		obj.image 		= love.graphics.newImage( imgFileName );
 	end
 	---------------------------
 	
@@ -77,7 +79,10 @@ function Arena:_InitOneTime()
 		
 		if ok then
 			self._lightingShader = shader;
-		end	
+		else
+			print( shader );
+		end
+		
 	end
 end
 
@@ -90,19 +95,58 @@ function Arena:GetModel()
 end
 
 
+local lights = {}
+lights[1] = {}
+lights[1].position = Vector:new(10, -5, 2):Unit()
+lights[1].diffuse  = {1, 1, 1, 1}
+lights[1].ambient  = {0, 0, 0, 0}
+
+
 -------------------------------------------------------------------------------
 --  Arena:Draw : Draws the arena
 -------------------------------------------------------------------------------
 function Arena:Draw()
-	local xScale, yScale = self.model:GetScale();
+	local modelW, modelH = self.model:GetSize();
+	local imageW, imageH = self.image:getWidth(), self.image:getHeight();
+	local xScale, yScale = modelW/imageW, modelH/imageH;
 	
 	if self._lightingShader then
 		love.graphics.setShader( self._lightingShader );
 		self._lightingShader:send("normalMap",  self.normalMap );
-		--lightingShader:send("lightPos",  self.normalMap );
-	end
+		for i=1, #lights do
+			local light = "lights["..(i-1).. "].";
+			
+			self._lightingShader:send( light .. "position",
+				{
+					lights[i].position[1],
+					lights[i].position[2],
+					lights[i].position[3],
+					lights[i].position[4],
+				}
+			);
+			
+			self._lightingShader:send( light .. "diffuse",
+				{
+					lights[i].diffuse[1],
+					lights[i].diffuse[2],
+					lights[i].diffuse[3],
+					lights[i].diffuse[4],
+				}
+			);			
+			
+			self._lightingShader:send( light .. "ambient",
+				{
+					lights[i].ambient[1],
+					lights[i].ambient[2],
+					lights[i].ambient[3],
+					lights[i].ambient[4],
+				}
+			);			
+		end
+	end	
 	
 	love.graphics.draw( self.image, 0, 0, 0, xScale, yScale );
+	--love.graphics.draw( self.normalMap, 0, 0, 0, xScale, yScale );
 	
 	-- Unset spin blur
 	if self._lightingShader then
@@ -138,6 +182,15 @@ end
 
 
 -------------------------------------------------------------------------------
+--  RemoveAllDyzx:RemoveDyzk : Removes a dyzk from the arena
+-------------------------------------------------------------------------------
+function Arena:RemoveAllDyzx()
+	self.dyzx = {};	
+	self.model:RemoveAllDyzx();
+end
+
+
+-------------------------------------------------------------------------------
 --  Arena:Dyzx : Returns an iterator to all dyzx objects in the arena
 -------------------------------------------------------------------------------
 function Arena:Dyzx()
@@ -154,10 +207,26 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Arena:GetDyzkCount : Returns the number of dyzx left
+-------------------------------------------------------------------------------
+function Arena:GetDyzkCount()
+	return #self.dyzx;
+end
+
+
+-------------------------------------------------------------------------------
 --  Arena:AddDyzk : Adds a dyzk to the arena
 -------------------------------------------------------------------------------
 function Arena:SetScale( x, y, z )
 	self.model:SetScale(x,y,z);
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:SetSize : Sets the size of the arena
+-------------------------------------------------------------------------------
+function Arena:SetSize( w, h, d )
+	self.model:SetSize(w,h,d);
 end
 
 
