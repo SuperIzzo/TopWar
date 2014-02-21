@@ -22,6 +22,7 @@ function AIBehaviourBase:new()
 	local obj = {}
 	
 	obj._controller	= nil;
+	obj._weight		= 1;
 
 	return setmetatable(obj, self);
 end
@@ -32,6 +33,22 @@ end
 -------------------------------------------------------------------------------
 function AIBehaviourBase:SetController( controller )
 	self._controller = controller;
+end
+
+
+-------------------------------------------------------------------------------
+--  AIBehaviourBase:SetWeight : Sets the weight of the behaviour
+-------------------------------------------------------------------------------
+function AIBehaviourBase:SetWeight( weight )
+	self._weight = weight;
+end
+
+
+-------------------------------------------------------------------------------
+--  AIBehaviourBase:GetWeight : Returns the weight of the behaviour
+-------------------------------------------------------------------------------
+function AIBehaviourBase:GetWeight()
+	return self._weight;
 end
 
 
@@ -66,6 +83,7 @@ function AIBehaviourBase:SuggestDirection( x,y )
 			len = 1; 
 		end
 		
+		len = len/self._weight;
 		self._controller:AddControlVector( x/len, y/len );
 	end
 end
