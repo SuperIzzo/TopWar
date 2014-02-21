@@ -1,7 +1,59 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local sqrt 				= math.sqrt
+local sqrt 					= math.sqrt
+local BSpline				= require 'src.math.BSpline'
+local Vector				= require 'src.math.Vector'
+
+
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--	Class ImagePointData2D : A point data wrapper around an image
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+local ImagePointData2D = {}
+ImagePointData2D.__index 	= ImagePointData2D;
+
+
+-------------------------------------------------------------------------------
+--  ImagePointData2D:new : Creates a new ImagePointData2D
+-------------------------------------------------------------------------------
+function ImagePointData2D:new( image )
+	local obj = {}
+
+	obj.image		= image;
+
+	return setmetatable(obj, self);
+end
+
+
+-------------------------------------------------------------------------------
+--  ImagePointData2D:GetDimension : Returns the dimension of the data
+-------------------------------------------------------------------------------
+function ImagePointData2D:GetDimension()
+	return 2;
+end
+
+
+-------------------------------------------------------------------------------
+--  ImagePointData2D:GetLimits : Returns the min and max of the array
+-------------------------------------------------------------------------------
+function ImagePointData2D:GetLimits( u )
+	if u then
+		return 1, self.image:getHeight();
+	else
+		return 1, self.image:getWidth();
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  ImagePointData2D:GetPoint : Returns point with the given index
+-------------------------------------------------------------------------------
+function ImagePointData2D:GetPoint( u, v )
+	-- warp pixels in a vector
+	local z = self.image:getPixel( u-1, v-1 );
+	return z;
+end
+
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -97,6 +149,32 @@ function ImageUtils.DepthToNormalMap( inDepthData, outNormData )
 		end
 	end
 end
+
+
+-------------------------------------------------------------------------------
+--  ImageUtils.ScaleImage : Scales an image using a specified filter level
+-------------------------------------------------------------------------------
+function ImageUtils.ScaleImage( inImage, outImage, level )
+	local bSpline = BSpline:new();
+	local pointData = ImagePointData2D:new( inImage );
+	local scaleX = outImage:getWidth()  / inImage:getWidth();
+	local scaleY = outImage:getHeight() / inImage:getHeight();
+	
+	bSpline:SetPoints( pointData );
+	bSpline:SetLevel( level );
+	
+	for x=0, outImage:getWidth()-1 do
+		local scaledX = x/scaleX;
+		
+		for y=0, outImage:getHeight()-1 do
+			local scaledY = y/scaleY;
+			
+			local pixel = bSpline:GetPoint( scaledX, scaledY );
+			outImage:setPixel( x,y, pixel, pixel, pixel, 255 );
+		end
+	end
+end
+
 
 
 
