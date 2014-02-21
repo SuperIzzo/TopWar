@@ -42,8 +42,6 @@ function BattleController:Update( dt )
 				
 		self._controlDirX = pointX - dyzkX;
 		self._controlDirY = pointY - dyzkY;
-		
-		print( "Dyzk: ", dyzkX, dyzkY, "Point: ", pointX, pointY );
 	end
 	
 	self._dyzk:SetControlVector( self._controlDirX, self._controlDirY );
