@@ -7,6 +7,7 @@ local Dyzk				= require 'src.object.Dyzk'
 local Camera			= require 'src.object.Camera'
 local RPMMeter			= require 'src.object.RPMMeter'
 local AbilityGadget		= require 'src.object.AbilityGadget'
+local SceneManager		= require 'src.scene.SceneManager'
 local DBC				= require 'src.input.DirectBattleController'
 local AIBC				= require 'src.input.AIBattleController'
 
@@ -14,6 +15,7 @@ local SABoost			= require 'src.abilities.SABoost'
 local SARedirect		= require 'src.abilities.SARedirect'
 local SAReverseLeap		= require 'src.abilities.SAReverseLeap'
 local SAStone			= require 'src.abilities.SAStone'
+local SADash			= require 'src.abilities.SADash'
 
 local sign				= MathUtils.Sign
 
@@ -41,24 +43,39 @@ ScBattle.__index = ScBattle
 --  ScBattle:new : Creates a new scene
 -------------------------------------------------------------------------------
 function ScBattle:new()
-	local obj = {}
-	
-	obj._dyzx = {};
-	obj._controllers = {}
-	obj._rpmMeters = {}
-	obj._abilityGadgets = {}
+	local obj = setmetatable( {}, self );	
 	
 	obj._arena = Arena:new(
 			"data/arena/arena_image2.png", 
-			"data/arena/arena_mask2.png" );
-	obj._arena:SetScale(4,4,8);
+			"data/arena/arena_mask2c.png" );
+	obj._arena:SetSize(4000, 4000, 2000);
 	
 	obj._camera = Camera:new();
-	obj._camera:SetScale( 0.25, 0.25 );
+	obj._camera:SetZoom( 0.25 );
+	obj._camera:SetZoomSpeed( 0.05, 4 );
+	obj._camera:SetMinZoom( 0.1 );
+	obj._camera:SetMaxZoom( 0.5 );
 	
-	obj._skipUpdate = 0;
+	obj:_Renew();
 	
-	return setmetatable( obj, self );
+	return obj;
+end
+
+
+-------------------------------------------------------------------------------
+--  ScBattle:_Renew : Clears the scene
+-------------------------------------------------------------------------------
+function ScBattle:_Renew()
+	self._dyzx = {};
+	self._controllers = {}
+	self._rpmMeters = {}
+	self._abilityGadgets = {}
+	
+	self._arena:RemoveAllDyzx();
+	self._camera:RemoveAllTrackObjects();
+	
+	self._skipUpdate = 0;
+	self._gameOverTimer = nil;
 end
 
 
@@ -66,23 +83,36 @@ end
 --  ScBattle:Init : Initializes the scene
 -------------------------------------------------------------------------------
 function ScBattle:Init()
+	local dyzx = 
+	{
+		"data/dyzx/DyzkAA001.png",
+		"data/dyzx/DyzkAA002.png",
+		"data/dyzx/DyzkAA003.png",
+		"data/dyzx/DyzkAA004.png",
+		"data/dyzx/DyzkAA005.png",
+		"data/dyzx/DyzkAA006.png",
+		"data/dyzx/DyzkAA007.png",
+		"data/dyzx/DyzkAA007b.png",
+	}
 
 	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
-		local dyzk1 = Dyzk:new("data/dyzx/DyzkAA007b.png");
+		local dyzkID = dyzx[ math.random(#dyzx) ];
+		local dyzk1 = Dyzk:new( dyzkID );
 		local model1 = dyzk1:GetModel();		
 		model1.x = 1048;
 		model1.y = 1048;
 		model1.vx = 10;
 		model1.vy = 10;
 		model1:SetAbility( 1, SARedirect:new( model1 ) 		);
-		model1:SetAbility( 2, SABoost:new( model1 ) 		);
+		model1:SetAbility( 2, SADash:new( model1 ) 		);
 		model1:SetAbility( 3, SAReverseLeap:new( model1 )	);
 		model1:SetAbility( 4, SAStone:new( model1 ) 		);
 		model1:Spin(1);
 		self._dyzx[1] = dyzk1;
 		
-		local dyzk2 = Dyzk:new("data/dyzx/DyzkAA001.png");
+		dyzkID = dyzx[ math.random(#dyzx) ];
+		local dyzk2 = Dyzk:new( dyzkID );
 		local model2 = dyzk2:GetModel();
 		model2.x = 2048;
 		model2.y = 2048;
@@ -95,7 +125,8 @@ function ScBattle:Init()
 		model2:Spin(1);
 		self._dyzx[2] = dyzk2;
 		
-		local dyzk = Dyzk:new("data/dyzx/DyzkAA003.png");
+		dyzkID = dyzx[ math.random(#dyzx) ];
+		local dyzk = Dyzk:new( dyzkID );
 		local model = dyzk:GetModel();
 		model.x = 3048;
 		model.y = 3048;
@@ -106,9 +137,10 @@ function ScBattle:Init()
 		model:SetAbility( 3, SAReverseLeap:new( model ) );
 		model:SetAbility( 4, SAStone:new( model ) );
 		model:Spin(1);
-		--self._dyzx[3] = dyzk;
+		self._dyzx[3] = dyzk;
 		
-		dyzk = Dyzk:new("data/dyzx/DyzkAA002.png");
+		dyzkID = dyzx[ math.random(#dyzx) ];
+		dyzk = Dyzk:new( dyzkID );
 		model = dyzk:GetModel();
 		model.x = 1048;
 		model.y = 3048;
@@ -121,7 +153,8 @@ function ScBattle:Init()
 		model:Spin(1);
 		--self._dyzx[4] = dyzk;
 		
-		dyzk = Dyzk:new("data/dyzx/DyzkAA004.png");
+		dyzkID = dyzx[ math.random(#dyzx) ];
+		dyzk = Dyzk:new(dyzkID);
 		model = dyzk:GetModel();
 		model.x = 3048;
 		model.y = 1048;
@@ -169,11 +202,35 @@ end
 
 
 -------------------------------------------------------------------------------
+--  ScBattle:Leave : Updates the scene
+-------------------------------------------------------------------------------
+function ScBattle:Leave()
+	self:_Renew()
+end
+
+
+-------------------------------------------------------------------------------
 --  ScBattle:Update : Updates the scene
 -------------------------------------------------------------------------------
 function ScBattle:AddDyzk( dyzk )
 	self._dyzx[ #self._dyzx+1 ] = dyzk;
 end
+
+
+-------------------------------------------------------------------------------
+--  ScBattle:Update : Updates the scene
+-------------------------------------------------------------------------------
+function ScBattle:DestroyDyzk( dyzk )
+	-- Remove from the arena
+	if self._arena then
+		self._arena:RemoveDyzk( dyzk );
+	end
+	
+	-- Remove from the camera track list
+	if self._camera then
+		self._camera:RemoveTrackObject( dyzk:GetModel() );
+	end
+end	
 
 
 -------------------------------------------------------------------------------
@@ -200,7 +257,9 @@ function ScBattle:Update( dt )
 		dyzk:Update( dt );
 		
 		-- Flag dyzx that need removing from the arena
-		if not dyzk:GetModel():IsSpinning() then
+		if 	not dyzk:GetModel():IsSpinning() or 
+			dyzk:GetModel():IsOutOfArena()
+		then
 			dyzxForRemoval = dyzxForRemoval or {};
 			table.insert( dyzxForRemoval, dyzk );
 		end		
@@ -208,13 +267,28 @@ function ScBattle:Update( dt )
 	
 	-- If any dyzx need removing do it now
 	if dyzxForRemoval then
-		for _, dyzk in ipairs( dyzxForRemoval ) do			
-			self._arena:RemoveDyzk( dyzk );
+		for _, dyzk in ipairs( dyzxForRemoval ) do
+			self:DestroyDyzk( dyzk )
 		end
 	end
-	
+		
 	for i=1, #self._rpmMeters do
 		self._rpmMeters[i]:Update( dt );
+	end
+	
+	
+	-- Setup the game over timer
+	if self._arena:GetDyzkCount() <=1 and not self._gameOverTimer then
+		self._gameOverTimer = 5;
+	end
+	
+	if self._gameOverTimer and self._gameOverTimer>0 then
+		self._gameOverTimer = self._gameOverTimer - dt;
+		
+		if self._gameOverTimer<=0 then
+			local sceneManager = SceneManager:GetInstance();
+			sceneManager:SetScene( "Main Menu" );
+		end
 	end
 end
 
@@ -258,11 +332,23 @@ end
 function ScBattle:ConstructAIController( dyzk )
 	local ai = AIBC:new( nil, dyzk:GetModel(), self._arena:GetModel() );
 	
-	local AIChasing	= require 'src.ai.AIChasing'	
-	ai:AddBehaviour( AIChasing:new() );
+	local AIChasing			= require 'src.ai.AIChasing'	
+	local AIRandom			= require 'src.ai.AIRandom'
+	local AIArenaAvoidance	= require 'src.ai.AIArenaAvoidance'
+	local chase 	= AIChasing:new();
+	local rand		= AIRandom:new();
+	local avoid		= AIArenaAvoidance:new();
+	
+	chase:SetWeight( math.random()*40 - 10 );
+	rand:SetWeight( math.random()*10 );
+	avoid:SetWeight( math.random()*40 );
+	ai:AddBehaviour( chase );
+	ai:AddBehaviour( rand  );
+	ai:AddBehaviour( avoid  );
 	
 	return ai;
 end
+
 
 --===========================================================================--
 --  Initialization
