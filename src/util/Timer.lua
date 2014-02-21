@@ -17,7 +17,7 @@ Timer.__index = Timer;
 function Timer:new( time )
 	local obj = {}
 	
-	obj.timeLeft			= 0;
+	obj.timeLeft			= time or 0;
 --	obj.announcer			= nil;
 
 	return setmetatable(obj, self);
