@@ -11,6 +11,7 @@ local DyzxCollisionReport	= require 'src.model.DyzxCollisionReport'
 local assert 				= _G.assert
 local sqrt					= _G.math.sqrt
 local sign					= MathUtils.Sign
+local clamp					= MathUtils.Clamp
 
 
 
@@ -27,7 +28,7 @@ local CollisionConfigurationConstants =
 	-- arc on each dyzk becomes, in effect resulting in more frequent events
 	-- where the dyzx stop at each other and battle in close range.
 	-- Note: Use with care as it violates some conventional physics laws.
-	PUSHBACK_NEGATION_ARC = 0.2;
+	PUSHBACK_NEGATION_ARC = 0.4;
 	
 	-- The pushback impulse is partially determined by the jaggedness of the
 	-- two dyzx. The pushback ratio determines what parts are taken from the
@@ -56,8 +57,11 @@ local CollisionConfigurationConstants =
 	PUSHBACK_BALANCE_EFFECT_MIN = 2;
 	PUSHBACK_BALANCE_EFFECT_MAX = 16;
 	
+	-- The heavier a dyzk is the more it pushes lighter dyzx back, 
+	-- the weight ratio amplifier increases the effect of weight on pushback
+	PUSHBACK_WEIGHT_RATIO_AMP = 5;
 	
-	PUSHBACK_MULTIPLIER = 4;
+	PUSHBACK_MULTIPLIER = 3;
 }
 local colConfig = CollisionConfigurationConstants -- Shorthand name
 
@@ -94,6 +98,7 @@ function DyzkModel:new()
 	obj.angVel 	= 0;
 	obj._spin	= 0;
 	
+	obj._arenaOut	= false;
 	obj._friction	= 0.01;	
 	obj._collisionAnnouncer = Announcer:new()
 	
@@ -107,8 +112,8 @@ function DyzkModel:new()
 	obj._globalCooldownPeriod = 0;
 	
 	-- Damage
-	obj._damageTimer = Timer:new();
-	obj._damageTimeGap = 0.2;	-- 0.1 seconds of invulnerability
+	obj._attackTimer = Timer:new();
+	obj._attackTimeGap = 0.2;	-- 0.1 seconds of invulnerability
 	
 	-- Extra information
 	obj.metaData = {}
@@ -274,7 +279,7 @@ end
 function DyzkModel:Update( dt )
 	-- Timers...
 	self._globalCooldownTimer:Update( dt );
-	self._damageTimer:Update( dt );
+	self._attackTimer:Update( dt );
 	
 	-- Update abilities		
 	self:UpdateAbilities( dt );	
@@ -299,8 +304,8 @@ function DyzkModel:Update( dt )
 	self.ang = self.ang + self.angVel*dt;	
 	
 	-- Reset the control vector
-	self._controlVecX = 0;
-	self._controlVecY = 0;
+	--self._controlVecX = 0;
+	--self._controlVecY = 0;
 end
 
 
@@ -314,163 +319,226 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	--------------------------------
 	-- Basic variables
 	--------------
-	local x1, y1 = self:GetPosition();
-	local x2, y2 = other:GetPosition();
-	local rad1, rad2 = self:GetMaxRadius(), other:GetMaxRadius();
+	local pos1					= Vector:new( self:GetPosition() );
+	local pos2					= Vector:new( other:GetPosition() );
+	local rad1, rad2			= self:GetMaxRadius(),	other:GetMaxRadius();
+	local weight1, weight2 		= self:GetWeight(),		other:GetWeight();
+	local jag1, jag2	 		= self:GetJaggedness(), other:GetJaggedness();
+	local bal1, bal2	 		= self:GetBalance(), 	other:GetBalance();
+	local vel1, vel2			= Vector:new( self:GetVelocity() ),
+								  Vector:new( other:GetVelocity() );
+	local angVel1, angVel2		= self:GetAngularVelocity(),
+								  other:GetAngularVelocity();
+	local ctrl1, ctrl2			= Vector:new( self:GetControlVector() ),
+								  Vector:new( other:GetControlVector() );
+	
 	
 	-- Distance is the distance between the centers
-	local distance = math.sqrt((x1-x2)^2 + (y1-y2)^2);
+	-- And the collision normal is a normalized vector in the direction of
+	-- the collision (i.e. the two centers)
+	local collisionNormal, distance = (pos2-pos1):Unit();
 	local radDistance = rad1+rad2;
 	
 	-- Ratio is the ratio between the two radiuses
 	local ratio = rad2/radDistance;
 	
 	-- The collision point
-	local xCol, yCol = x1*ratio+x2*(1-ratio), y1*ratio+y2*(1-ratio);
+	local collisionPoint = pos1*ratio + pos2*(1-ratio);
 	
-	-- The collision normal is a normalized vector in the direction of
-	-- the collision (i.e. the two centers)
-	local collisionNormal = Vector:new(
-				(x2-x1)/distance, 
-				(y2-y1)/distance );
-	
-	-- Work out velocity, speed and direction
-	local vel1 = Vector:new( self:GetVelocity() );
-	local vel2 = Vector:new( other:GetVelocity() );
-	
-	local speed1 = vel1:Length();
-	local speed2 = vel2:Length();
-	local dir1 = Vector:new(0,0);
-	local dir2 = Vector:new(0,0);
-	
-	if speed1>0 then
-		dir1 = vel1/speed1;
-	end
-	if speed2>0 then
-		dir2 = vel2/speed2;
-	end
+	-- Work out the speed and the direction	
+	local dir1, speed1 = vel1:Unit();
+	local dir2, speed2 = vel2:Unit();
 	
 	-- Motion direction to collision normal dot product
-	-- tell us which direction the dyzk is hit from in respect
+	-- tells us which direction the dyzk is hit from in respect
 	-- to the direction it is moving in:
-	-- frontal collision(1), sides(0), back(-1)
+	-- front(1), sides(0), back(-1)
 	local dirNormDot1 = dir1:Dot( collisionNormal );
 	local dirNormDot2 = -dir2:Dot( collisionNormal );
 	
+	-- Control direction to collision normal dot product
+	-- tells us which direction the players are pushing the dyzx 
+	-- to in respect to the collision when it happens:
+	-- towards(1), away(-1) or indifferent(0)
+	local ctrlNormDot1 = ctrl1:Dot( collisionNormal );
+	local ctrlNormDot2 = ctrl2:Dot( collisionNormal );
+		
+	--[[
 	-- facingTerm is how much do the two dyzx face each other
 	-- safe arc is a modifier which increases or decreases the
 	-- pushback negation area (higher is safer)
-	local facingTerm = 
-		dirNormDot1*dirNormDot2  *  colConfig.PUSHBACK_NEGATION_ARC;
+	local facingTerm = dirNormDot1*dirNormDot2
+	facingTerm = facingTerm * colConfig.PUSHBACK_NEGATION_ARC;
+	--]]
 	
 	-- Force is calculated such that, if a dyzk is striken from the
 	-- side it takes the most damage, if the two dyzx face each other
 	-- directly they will stop and take almost no damage
-	local force1 = math.max(0, math.min(1, dirNormDot2-facingTerm) )
-	local force2 = math.max(0, math.min(1, dirNormDot1-facingTerm) )
-	
-	local weight1, weight2 		= self:GetWeight(), 	other:GetWeight()
-	local jag1, jag2	 		= self:GetJaggedness(), other:GetJaggedness()
-	local bal1, bal2	 		= self:GetBalance(), 	other:GetBalance()
+	local force1 = math.max(0, math.min(2, dirNormDot1-dirNormDot2/2) )
+	local force2 = math.max(0, math.min(2, dirNormDot2-dirNormDot1/2) )
+	local forceSpeed1 = speed1;
+	local forceSpeed2 = speed2;
 	
 	--------------------------------
 	-- Pushback
 	--------------
-	local weightRatio = weight1/(weight1 + weight2)	
+	local tangentDir1 = Vector:new(-collisionNormal.y, collisionNormal.x );	
+	local tangentDir2 = Vector:new( collisionNormal.y,-collisionNormal.x );
+	local tangentForce1 = tangentDir1*0.7 - collisionNormal*0.3;
+	local tangentForce2 = tangentDir2*0.7 + collisionNormal*0.3;
 	
-	local jagednessFactor1 =
-		1 +	(   jag2 * colConfig.PUSHBACK_JAG_RATIO
-			  + jag1 * ( 1-colConfig.PUSHBACK_JAG_RATIO ) )
-		* colConfig.PUSHBACK_JAG_EFFECT;
-		
-	local jagednessFactor2 =
-		1 +	(   jag1 * colConfig.PUSHBACK_JAG_RATIO
-			  + jag2 * ( 1-colConfig.PUSHBACK_JAG_RATIO ) )
-		* colConfig.PUSHBACK_JAG_EFFECT;
+	-- We calculate the alignment of the movement directions with the tangent
+	-- to the collision normal, when it goes over a certain threshold we'll
+	-- initiate a grip
+	local tanDot1 = tangentForce1:Dot( dir2 );
+	local tanDot2 = tangentForce2:Dot( dir1 );
+	local tanGrips = math.max(0,tanDot1) * math.max(0,tanDot2);
 	
-	local pb_low = colConfig.PUSHBACK_BALANCE_EFFECT_MIN;
-	local pb_high = colConfig.PUSHBACK_BALANCE_EFFECT_MAX;
-	local pb_range = pb_high - pb_low;
-	local balanceFactor1 = 
-		1 - (	bal2 * colConfig.PUSHBACK_BALANCE_RATIO 
-				+ bal1 * (1 - colConfig.PUSHBACK_BALANCE_RATIO) ) 
-		*  (pb_low + pb_range*math.random());
-		
-	local balanceFactor2 = 
-		1 - (	bal1 * colConfig.PUSHBACK_BALANCE_RATIO 
-				+ bal2 * (1 - colConfig.PUSHBACK_BALANCE_RATIO) ) 
-		* (pb_low + pb_range*math.random());
+	-- Amplify the signal
+	--[[
+	if tanGrips>0.5 then
+		tanGrips = tanGrips + (tanGrips-0.5)*3;
+	else
+		tanGrips = tanGrips - (0.5-tanGrips)*3;
+	end
+	--]]
 	
-	local pushBack1  =  colConfig.PUSHBACK_MULTIPLIER *
-		( force1*speed2*jagednessFactor1 + balanceFactor1 ) * (1-weightRatio);
-	local pushBack2  =  colConfig.PUSHBACK_MULTIPLIER *
-		( force2*speed1*jagednessFactor2 + balanceFactor2 ) * weightRatio;
+	-- The grip is a value between 0 and 1 represents the chance for the
+	-- grip event to occur. When it does it nullifies the speed of the dyzx
+	-- essentially negating the pushback and the remaining force and leaving
+	-- active only the tangent (spinning) force.
+	local grip = ( tanGrips )*(jag1*jag2*2 + 0.2);
+	grip = clamp( grip, 0, 0.7 );
+	grip = grip + (ctrlNormDot1 + ctrlNormDot2)*0.3;
+	
+	print( grip, ctrlNormDot1, ctrlNormDot2 );
+	if grip > math.random() then
+		print( "Happened" );
+		forceSpeed1=0;
+		forceSpeed2=0;
+	end
+	
+	local weightRate1 = (weight1/weight2)^1.5;
+	local weightRate2 = (weight2/weight1)^1.5;
+	local weightRatio = weight1/(weight1 + weight2)
+	
+	-- Preserved force (linear inertia)
+	local preservedStrength1 = forceSpeed1 * (1-force1);
+	local preservedStrength2 = forceSpeed2 * (1-force2);
+	local preservedForce1 = dir1 * preservedStrength1;
+	local preservedForce2 = dir2 * preservedStrength2;
+
+	-- Pushback force (generated by the linear force)
+	local pushBackStrength1 = forceSpeed1 * force1 * weightRate1;
+	local pushBackStrength2 = forceSpeed2 * force2 * weightRate2;	
+	local pushBackForce1 = Vector:new( collisionNormal.x, collisionNormal.y );
+	local pushBackForce2 = Vector:new(-collisionNormal.x,-collisionNormal.y );
+	pushBackForce1 = pushBackForce1 * pushBackStrength1;
+	pushBackForce2 = pushBackForce2 * pushBackStrength2;
 		
-		  
+		
+	-- Tangent force (generated by the spinning)
+	local tangentStrength1 = ( jag1+jag2 ) * 2;
+	local tangentStrength2 = tangentStrength1 * (angVel1*0.2+angVel2*0.8);	
+	local tangentStrength1 = tangentStrength1 * (angVel2*0.2+angVel1*0.8);
+	
+	tangentForce1 = tangentForce1 * tangentStrength1 * weight1/weight2;
+	tangentForce2 = tangentForce2 * tangentStrength2 * weight2/weight1;
+	--local tangentForce2 = looseDir2 * (preservedStrength2 + tangentStrength2);
+	
+	-- Resulting forces
+	local resultForce1 = preservedForce1 + pushBackForce2 + tangentForce2;
+	local resultForce2 = preservedForce2 + pushBackForce1 + tangentForce1;
+	
 	-- Apply the forces as two impulses in direction opposite to the 
 	-- collision normal (to the dyzk centers)
-	self:SetVelocity(	vel1.x*weightRatio -collisionNormal.x*pushBack1*(1-weightRatio),
-						vel1.y*weightRatio -collisionNormal.y*pushBack1*(1-weightRatio));
-				
-	other:SetVelocity(	vel2.x*(1-weightRatio) + collisionNormal.x*pushBack2*weightRatio,
-						vel2.x*(1-weightRatio) + collisionNormal.y*pushBack2*weightRatio );
+	self:SetVelocity(	resultForce1.x,	resultForce1.y );				
+	other:SetVelocity(	resultForce2.x,	resultForce2.y );
 	
 	-- Deal with intersections and make sure dyzx don't overlap
 	local intersectionAmount = (radDistance+6-distance);	
 	if intersectionAmount > 0 then
-		self:SetPosition( 	x1 - collisionNormal.x * intersectionAmount * (1-weightRatio),
-							y1 - collisionNormal.y * intersectionAmount * (1-weightRatio) )
+		self:SetPosition( 	pos1.x - collisionNormal.x * intersectionAmount * (1-weightRatio),
+							pos1.y - collisionNormal.y * intersectionAmount * (1-weightRatio) )
 							
-		other:SetPosition( 	x2 + collisionNormal.x * intersectionAmount * (weightRatio),
-							y2 + collisionNormal.y * intersectionAmount * (weightRatio) )
+		other:SetPosition( 	pos2.x + collisionNormal.x * intersectionAmount * (weightRatio),
+							pos2.y + collisionNormal.y * intersectionAmount * (weightRatio) )
 	end
 	
 	--------------------------------
 	-- RPM Damage
-	--------------	
+	--------------
 	-- The RPM damage depends on the collision force, the jagedness of the two dyzx and
 	-- angular velocity of the other top... note that if the two dyzx have opposite spins	
 	-- they will regenerate instead of damaging each other
 	local rpmDmg1 = 0
 	local rpmDmg2 = 0;
-	if self._damageTimer:IsStopped() then
+	if other._attackTimer:IsStopped() then
 		-- RPM damage formula for dyzk 1
 		local jagFactor = jag1*0.3 + jag2*0.7;
-		local staticDamage = (self.angVel + other.angVel) * jagFactor * other:GetMaxRadius()/32 * weight2/(weight1^2);
+		local staticDamage = 
+			weight2^2 * (2 - bal2)
+			* rad2 * (jag2*0.7 + jag1*0.3)
+			/ (weight1 * rad1 * 25);
 		
-		local kineticDamage = 0;
-		if speed2>10 then  
-			kineticDamage = jagFactor * (speed2/8)^2 * force1 * weight2/(weight1^2) * sign(self.angVel);
+		local knockDamage = 
+			speed2 * force2 * weight2^2
+			/ (weight1^2 * 1000)
+		
+		-- Razor (aka slash) damage is generated when one dyzk moves quickly
+		-- trough the other's side without pushing it (like a sword)
+		local razorDamage	= 
+			math.abs(tanDot2) * speed2^2			-- Motion factor
+			* angVel2 * rad2 * (jag2*1.6 + 0.4)		-- Rotation factor
+			/ (weight1^2 * rad1^2 * 1000) 			-- Defence
+			* (jag1*0.7 + 0.3)						-- some more defence
+		if speed2<10 then  
+			knockDamage = 0;
 		end
 		
-		rpmDmg1 = staticDamage + kineticDamage;	
+		rpmDmg1 = staticDamage + knockDamage + razorDamage;
 		
 		-- reset the damage timer
 		if rpmDmg1 > 0.01 or rpmDmg1 < -0.01 then
-			self._damageTimer:Reset( self._damageTimeGap );
+			other._attackTimer:Reset( other._attackTimeGap );
 		end
 	end
-	if other._damageTimer:IsStopped() then	
+	if self._attackTimer:IsStopped() then	
 		-- RPM damage formula for dyzk 2
-		local jagFactor = jag1*0.7 + jag2*0.3;
-		local staticDamage = (self.angVel + other.angVel) * jagFactor * self:GetMaxRadius()/32 * weight1/(weight2^2);
+		local staticDamage = 
+			weight1^2 * (2 - bal1)
+			* rad1 * (jag1*0.7 + jag2*0.3)
+			/ (weight2 * rad2 * 25);
+		--(self.angVel + other.angVel) * jagFactor * self:GetMaxRadius()/32 * weight1/(weight2^2);
 		
-		local kineticDamage = 0;
-		if speed1>10 then  
-			kineticDamage = jagFactor * (speed1/8)^2 * force2 * weight1/(weight2^2) * sign(other.angVel);		
+		--jagFactor * (speed1/8)^2 * force2 * weight1/(weight2^2) * sign(other.angVel);
+		local knockDamage = 
+			speed1 * force1 * weight1^2
+			/ (weight2^2 * 1000)
+		
+		-- Razor (aka slash) damage is generated when one dyzk moves quickly
+		-- trough the other's side without pushing it (like a sword)
+		local razorDamage	= 
+			math.abs(tanDot1) * speed1^2			-- Motion factor
+			* angVel1 * rad1 * (jag1*1.6 + 0.4)		-- Rotation factor
+			/ (weight2^2 * rad2^2 * 1000)			-- Defence
+			* (jag2*0.7 + 0.3)						-- some more defence
+		
+		if speed1<10 then  
+			knockDamage = 0;
 		end
 		
-		rpmDmg2 = staticDamage + kineticDamage;
+		rpmDmg2 = staticDamage + knockDamage + razorDamage;
 		
 		-- reset the damage timer
 		if rpmDmg2 > 0.01 or rpmDmg2 < -0.01 then
-			other._damageTimer:Reset( other._damageTimeGap );
+			 self._attackTimer:Reset( self._attackTimeGap );
 		end
 	end
 	
 	-- A couple of fake adjustments
-	rpmDmg1 = rpmDmg1/40;
-	rpmDmg2 = rpmDmg2/40;
+	rpmDmg1 = rpmDmg1;
+	rpmDmg2 = rpmDmg2;
 	
 	-- Apply the damage
 	self.angVel = self.angVel 	- rpmDmg1;
@@ -481,23 +549,39 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	local collisionReport1 = 
 		DyzxCollisionReport:new(
 				self, other, true,
-				xCol, yCol, 
+				collisionPoint.x, collisionPoint.y, 
 				collisionNormal.x, collisionNormal.y,
 				rpmDmg1 * self.RPS_TO_RPM_SCALE, 
-				rpmDmg2 * self.RPS_TO_RPM_SCALE,
-				pushBack1, pushBack2 );
+				rpmDmg2 * self.RPS_TO_RPM_SCALE )				
+				--pushBack1, pushBack2 );
 				
 	local collisionReport2 = 
 		DyzxCollisionReport:new(
 				other, self, false,
-				xCol, yCol, 
+				collisionPoint.x, collisionPoint.y, 
 				-collisionNormal.x, -collisionNormal.y,
 				rpmDmg2 * self.RPS_TO_RPM_SCALE,
-				rpmDmg1 * self.RPS_TO_RPM_SCALE, 				
-				pushBack2, pushBack1 );
+				rpmDmg1 * self.RPS_TO_RPM_SCALE )
+				--	pushBack2, pushBack1 );
 	
 	self._collisionAnnouncer:Announce( collisionReport1 );
 	other._collisionAnnouncer:Announce( collisionReport2 );
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:OnArenaOut : Handles arena out events
+-------------------------------------------------------------------------------
+function DyzkModel:OnArenaOut()
+	self._arenaOut = true;
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:IsOutOfArena : Returns true if the dyzk is still in the arena
+-------------------------------------------------------------------------------
+function DyzkModel:IsOutOfArena()
+	return self._arenaOut;
 end
 
 
