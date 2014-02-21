@@ -84,6 +84,7 @@ function SpecialAbility:Activate( on )
 			self.active 				= true;
 			self._activationDown 		= true;
 			self._activationHoldTimer:Reset( self.activationHold );
+			self._effectTimer:Reset( self.effectDuration );
 			
 			self:OnActivationStart();
 		end;		
@@ -91,8 +92,6 @@ function SpecialAbility:Activate( on )
 		self._activationDown = false;
 
 		self:OnActivationEnd();	
-		
-		self._effectTimer:Reset( self.effectDuration );
 	end
 	
 end
@@ -106,7 +105,7 @@ function SpecialAbility:Update( dt )
 	self._cooldownTimer:Update( dt );
 	
 	-- A complicated if-then-else tree to handle possible all ability states
-	if not self._activationHoldTimer:IsRunning() then
+	if self._activationHoldTimer:IsRunning() then
 		self._activationHoldTimer:Update( dt );
 	
 		if self._activationHoldTimer:IsStopped() then
@@ -116,7 +115,7 @@ function SpecialAbility:Update( dt )
 		end		
 	elseif self._effectTimer:IsRunning() then
 		self._effectTimer:Update( dt );
-		
+
 		if self._effectTimer:IsStopped() then
 			self:OnDeactivation()
 			self.active = false;
