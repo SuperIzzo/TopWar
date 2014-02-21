@@ -24,7 +24,7 @@ SABoost.activationHold		= 1;
 function SABoost:new(dyzk, arena)
 	local obj = SpecialAbility:new(dyzk)
 			
-	obj._initialBoost = 100;	-- impulse
+	obj._initialBoost = 300;	-- impulse
 	obj._continuousBoost = 400;	-- pixels per seconds
 
 	return setmetatable(obj, self);
