@@ -23,6 +23,8 @@ function Announcer:new()
 	local obj = {}
 	
 	obj.listeners = {}
+	
+	-- We don't want to keep objects in memory, this table has weak keys
 	setmetatable( obj.listeners, ListenersMetaTable );
 
 	return setmetatable(obj, self);
@@ -30,7 +32,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Announcer:new : Creates a new Announcer
+--  Announcer:AddListener : Adds a listener to the announcer
 -------------------------------------------------------------------------------
 function Announcer:AddListener( obj, func )
 	self.listeners[ obj ] = func;
@@ -38,7 +40,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Announcer:RemoveListener : Removes a listener
+--  Announcer:RemoveListener : Removes a listener from the announcer
 -------------------------------------------------------------------------------
 function Announcer:RemoveListener( obj )
 	self.listeners[ obj ] = nil;
