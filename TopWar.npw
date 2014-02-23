@@ -139,8 +139,8 @@
             <Folder name="model">
                 <File name="src\model\Player.lua" />
                 <File name="src\model\ArenaModel.lua" />
-                <File name="src\model\DyzkData.lua" />
                 <File name="src\model\DyzkModel.lua" />
+                <File name="src\model\DyzkData.lua" />
                 <File name="src\model\DyzkCollection.lua" />
                 <File name="src\model\DyzxCollisionReport.lua" />
                 <File name="src\model\DyzkCollision.lua" />
