@@ -50,8 +50,8 @@ end
 -------------------------------------------------------------------------------
 function ImagePointData2D:GetPoint( u, v )
 	-- warp pixels in a vector
-	local z = self.image:getPixel( u-1, v-1 );
-	return z;
+	local pixel = Vector:new( self.image:getPixel( u-1, v-1 ) );
+	return pixel;
 end
 
 
@@ -170,7 +170,7 @@ function ImageUtils.ScaleImage( inImage, outImage, level )
 			local scaledY = y/scaleY;
 			
 			local pixel = bSpline:GetPoint( scaledX, scaledY );
-			outImage:setPixel( x,y, pixel, pixel, pixel, 255 );
+			outImage:setPixel( x,y, pixel.x, pixel.y, pixel.z, 255 );
 		end
 	end
 end
