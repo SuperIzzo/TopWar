@@ -30,7 +30,7 @@ function ArenaModel:new()
 	
 	obj._depthMask = nil;
 	obj._normalMask = nil;
-	obj._dyzx = {}
+	obj._dyzx = Array:new()
 	obj._xScale = 1;
 	obj._yScale = 1;
 	obj._zScale = 1;
@@ -117,7 +117,7 @@ end
 --  ArenaModel:AddDyzk : Adds a dyzk to the ArenaModel
 -------------------------------------------------------------------------------
 function ArenaModel:AddDyzk( dyzk )
-	self._dyzx[ #self._dyzx+1 ] = dyzk;
+	self._dyzx:Add( dyzk );
 end
 
 
@@ -125,7 +125,7 @@ end
 --  ArenaModel:RemoveDyzk : Removes a dyzk to the ArenaModel
 -------------------------------------------------------------------------------
 function ArenaModel:RemoveDyzk( dyzk )
-	Array.RemoveFirst( self._dyzx, dyzk );
+	self._dyzx:RemoveFirst( dyzk );
 end
 
 
@@ -133,7 +133,7 @@ end
 --  ArenaModel:RemoveAllDyzx : Removes all dyzx from the arena
 -------------------------------------------------------------------------------
 function ArenaModel:RemoveAllDyzx()
-	self._dyzx = {}
+	self._dyzx = Array:new()
 end
 
 
@@ -141,12 +141,7 @@ end
 --  ArenaModel:Dyzx : Returns an iterator to all dyzx in the arena
 -------------------------------------------------------------------------------
 function ArenaModel:Dyzx()
-	local i = 0;
-	
-	return function ()
-		i=i+1;
-		return self._dyzx[i];
-	end	
+	return self._dyzx:Items()
 end
 
 
@@ -193,8 +188,7 @@ end
 function ArenaModel:Update( dt )
 	local dyzxOut;
 	
-	for i = 1, #self._dyzx do
-		local dyzk = self._dyzx[i];
+	for dyzk in self._dyzx:Items() do
 		local norm = self:GetNormal( dyzk.x, dyzk.y );
 		
 		if norm.x == 0 and norm.y == 0 and norm.z == 0 then
@@ -241,8 +235,7 @@ end
 --  ArenaModel:AnnounceOut : Announces arena out events
 -------------------------------------------------------------------------------
 function ArenaModel:AnnounceOut( dyzx )
-	for i = 1, #dyzx do	
-		local dyzk = dyzx[i];
+	for dyzk in Array.Items( dyzx ) do
 		dyzk:OnArenaOut();
 	end
 end
