@@ -137,9 +137,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkData:SetMaxAngularVelocity : Sets the max angular velocity of the dyzk
+--  DyzkData:SetMaxRadialVelocity : Sets the max angular velocity of the dyzk
 -------------------------------------------------------------------------------
-function DyzkData:SetMaxAngularVelocity( angVel )
+function DyzkData:SetMaxRadialVelocity( angVel )
 	assert( angVel >= 0 )
 	
 	self._maxAngVel = angVel;
@@ -147,9 +147,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkData:GetMaxAngularVelocity : Returns the maximal dyzk angular velocity
+--  DyzkData:GetMaxRadialVelocity : Returns the maximal dyzk angular velocity
 -------------------------------------------------------------------------------
-function DyzkData:GetMaxAngularVelocity()
+function DyzkData:GetMaxRadialVelocity()
 	return self._maxAngVel or 0;
 end
 
@@ -165,7 +165,7 @@ function DyzkData:CopyFromDyzkData( dyzkData )
 	self:SetWeight( 				dyzkData:GetWeight() 				);
 	self:SetBalance( 				dyzkData:GetBalance()				);
 	self:SetSpeed( 					dyzkData:GetSpeed()					);
-	self:SetMaxAngularVelocity( 	dyzkData:GetMaxAngularVelocity()	);
+	self:SetMaxRadialVelocity( 		dyzkData:GetMaxRadialVelocity()		);
 end
 
 

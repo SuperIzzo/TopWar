@@ -8,8 +8,8 @@ local Timer					= require 'src.util.Timer'
 local DyzkData				= require 'src.model.DyzkData'
 local DyzxCollisionReport	= require 'src.model.DyzxCollisionReport'
 
-local assert 				= _G.assert
-local sqrt					= _G.math.sqrt
+local assert 				= assert
+local sqrt					= math.sqrt
 local sign					= MathUtils.Sign
 local clamp					= MathUtils.Clamp
 
@@ -175,9 +175,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkModel:GetAngularVelocity : Returns the angular velocity
+--  DyzkModel:GetRadialVelocity : Returns the angular velocity
 -------------------------------------------------------------------------------
-function DyzkModel:GetAngularVelocity()
+function DyzkModel:GetRadialVelocity()
 	return self.angVel;
 end
 
@@ -212,7 +212,7 @@ end
 --  DyzkModel:GetRPM : Returns the angular velocity in revolution per minutes
 -------------------------------------------------------------------------------
 function DyzkModel:GetRPM()
-	return self:GetAngularVelocity()*self.RPS_TO_RPM_SCALE;
+	return self:GetRadialVelocity()*self.RPS_TO_RPM_SCALE;
 end
 
 
@@ -248,7 +248,7 @@ end
 -------------------------------------------------------------------------------
 function DyzkModel:Spin( spin )
 	self._spin = self._spin + spin;	
-	self.angVel = self.angVel + spin * self:GetMaxAngularVelocity()
+	self.angVel = self.angVel + spin * self:GetMaxRadialVelocity()
 end
 
 
@@ -327,8 +327,8 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	local bal1, bal2	 		= self:GetBalance(), 	other:GetBalance();
 	local vel1, vel2			= Vector:new( self:GetVelocity() ),
 								  Vector:new( other:GetVelocity() );
-	local angVel1, angVel2		= self:GetAngularVelocity(),
-								  other:GetAngularVelocity();
+	local angVel1, angVel2		= self:GetRadialVelocity(),
+								  other:GetRadialVelocity();
 	local ctrl1, ctrl2			= Vector:new( self:GetControlVector() ),
 								  Vector:new( other:GetControlVector() );
 	

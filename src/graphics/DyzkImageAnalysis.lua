@@ -9,8 +9,8 @@ local DyzkData		= require 'src.model.DyzkData'
 local max			= math.max
 local log			= math.log
 local floor			= math.floor
-local asin			= _G.math.asin
-local pi			= _G.math.pi
+local asin			= math.asin
+local pi			= math.pi
 local clamp			= MathUtils.Clamp
 local warp			= MathUtils.Warp
 
@@ -233,7 +233,7 @@ function DyzkImageAnalysis:GetJaggedness()
 	local maxRad = self:GetMaxRadius();
 		
 	-- Sum up jaggedness from all angles
-	-- Logarithms ensure that jagedness is only effetive at the contour		
+	-- Logarithms ensure that jaggedness is most effective at the contour		
 	for ang =0, self:GetAngleSpan() do			
 		local difference = maxRad - self:GetRadiusAS(ang);
 		
@@ -245,7 +245,7 @@ function DyzkImageAnalysis:GetJaggedness()
 	
 	-- Normalize:
 	jag = jag / self:GetAngleSpan()  -- divide by the number of angle measures
-	jag = jag / log(128)			 -- rebase the log at 128 (adjustable)
+	jag = jag / log(128)			 -- re-base the log at 128 (adjustable)
 	jag = clamp( jag, 0, 1 );		 -- clamp to (0.0, 1.0)
 	
 	self._jaggedness = jag;	
@@ -262,9 +262,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkImageAnalysis:GetMaxAngularVelocity : Returns the maximal speed
+--  DyzkImageAnalysis:GetMaxRadialVelocity : Returns the maximal speed
 -------------------------------------------------------------------------------
-function DyzkImageAnalysis:GetMaxAngularVelocity()
+function DyzkImageAnalysis:GetMaxRadialVelocity()
 	local weightFactor = self:GetWeight();
 	local radiusFactor = self:GetMaxRadius()/64;
 	
