@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local Announcer				= require 'src.util.Announcer'
+local Announcer				= nil -- required when needed (Timer:AddListener)
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -80,6 +80,7 @@ end
 -------------------------------------------------------------------------------
 function Timer:AddListener( obj, func )
 	if not self.announcer then
+		Announcer = Announcer or require 'src.util.Announcer';
 		self.announcer = Announcer:new();
 	end
 	
