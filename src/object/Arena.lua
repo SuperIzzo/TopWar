@@ -20,7 +20,7 @@ Arena.__index = Arena;
 -------------------------------------------------------------------------------
 --  Arena:new : Creates a new arena game object
 -------------------------------------------------------------------------------
-function Arena:new( imgFileName, maskFileName, normFileName )
+function Arena:new( imgFileName, maskFileName )
 	local obj = {}
 	
 	self:_InitOneTime();
