@@ -12,7 +12,7 @@ local DyzkImageAnalysis		= require 'src.graphics.DyzkImageAnalysis'
 --	Constants
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local DEFAULT_DYZK_SCALE = 1
-local DEBUG_GRAPHICS	 = true
+local DEBUG_GRAPHICS	 = false
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
@@ -76,6 +76,78 @@ local function changePitch( inSoundData, outSoundData, scale )
 end
 
 
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+--	Class SoundPointData a brief... 
+--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
+local SoundPointData = {}
+SoundPointData.__index = SoundPointData;
+
+
+-------------------------------------------------------------------------------
+--  SoundPointData:new  Creates a new SoundPointData
+-------------------------------------------------------------------------------
+function SoundPointData:new( soundData )
+	local obj = {}
+	obj.soundData		= soundData;
+	return setmetatable(obj, self);
+end
+
+
+-------------------------------------------------------------------------------
+--  SoundPointData:GetDimension : Returns the dimension of the data
+-------------------------------------------------------------------------------
+function SoundPointData:GetDimension() return 1; end
+
+
+-------------------------------------------------------------------------------
+--  SoundPointData:GetLimits : Returns the min and max of the array
+-------------------------------------------------------------------------------
+function SoundPointData:GetLimits()
+	return 1, self.soundData:getSampleCount();
+end
+
+
+-------------------------------------------------------------------------------
+--  SoundPointData:GetPoint : Returns point with the given index
+-------------------------------------------------------------------------------
+function SoundPointData:GetPoint( idx )
+	return self.soundData:getSample(idx-1);
+end
+
+
+-------------------------------------------------------------------------------
+--  Dyzk:_GenerateClings : Generates different cling sounds
+-------------------------------------------------------------------------------
+local BSpline = require 'src.math.BSpline'
+function Dyzk:_GenerateClings()
+	local soundData = love.sound.newSoundData("data/sfx/metallic-cling1.ogg");
+	local pointData = SoundPointData:new( soundData );
+	local bSpline = BSpline:new();
+	bSpline:SetPoints( pointData );
+	
+	local clings = {}
+	for i=1, 10 do
+		local scale = 0.2+math.random(10)/10;
+		local trim = 3000;
+		local numSamples = math.floor((soundData:getSampleCount()-trim)*scale);
+		local newSoundData = love.sound.newSoundData( 
+			numSamples, 
+			soundData:getSampleRate(), 
+			soundData:getBitDepth(), 
+			soundData:getChannels() );
+			
+		for s=1,numSamples do
+			local sample = bSpline:GetPoint( s/scale+trim/2,4 );
+			newSoundData:setSample( s, sample );
+		end
+		
+		clings[i] = love.audio.newSource( newSoundData );
+	end
+	
+	return clings;
+end
+
+
 -------------------------------------------------------------------------------
 --  Dyzk:_InitOneTime : Loads common resoources
 -------------------------------------------------------------------------------
@@ -87,8 +159,7 @@ function Dyzk:_InitOneTime()
 	self._classInitialised = true;
 
 	-- Load the cling sound effect
-	self._sfxClings = {};
-	self._sfxClings[1] = love.audio.newSource( "data/sfx/metallic-cling1.ogg" );
+	self._sfxClings = self:_GenerateClings();
 	
 	if love.graphics.isSupported( "shader" ) then
 		local shaderCode = love.filesystem.read( "data/gfx/shaders/spin-blur.frag" );
@@ -130,7 +201,7 @@ function Dyzk:Draw()
 		-- Set spin blur
 		if self._spinBlurShader then
 			g.setShader( self._spinBlurShader );
-			self._spinBlurShader:send("angle", self.model:GetAngularVelocity()/60 );
+			self._spinBlurShader:send("angle", self.model:GetRadialVelocity()/60 );
 		end
 		
 		-- Draw the image
@@ -209,8 +280,11 @@ function Dyzk:OnDyzkCollision( report )
 		);
 		self._sparks:SetAnimDuration( 0.1 );
 		
-		local clingIdx = math.random( #self._sfxClings ); 
-		love.audio.play( self._sfxClings[clingIdx] );
+		if (not self._sfxClings.current) or self._sfxClings.current:isStopped() then
+			local clingIdx = math.random( #self._sfxClings ); 
+			self._sfxClings.current = self._sfxClings[clingIdx];
+			love.audio.play( self._sfxClings.current );
+		end
 	end
 	
 end
