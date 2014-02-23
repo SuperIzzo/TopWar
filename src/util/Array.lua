@@ -65,6 +65,18 @@ function Array:RemoveFirst( item )
 end
 
 
+-------------------------------------------------------------------------------
+--  Array:Items : Returns an iterator to the array items
+-------------------------------------------------------------------------------
+function Array:Items()
+	local i = 0;
+	
+	return function ()
+		i=i+1;
+		return self[i];
+	end
+end
+
 
 --===========================================================================--
 --  Initialization
