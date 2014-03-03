@@ -4,7 +4,7 @@
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class Array: An utility class to handle tables as array data structures
+--	Class Array : An utility class to handle tables as array data structures
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  In a manner the Array class works like the standard table library and uses
 -- 	it quite a lot. The difference being it provides some extra functionality
@@ -38,27 +38,44 @@ Array.RemoveAt = table.remove
 
 
 -------------------------------------------------------------------------------
---  Array.FindFirst : Finds the index of the first matched item in tab
+--  Array.Find : Finds the index of the first matched item in tab
 -------------------------------------------------------------------------------
-function Array:FindFirst( item )
+function Array:Find( startPos, endPos, item )
+	-- Work out the parameters
+	if type(item)=="nil" then
+		if not endPos then
+			item = startPos;
+			startPos = 1;
+			endPos = table.getn( self );
+		else
+			item = endPos;
+			startPos = startPos or 1;
+			endPos = table.getn( self );
+		end		
+	end
 	
-	return table.foreach( self, 
-		function( idx, value ) 
-			if value == item then 
-				return idx;
-			end
+	-- See if we'll be going backwards
+	local inc = 1;
+	if startPos>endPos then
+		inc = -1;
+	end
+	
+	-- Do the searching
+	for i = startPos, endPos, inc do
+		local currentItem = self[i];
+		if item == currentItem then
+			return i;
 		end 
-	);
+	end
 end
 
 
 -------------------------------------------------------------------------------
---  Array:RemoveFirst : Removes the first value found that matches 'item'
+--  Array:RemoveItem : Removes the first value found that matches 'item'
 -------------------------------------------------------------------------------
-function Array:RemoveFirst( item )
-	
-	local findFirst = self.FindFirst or Array.FindFirst;	
-	local idx = findFirst( self, item )
+function Array:RemoveItem( ... )	
+	local findFirst = self.Find or Array.Find;	
+	local idx = findFirst( self, ... )
 	if idx then
 		return table.remove( self, idx );
 	end
@@ -73,7 +90,7 @@ function Array:Items()
 	
 	return function ()
 		i=i+1;
-		return self[i];
+		return self[i], i;
 	end
 end
 
