@@ -2,6 +2,8 @@
 --  Dependencies
 --===========================================================================--
 local ArenaModel			= require 'src.model.ArenaModel'
+local HeightMap				= require 'src.model.HeightMap'
+local NormalMap				= require 'src.model.NormalMap'
 local ImageUtils 			= require 'src.graphics.ImageUtils'
 local ImageData 			= require 'src.graphics.ImageData'
 
@@ -20,7 +22,7 @@ Arena.__index = Arena;
 -------------------------------------------------------------------------------
 --  Arena:new : Creates a new arena game object
 -------------------------------------------------------------------------------
-function Arena:new( imgFileName, maskFileName )
+function Arena:new( arenaPath, width, height, depth )
 	local obj = {}
 	
 	self:_InitOneTime();
@@ -32,33 +34,14 @@ function Arena:new( imgFileName, maskFileName )
 	---------------------------
 	local model = obj.model;
 	
-	if imgFileName and maskFileName then
+	local heightMap = self:LoadHeightMap( arenaPath, width, height );
+	local normalMap = self:LoadNormalMap( arenaPath, width, height, heightMap );
+	obj.image = love.graphics.newImage( arenaPath .. "/image.png" );
 	
-		obj.image 		= love.graphics.newImage( imgFileName );
+	model:SetDepthMask( heightMap );
+	model:SetNormalMask( normalMap );
 	
-	
-		local tempDepthMap  = love.image.newImageData( maskFileName );
-		local normalMap;
-		
-		local depthMap = ImageData:new( 
-			tempDepthMap:getWidth()*2, 
-			tempDepthMap:getHeight()*2 
-		);
-		
-		normalMap = love.image.newImageData( 
-			depthMap:getWidth(), 
-			depthMap:getHeight() 
-		);
-		
-		ImageUtils.ScaleImage( tempDepthMap, depthMap, 5 );
-		ImageUtils.DepthToNormalMap( depthMap, normalMap )
-		
-		model:SetDepthMask( depthMap );
-		model:SetNormalMask( normalMap );
-		
-		obj.normalMap 	= love.graphics.newImage( normalMap );
-	end
-	---------------------------
+	self.SetSize( obj, width, height, depth );
 	
 	return setmetatable( obj, self );
 end
@@ -84,6 +67,140 @@ function Arena:_InitOneTime()
 		end
 		
 	end
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:LoadHeightMap : Loads the height map of the arena
+-------------------------------------------------------------------------------
+function Arena:LoadHeightMap( arenaPath, width, height )
+	local heightMap = nil
+	local fidPath = arenaPath .. "/depth.fid";	
+		
+	-- Try loading from a fid file
+	if not heightMap then		
+		local heightMapFile = io.open(fidPath, "rb");
+		if heightMapFile then
+			heightMap = HeightMap:new();
+			heightMap:LoadFromFile( heightMapFile );
+			heightMapFile:close();
+		end
+	end
+	
+	-- Try loading and running a generator
+	if not heightMap then
+		local ok, loader;	
+		ok, loader = pcall( love.filesystem.load, arenaPath .. "/depth.lua" );
+		ok = ok and loader or false;
+		
+		local generator, env;
+		if ok then			
+			env = {}
+			env.math = {};
+			env.math.sin = math.sin;
+			env.math.cos = math.cos;
+			env.math.pi  = math.pi;
+			env.print	 = print;
+			
+			setfenv( loader, env );
+			ok, generator = pcall( loader );
+		end
+		
+		local Get, SetSize;
+		if ok then
+			ok, Get, SetSize = pcall( 
+				function() 
+					return generator.Get, generator.SetSize;
+				end );
+		end
+				
+		if ok and type(SetSize)=="function" then
+			ok = pcall( SetSize, generator, width, height );
+		end
+		
+		if ok and Get then
+			heightMap = HeightMap:new();
+			heightMap:CreateEmpty( width, height );
+						
+			for x=0, heightMap:GetWidth()-1 do
+				for y=0, heightMap:GetWidth()-1 do
+					local depth;
+					ok, depth = pcall( Get, generator, x, y );
+					ok = ok and (type(depth)=="number");
+					
+					if ok then
+						heightMap:Set( x, y, depth*255 );
+					else
+						break;
+					end
+				end
+			end
+		end
+		
+		if not ok then
+			heightMap = nil;
+		end
+	end
+	
+	-- If failed, try loading from a png
+	if not heightMap then
+		local ok, depthImg = pcall(	love.image.newImageData, 
+								arenaPath .. "/depth.png");
+								
+		depthImg = love.image.newImageData( arenaPath .. "/depth.png" );
+					
+		if ok then
+			local scaledDepthImg =	ImageData:new( 512, 512 );
+			ImageUtils.ScaleImage( depthImg, scaledDepthImg, 5 );
+			
+			heightMap = HeightMap:new();
+			heightMap:LoadFromImageData( scaledDepthImg );
+			
+			local heightMapFile = io.open(fidPath, "wb");
+			if heightMapFile then
+				heightMap:SaveToFile( heightMapFile );
+				heightMapFile:close();
+			end
+		end
+	end
+	
+	return heightMap;
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:LoadHeightMap : Loads the height map of the arena
+-------------------------------------------------------------------------------
+function Arena:LoadNormalMap( arenaPath, height, width, heightMap )
+	local normalMap = nil
+	
+	-- If failed, try loading from a png
+	if not normalMap then
+		local ok, normalImg = pcall(	love.image.newImageData, 
+										arenaPath .. "/normal.png" );
+		if ok then
+			normalMap = NormalMap:new();
+			normalMap:LoadFromImageData( normalImg );
+		end
+	end
+	
+	if not normalMap then
+		if heightMap then
+			normalMap = NormalMap:new();
+			normalMap:GenerateFromHeightMap( heightMap );
+		end
+	end
+	
+	if normalMap then
+		local mapImgData = ImageData:new( normalMap );
+		local loveImageData = love.image.newImageData( 
+								mapImgData:getDimensions() );
+		mapImgData:copy( loveImageData );
+		
+		self.normalMap = love.graphics.newImage( loveImageData );
+	end
+	
+	return normalMap;
 end
 
 
@@ -177,7 +294,7 @@ end
 -------------------------------------------------------------------------------
 function Arena:RemoveDyzk( dyzk )
 	self.model:RemoveDyzk( dyzk:GetModel() );
-	Array.RemoveFirst( self.dyzx, dyzk );	
+	Array.RemoveItem( self.dyzx, dyzk );	
 end
 
 
