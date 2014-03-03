@@ -148,6 +148,8 @@ function Game:InitSelf()
 	self._eventHandlers[ "mousereleased" ]		= self.MouseReleased;
 	self._eventHandlers[ "joystickpressed" ]	= self.JoystickPressed;
 	self._eventHandlers[ "joystickreleased" ]	= self.JoystickReleased;
+	self._eventHandlers[ "joystickhat" ]		= self.JoystickHat;
+	self._eventHandlers[ "joystickaxis" ]		= self.JoystickAxis;
 end
 
 
@@ -213,7 +215,7 @@ function Game:InitGraphics()
 	windowFlags.resizable = true;
 	--windowFlags.fullscreen = true;
 	
-	love.window.setMode( 800, 600, windowFlags );
+	--love.window.setMode( 800, 600, windowFlags );
 end
 
 
@@ -269,62 +271,16 @@ end
 -------------------------------------------------------------------------------
 --  Game:Update : Updates the game
 -------------------------------------------------------------------------------
-local prevHat = {}
 function Game:Update( dt )
 	local sceneMgr = SceneManager:GetInstance();
-	local client = Client:GetInstance();
-	
-	---------------------
-	for msg in client:Messages() do
-		--client:Peek( msg );		
-		
-		for k,v in pairs(msg) do
-			print(" >".. tostring(k) .. " = " .. tostring(v));
-		end
-		
-		sceneMgr:Network( msg );
-	end
-	--------------------------	
 
-	-- Handle mouse events and update as needed
 	self:UpdateMouse();
-
 	sceneMgr:Update(dt);
 	
 	self.p1Box:Trigger( "Update", 1 );
 	self.p2Box:Trigger( "Update", 1 );
-
-	for joy = 1, love.joystick.getJoystickCount() do		
-		local joystick = love.joystick.getJoysticks()[joy];
 		
-		if joystick then
-		
-			for axis=1, joystick:getAxisCount() do
-				self.p1Box:Trigger( "Joy" .. joy .. "Axis", axis, joystick:getAxis( axis ) );
-				self.p2Box:Trigger( "Joy" .. joy .. "Axis", axis, joystick:getAxis( axis ) );
-			end
-		
-			for i=1, joystick:getHatCount() do
-				local hat = joystick:getHat( i );
-			
-				if prevHat[i] ~= hat then 
-					if prevHat[i] then
-						self.p1Box:Trigger( "Joy" .. joy .. "Hat", prevHat[i] .. i , false );
-						self.p2Box:Trigger( "Joy" .. joy .. "Hat", prevHat[i] .. i , false );
-					end
-				
-					prevHat[i] = hat;
-					self.p1Box:Trigger( "Joy" .. joy .. "Hat", hat .. i, true );
-					self.p2Box:Trigger( "Joy" .. joy .. "Hat", hat .. i, true );
-				end
-			end
-		end
-	end
-	
-	
 	love.window.setTitle( "Battle Dyzx - " .. love.timer.getFPS() );
-	-- Update the GUI
-	--loveframes.update(dt);
 end
 
 
@@ -391,8 +347,8 @@ end
 --  Game:JoystickPressed : Receives joypressed events
 -------------------------------------------------------------------------------
 function Game:JoystickPressed( joystick, button )
-	self.p1Box:Trigger( "Joy" .. j:getID() .. "Button", but, true );
-	self.p2Box:Trigger( "Joy" .. j:getID() .. "Button", but, true );
+	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, true );
+	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, true );
 end
 
 
@@ -400,12 +356,34 @@ end
 --  Game:JoystickPressed : Receives joystickreleased events
 -------------------------------------------------------------------------------
 function Game:JoystickReleased( joystick, button )
-	self.p1Box:Trigger( "Joy" .. j:getID() .. "Button", but, false );
-	self.p2Box:Trigger( "Joy" .. j:getID() .. "Button", but, false );
+	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, false );
+	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, false );
 end
 
 
+-------------------------------------------------------------------------------
+--  Game:JoystickPressed : Receives joystickhat events
+-------------------------------------------------------------------------------
+local prevDir = nil;
+function Game:JoystickHat( joystick, hat, direction )
+	if prevDir then
+		self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Hat", prevDir, false );
+		self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Hat", prevDir, false );
+	end
+	
+	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Hat", direction, true );
+	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Hat", direction, true );	
+	prevDir = direction;
+end
 
+
+-------------------------------------------------------------------------------
+--  Game:JoystickAxis : Receives joystickaxis events
+-------------------------------------------------------------------------------
+function Game:JoystickAxis( joystick, axis, value )
+	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Axis", axis, value );
+	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Button", axis, value );
+end
 
 
 --===========================================================================--
