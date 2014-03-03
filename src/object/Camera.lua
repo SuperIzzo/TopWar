@@ -85,7 +85,7 @@ end
 --  Camera:RemoveTrackObject : Removes an object from the tracking list
 -------------------------------------------------------------------------------
 function Camera:RemoveTrackObject( obj )
-	self._trackedObject:RemoveFirst( obj );
+	self._trackedObject:RemoveItem( obj );
 end
 
 
