@@ -1,0 +1,12 @@
++ Test how the Array2D modification work with HeightMap and NormalMap
++ Width, Height in the constructor of Arena should affect maps loading
+- Light Class is unfinished
+	- Move stuff out of arena
+	- Implement point light
+	- Sparks generate point lights
+- (optional) Z scale should affect graphics (normal are not re-oriented properly in lighting shader)
+- Logger class (debug, info, warn, error, fatal) (console, file)
+- Arena and Dyzk need a little cleaning up and re-factoring
+- Move DyzkImageAnalizys to model
+- Dyzk abilities
+- Dyzx should collide with the arena, based on slope steepness 
