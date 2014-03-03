@@ -45,10 +45,7 @@ ScBattle.__index = ScBattle
 function ScBattle:new()
 	local obj = setmetatable( {}, self );	
 	
-	obj._arena = Arena:new(
-			"data/arena/arena_image2.png", 
-			"data/arena/arena_mask2c.png" );
-	obj._arena:SetSize(4000, 4000, 2000);
+	obj._arena = Arena:new(	"data/arena/arena1", 4000, 4000, 4000 );
 	
 	obj._camera = Camera:new();
 	obj._camera:SetZoom( 0.25 );
