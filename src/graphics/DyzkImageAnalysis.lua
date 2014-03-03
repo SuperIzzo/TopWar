@@ -257,7 +257,7 @@ end
 --  DyzkImageAnalysis:GetSpeed : Returns the control speed
 -------------------------------------------------------------------------------
 function DyzkImageAnalysis:GetSpeed()	
-	return (50/self:GetWeight())^2 * 400;
+	return (50/self:GetWeight())^2 * 1000;
 end
 
 
