@@ -79,8 +79,8 @@ function ArenaModel:GetNormal( x, y )
 
 	local normMask = self._normalMask
 
-	local width = normMask:getWidth();
-	local height = normMask:getHeight();
+	local width = normMask:GetWidth();
+	local height = normMask:GetHeight();
 		
 	local x = x/self._xScale
 	local y = y/self._yScale
@@ -90,10 +90,10 @@ function ArenaModel:GetNormal( x, y )
 		local bx, by = ax+1, ay+1;
 		local t1, t2 = x - ax, y - ay;
 		
-		local n00_x, n00_y, n00_z = normMask:getPixel(ax,ay);
-		local n01_x, n01_y, n01_z = normMask:getPixel(ax,by);
-		local n10_x, n10_y, n10_z = normMask:getPixel(bx,ay);
-		local n11_x, n11_y, n11_z = normMask:getPixel(bx,by);
+		local n00_x, n00_y, n00_z = unpack( normMask:Get(ax,ay) );
+		local n01_x, n01_y, n01_z = unpack( normMask:Get(ax,by) );
+		local n10_x, n10_y, n10_z = unpack( normMask:Get(bx,ay) );
+		local n11_x, n11_y, n11_z = unpack( normMask:Get(bx,by) );
 		
 		local nx = bilerp( n00_x, n01_x, n10_x, n11_x, t1, t2 );
 		local ny = bilerp( n00_y, n01_y, n10_y, n11_y, t1, t2 );
@@ -125,7 +125,7 @@ end
 --  ArenaModel:RemoveDyzk : Removes a dyzk to the ArenaModel
 -------------------------------------------------------------------------------
 function ArenaModel:RemoveDyzk( dyzk )
-	self._dyzx:RemoveFirst( dyzk );
+	self._dyzx:RemoveItem( dyzk );
 end
 
 
@@ -165,8 +165,8 @@ end
 --  ArenaModel:GetSize : Returns the size of the arena (scaled)
 -------------------------------------------------------------------------------
 function ArenaModel:GetSize()
-	local width = self._normalMask:getWidth();
-	local height = self._normalMask:getHeight();
+	local width = self._normalMask:GetWidth();
+	local height = self._normalMask:GetHeight();
 	
 	return self._xScale*width, self._yScale*height, 255*self._zScale;
 end
@@ -176,8 +176,8 @@ end
 --  ArenaModel:SetSize : Sets the size of the arena (scaling it)
 -------------------------------------------------------------------------------
 function ArenaModel:SetSize( w, h, d )
-	self._xScale = w/self._normalMask:getWidth();
-	self._yScale = h/self._normalMask:getHeight();
+	self._xScale = w/self._normalMask:GetWidth();
+	self._yScale = h/self._normalMask:GetHeight();
 	self._zScale = d/255;
 end
 
