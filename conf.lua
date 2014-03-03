@@ -6,15 +6,16 @@ function love.conf( game )
     game.identity 				= "Battle Dyzx"
     game.version				= "0.9.0"
     game.console				= true
-    game.release 				= false
+    game.release 				= true
 	game.test					= false
 	
 	-- Screen settings
-    game.window.width 			= 800
-    game.window.height 			= 600
+    game.window.width 			= 800 --1366
+    game.window.height 			= 600 --768
     game.window.fullscreen 		= false
-    game.window.vsync 			= true
+    game.window.vsync 			= false
     game.window.fsaa 			= 0
+	game.window.resizable		= true;
 	
 	-- Module flags
     game.modules.joystick		= true
