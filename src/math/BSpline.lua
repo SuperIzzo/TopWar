@@ -229,7 +229,7 @@ end
 --  BSpline:new : Creates a new BSpline
 -------------------------------------------------------------------------------
 function BSpline:_GetPoint1D( t )
-	local d 	= self.level;
+	local d 	= self.level+1;
 	local low	= ceil(-d/2);
 	local high	= floor(d/2+0.5);	
 	
@@ -254,7 +254,7 @@ end
 --  BSpline:GetPoint2D : Creates a new BSpline
 -------------------------------------------------------------------------------
 function BSpline:_GetPoint2D( u, v )
-	local d 	= self.level;
+	local d 	= self.level+1;
 	local low	= ceil(-d/2);
 	local high	= floor(d/2+0.5);	
 	
