@@ -134,17 +134,24 @@
                 <File name="src\util\Timer.lua" />
                 <File name="src\util\Announcer.lua" />
                 <File name="src\util\Array.lua" />
+                <File name="src\util\Array2D.lua" />
                 <File name="src\util\Set.lua" />
+                <File name="src\util\Byter.lua" />
             </Folder>
             <Folder name="model">
                 <File name="src\model\Player.lua" />
-                <File name="src\model\ArenaModel.lua" />
-                <File name="src\model\DyzkModel.lua" />
-                <File name="src\model\DyzkData.lua" />
                 <File name="src\model\DyzkCollection.lua" />
-                <File name="src\model\DyzxCollisionReport.lua" />
-                <File name="src\model\DyzkCollision.lua" />
                 <File name="src\model\DBDyzx.lua" />
+                <Folder name="dyzk">
+                    <File name="src\model\DyzkData.lua" />
+                    <File name="src\model\DyzxCollisionReport.lua" />
+                    <File name="src\model\DyzkModel.lua" />
+                </Folder>
+                <Folder name="arena">
+                    <File name="src\model\ArenaModel.lua" />
+                    <File name="src\model\HeightMap.lua" />
+                    <File name="src\model\NormalMap.lua" />
+                </Folder>
                 <Folder name="abilities">
                     <File name="src\abilities\SpecialAbility.lua" />
                     <File name="src\abilities\ABILITY_TEMPLATE.lua" />
@@ -235,6 +242,7 @@
             </Folder>
         </Folder>
         <Folder name="docs">
+            <File name="docs\Checklist.txt" />
             <File name="docs\Rules.txt" />
             <File name="docs\Tops.txt" />
             <File name="docs\Colors.txt" />
