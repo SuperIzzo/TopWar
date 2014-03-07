@@ -1,10 +1,8 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-require 'src.strict'
-declare 'loveframes'
-require 'src.lib.loveframes'
 
+require 'src.strict'
 
 local Game 					= require 'src.Game';
 local Settings				= require 'src.settings.Settings'
@@ -33,7 +31,7 @@ function love.run()
 	
 	local game = Game:GetInstance();
 	game:Run( arg )
-
+	
 end
 
 
