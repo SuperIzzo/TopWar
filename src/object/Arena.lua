@@ -34,8 +34,8 @@ function Arena:new( arenaPath, width, height, depth )
 	---------------------------
 	local model = obj.model;
 	
-	local heightMap = self:LoadHeightMap( arenaPath, width, height );
-	local normalMap = self:LoadNormalMap( arenaPath, width, height, heightMap );
+	local heightMap = self:LoadHeightMap( arenaPath, 1024, 1024 );
+	local normalMap = self:LoadNormalMap( arenaPath, 1024, 1024, heightMap );
 	obj.image = love.graphics.newImage( arenaPath .. "/image.png" );
 	
 	model:SetDepthMask( heightMap );
@@ -148,8 +148,11 @@ function Arena:LoadHeightMap( arenaPath, width, height )
 								arenaPath .. "/depth.png");
 								
 		depthImg = love.image.newImageData( arenaPath .. "/depth.png" );
-					
-		if ok then
+		
+		heightMap = HeightMap:new();
+		heightMap:LoadFromImageData( depthImg );
+		
+		if ok and false then
 			local scaledDepthImg =	ImageData:new( 512, 512 );
 			ImageUtils.ScaleImage( depthImg, scaledDepthImg, 5 );
 			
@@ -212,11 +215,12 @@ function Arena:GetModel()
 end
 
 
-local lights = {}
-lights[1] = {}
-lights[1].position = Vector:new(10, -5, 2):Unit()
-lights[1].diffuse  = {1, 1, 1, 1}
-lights[1].ambient  = {0, 0, 0, 0}
+-------------------------------------------------------------------------------
+--  Arena:SetupLights : Sets up the lights
+-------------------------------------------------------------------------------
+function Arena:SetupLights( lights )
+	self._lights = lights;
+end
 
 
 -------------------------------------------------------------------------------
@@ -227,47 +231,16 @@ function Arena:Draw()
 	local imageW, imageH = self.image:getWidth(), self.image:getHeight();
 	local xScale, yScale = modelW/imageW, modelH/imageH;
 	
-	if self._lightingShader then
-		love.graphics.setShader( self._lightingShader );
-		self._lightingShader:send("normalMap",  self.normalMap );
-		for i=1, #lights do
-			local light = "lights["..(i-1).. "].";
-			
-			self._lightingShader:send( light .. "position",
-				{
-					lights[i].position[1],
-					lights[i].position[2],
-					lights[i].position[3],
-					lights[i].position[4],
-				}
-			);
-			
-			self._lightingShader:send( light .. "diffuse",
-				{
-					lights[i].diffuse[1],
-					lights[i].diffuse[2],
-					lights[i].diffuse[3],
-					lights[i].diffuse[4],
-				}
-			);			
-			
-			self._lightingShader:send( light .. "ambient",
-				{
-					lights[i].ambient[1],
-					lights[i].ambient[2],
-					lights[i].ambient[3],
-					lights[i].ambient[4],
-				}
-			);			
-		end
-	end	
+	-- Setup lights
+	if self._lights then
+		self._lights:Use( self.normalMap );
+	end
 	
 	love.graphics.draw( self.image, 0, 0, 0, xScale, yScale );
-	--love.graphics.draw( self.normalMap, 0, 0, 0, xScale, yScale );
 	
-	-- Unset spin blur
-	if self._lightingShader then
-		love.graphics.setShader( nil );
+	-- Disable lights
+	if self._lights then
+		self._lights:Use( nil );
 	end
 end
 
@@ -344,6 +317,14 @@ end
 -------------------------------------------------------------------------------
 function Arena:SetSize( w, h, d )
 	self.model:SetSize(w,h,d);
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:SetSize : Sets the size of the arena
+-------------------------------------------------------------------------------
+function Arena:GetSize()
+	return self.model:GetSize();
 end
 
 
