@@ -364,16 +364,20 @@ end
 -------------------------------------------------------------------------------
 --  Game:JoystickPressed : Receives joystickhat events
 -------------------------------------------------------------------------------
-local prevDir = nil;
 function Game:JoystickHat( joystick, hat, direction )
+	local joystickID = joystick:getID();
+	
+	self._prevHatDir = self._prevHatDir or {}
+	local prevDir = self._prevHatDir[joystickID];
+	
 	if prevDir then
-		self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Hat", prevDir, false );
-		self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Hat", prevDir, false );
+		self.p1Box:Trigger( "Joy" .. joystickID .. "Hat", prevDir, false );
+		self.p2Box:Trigger( "Joy" .. joystickID .. "Hat", prevDir, false );
 	end
 	
-	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Hat", direction, true );
-	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Hat", direction, true );	
-	prevDir = direction;
+	self.p1Box:Trigger( "Joy" .. joystickID .. "Hat", direction, true );
+	self.p2Box:Trigger( "Joy" .. joystickID .. "Hat", direction, true );	
+	self._prevHatDir[joystickID] = direction;
 end
 
 
@@ -382,7 +386,7 @@ end
 -------------------------------------------------------------------------------
 function Game:JoystickAxis( joystick, axis, value )
 	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Axis", axis, value );
-	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Button", axis, value );
+	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Axis", axis, value );
 end
 
 
