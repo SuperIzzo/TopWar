@@ -411,9 +411,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	grip = clamp( grip, 0, 0.7 );
 	grip = grip + (ctrlNormDot1 + ctrlNormDot2)*0.3;
 	
-	print( grip, ctrlNormDot1, ctrlNormDot2 );
 	if grip > math.random() then
-		print( "Happened" );
 		forceSpeed1=0;
 		forceSpeed2=0;
 	end
@@ -566,6 +564,25 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	
 	self._collisionAnnouncer:Announce( collisionReport1 );
 	other._collisionAnnouncer:Announce( collisionReport2 );
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:OnArenaOut : Handles arena out events
+-------------------------------------------------------------------------------
+function DyzkModel:OnArenaCollision( colX, colY, colZ )
+	local x,y 			= self:GetPosition();
+	local rad			= self:GetMaxRadius();
+	local colVec		= Vector:new( colX-x, colY-y );
+	local velocity		= Vector:new( self:GetVelocity() );
+	local dir			= velocity:Unit();
+	local invRadVec		= dir * (-rad);
+	
+	local projCol		= dir * colVec:Dot( dir );	
+	local contactVec = invRadVec + projCol;
+	
+	self:SetPosition( x+contactVec.x, y+contactVec.y );	
+	self:SetVelocity( 0, 0 );
 end
 
 

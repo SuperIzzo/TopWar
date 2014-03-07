@@ -1,13 +1,9 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local MathUtils 		= require 'src.math.MathUtils'
 local Array 			= require 'src.util.Array'
+local Vector 			= require 'src.math.Vector'
 
-local clamp				= MathUtils.Clamp;
-local bilerp			= MathUtils.Bilerp;
-local floor				= math.floor
-local ceil				= math.ceil
 local sqrt				= math.sqrt
 
 
@@ -59,15 +55,10 @@ end
 --  ArenaModel:GetDepth : Returns the depth at point x,y
 -------------------------------------------------------------------------------
 function ArenaModel:GetDepth( x, y )
-	local result = {};
-	
-	result.x = 0;
-	result.y = 0;
-	result.z = 0;
-	
-	print( "WARNING: Unimplemented function ArenaModel:GetDepth" );
-	
-	return result;
+	local x = x/self._xScale
+	local y = y/self._yScale
+
+	return self._depthMask:Get( x, y );
 end
 
 
@@ -75,41 +66,10 @@ end
 --  ArenaModel:GetNormal : Returns the normal at point x,y
 -------------------------------------------------------------------------------
 function ArenaModel:GetNormal( x, y )
-	local result = {}
-
-	local normMask = self._normalMask
-
-	local width = normMask:GetWidth();
-	local height = normMask:GetHeight();
-		
 	local x = x/self._xScale
 	local y = y/self._yScale
-	
-	if x>=0 and x<=width-2 and y>=0 and y<=height-2 then
-		local ax, ay = floor(x), floor(y);
-		local bx, by = ax+1, ay+1;
-		local t1, t2 = x - ax, y - ay;
-		
-		local n00_x, n00_y, n00_z = unpack( normMask:Get(ax,ay) );
-		local n01_x, n01_y, n01_z = unpack( normMask:Get(ax,by) );
-		local n10_x, n10_y, n10_z = unpack( normMask:Get(bx,ay) );
-		local n11_x, n11_y, n11_z = unpack( normMask:Get(bx,by) );
-		
-		local nx = bilerp( n00_x, n01_x, n10_x, n11_x, t1, t2 );
-		local ny = bilerp( n00_y, n01_y, n10_y, n11_y, t1, t2 );
-		local nz = bilerp( n00_z, n01_z, n10_z, n11_z, t1, t2 );
-		
-		
-		result.x = (nx-127)/255;
-		result.y = (ny-127)/255;
-		result.z = nz/255;
-	else
-		result.x = 0;
-		result.y = 0;
-		result.z = 0;
-	end
-	
-	return result;
+
+	return self._normalMask:GetNormal( x, y );
 end
 
 
@@ -191,12 +151,12 @@ function ArenaModel:Update( dt )
 	for dyzk in self._dyzx:Items() do
 		local norm = self:GetNormal( dyzk.x, dyzk.y );
 		
-		if norm.x == 0 and norm.y == 0 and norm.z == 0 then
+		if norm[1] == 0 and norm[2] == 0 and norm[3] == 0 then
 			dyzxOut = dyzxOut or Array:new();
 			dyzxOut:Add( dyzk );
 		else		
 			local zScale = DEFAULT_ZSCALE * self._zScale
-			dyzk:SetAcceleration( norm.x * zScale, norm.y * zScale );
+			dyzk:SetAcceleration( norm[1] * zScale, norm[2] * zScale );
 		end
 	end
 	
@@ -204,14 +164,15 @@ function ArenaModel:Update( dt )
 		self:AnnounceOut( dyzxOut );
 	end
 	
-	self:DetectCollision();
+	self:_DetectDyzxCollision();
+	self:_DetectArenaCollision( dt );
 end
 
 
 -------------------------------------------------------------------------------
---  ArenaModel:DetectCollision : Detects collision between tops
+--  ArenaModel:_DetectDyzxCollision : Detects collision between dyzx
 -------------------------------------------------------------------------------
-function ArenaModel:DetectCollision()
+function ArenaModel:_DetectDyzxCollision()
 	for i = 1, #self._dyzx-1 do
 		for j = i+1, #self._dyzx do			
 			local dyzk1 = self._dyzx[i];
@@ -225,6 +186,40 @@ function ArenaModel:DetectCollision()
 			if sqrt((x1-x2)^2 + (y1-y2)^2) < (rad1+rad2) then
 				dyzk1:OnDyzkCollision( dyzk2, true );
 				dyzk2:OnDyzkCollision( dyzk1, false );
+			end
+		end
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  ArenaModel:_DetectArenaCollision : Detects collision the arena and a dyzx
+-------------------------------------------------------------------------------
+function ArenaModel:_DetectArenaCollision( dt )
+	for i = 1, #self._dyzx do
+		local dyzk = self._dyzx[i];
+	
+		local x, y	= dyzk:GetPosition();
+		local rad	= dyzk:GetMaxRadius();
+		local vel	= Vector:new( dyzk:GetVelocity() );
+		local dir, speed = vel:Unit();
+		
+		local scanLineStart = -(speed * dt * 1.2);
+		local scanLineLength = rad - scanLineStart;		
+		
+		local dyzkDepth = self:GetDepth( 
+								x + dir.x*scanLineStart,
+								y + dir.y*scanLineStart );
+		local depthThresh = 1024 / self._zScale;
+		
+		for i = 0, 6 do
+			local ratio = scanLineLength * i/6 + scanLineStart;
+			
+			local pos = dir * ratio;
+			local arenaDepth = self:GetDepth(pos.x+x, pos.y+y);
+			
+			if arenaDepth - dyzkDepth > depthThresh then
+				dyzk:OnArenaCollision( pos.x+x, pos.y+y, arenaDepth );
 			end
 		end
 	end
