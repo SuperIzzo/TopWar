@@ -279,8 +279,6 @@ function Game:Update( dt )
 	
 	self.p1Box:Trigger( "Update", 1 );
 	self.p2Box:Trigger( "Update", 1 );
-		
-	love.window.setTitle( "Battle Dyzx - " .. love.timer.getFPS() );
 end
 
 
@@ -290,6 +288,11 @@ end
 function Game:Draw()
 	local sceneMgr = SceneManager:GetInstance();
 	sceneMgr:Draw();
+	
+	love.graphics.setColor(255,0,0);
+	local y = love.graphics.getHeight() - 20;
+	love.graphics.print( "FPS: " .. love.timer.getFPS(), 0, y );
+	love.graphics.setColor(255,255,255);
 end
 
 
