@@ -146,6 +146,7 @@
                     <File name="src\model\DyzkData.lua" />
                     <File name="src\model\DyzxCollisionReport.lua" />
                     <File name="src\model\DyzkModel.lua" />
+                    <File name="src\model\DyzkImageAnalysis.lua" />
                 </Folder>
                 <Folder name="arena">
                     <File name="src\model\ArenaModel.lua" />
@@ -164,9 +165,7 @@
             </Folder>
             <Folder name="graphics">
                 <File name="src\graphics\ImageUtils.lua" />
-                <File name="src\graphics\DyzkImageAnalysis.lua" />
                 <File name="src\graphics\ImageData.lua" />
-                <File name="src\graphics\Light.lua" />
             </Folder>
             <Folder name="settings">
                 <File name="src\settings\Settings.lua" />
@@ -174,7 +173,6 @@
             <Folder name="input">
                 <File name="src\input\ControlBox.lua" />
                 <File name="src\input\Control.lua" />
-                <File name="src\input\TriggerType_old.lua" />
                 <File name="src\input\DirectBattleController.lua" />
                 <File name="src\input\NetworkBattleController.lua" />
                 <File name="src\input\AIBattleController.lua" />
@@ -195,6 +193,8 @@
                 <File name="src\object\Dyzk.lua" />
                 <File name="src\object\Arena.lua" />
                 <File name="src\object\Camera.lua" />
+                <File name="src\object\Lights.lua" />
+                <File name="src\object\LightSource.lua" />
                 <File name="src\object\Sparks.lua" />
                 <File name="src\object\RPMMeter.lua" />
                 <File name="src\object\AbilityGadget.lua" />
