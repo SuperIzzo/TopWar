@@ -24,7 +24,8 @@ end
 --  triggerFunction : A private function we return every time we are asked to
 -------------------------------------------------------------------------------
 local function triggerFunction( control, newValue )
-	assert( type(newValue)=="boolean" );
+	assert( type(newValue)=="boolean", 
+			"Expected boolean, got " .. type(newValue) );
 	
 	if control:GetValue() ~= newValue then
 		control:SetValue( newValue );
