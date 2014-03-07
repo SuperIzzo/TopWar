@@ -121,12 +121,12 @@ function ScBattle:Init()
 		dyzkID = dyzx[ math.random(#dyzx) ];
 		local dyzk2 = Dyzk:new( dyzkID );
 		local model2 = dyzk2:GetModel();
-		model2.x = 2048;
-		model2.y = 2048;
+		model2.x = 3048;
+		model2.y = 3048;
 		model2.vx = -10;
 		model2.vy = -10;
 		model2:SetAbility( 1, SARedirect:new( model2 ) );
-		model2:SetAbility( 2, SABoost:new( model2 ) );
+		model2:SetAbility( 2, SADash:new( model2 ) );
 		model2:SetAbility( 3, SAReverseLeap:new( model2 ) );
 		model2:SetAbility( 4, SAStone:new( model2 ) );
 		model2:Spin(1);
@@ -135,8 +135,8 @@ function ScBattle:Init()
 		dyzkID = dyzx[ math.random(#dyzx) ];
 		local dyzk = Dyzk:new( dyzkID );
 		local model = dyzk:GetModel();
-		model.x = 3048;
-		model.y = 3048;
+		model.x = 2048;
+		model.y = 2048;
 		model.vx = -10;
 		model.vy = -10;
 		model:SetAbility( 1, SARedirect:new( model ) );
