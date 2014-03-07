@@ -21,6 +21,7 @@ function SARedirect:new(dyzk)
 	
 	obj._stopFactor 	= 0.7;
 	obj._redirectFactor = 0.8;
+	obj._ctrlVec		= {0,0};
 	
 	return setmetatable(obj, self);
 end
@@ -44,7 +45,7 @@ end
 -------------------------------------------------------------------------------
 function SARedirect:OnActivationEnd()	
 	local vel  = Vector:new(self.dyzk:GetVelocity());
-	local ctrl = Vector:new(self.dyzk:GetControlVector());
+	local ctrl = Vector:new(self._ctrlVec);
 		
 	if ctrl:Length() <= 0 then
 		ctrl = vel:Unit();
@@ -60,6 +61,9 @@ end
 --  SARedirect:OnActivationUpdate : activates the ability
 -------------------------------------------------------------------------------
 function SARedirect:OnActivationUpdate( ds )
+	-- Cache the control vector
+	self._ctrlVec = self.dyzk:GetControlVector();
+	
 	-- Disable manual control over the dyzk
 	self.dyzk:SetControlVector(0,0);
 end
