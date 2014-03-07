@@ -2,9 +2,11 @@
 --  Dependencies
 --===========================================================================--
 local MathUtils			= require 'src.math.MathUtils'
+local Vector			= require 'src.math.Vector'
 local Arena				= require 'src.object.Arena'
 local Dyzk				= require 'src.object.Dyzk'
 local Camera			= require 'src.object.Camera'
+local Lights			= require 'src.object.Lights'
 local RPMMeter			= require 'src.object.RPMMeter'
 local AbilityGadget		= require 'src.object.AbilityGadget'
 local SceneManager		= require 'src.scene.SceneManager'
@@ -45,13 +47,21 @@ ScBattle.__index = ScBattle
 function ScBattle:new()
 	local obj = setmetatable( {}, self );	
 	
-	obj._arena = Arena:new(	"data/arena/arena1", 4000, 4000, 4000 );
+	obj._lights	= Lights:new();
+	obj._arena	= Arena:new(	"data/arena/arena3", 4000, 4000, 4000 );
+	obj._arena:SetupLights( obj._lights );
 	
 	obj._camera = Camera:new();
 	obj._camera:SetZoom( 0.25 );
 	obj._camera:SetZoomSpeed( 0.05, 4 );
 	obj._camera:SetMinZoom( 0.1 );
 	obj._camera:SetMaxZoom( 0.5 );
+	
+	-- Create a directional light to lit the scene
+	obj._lights:CreateDirectionalLight(
+		{255,255,255}, 1, 0, 
+		Vector:new( -10, 5, -5):Unit()
+	);
 	
 	obj:_Renew();
 	
@@ -172,7 +182,10 @@ function ScBattle:Init()
 		self._arena:AddDyzk( dyzk );
 		self._camera:AddTrackObject( dyzk:GetModel() );
 		
-		if i<2 then
+		local w, h = self._arena:GetSize();
+		dyzk:SetupLights( self._lights, w, h );
+		
+		if i<3 then
 			self._controllers[i] = DBC:new(i, dyzk:GetModel(), self._camera );		
 		else			
 			self._controllers[i] = self:ConstructAIController( dyzk )
