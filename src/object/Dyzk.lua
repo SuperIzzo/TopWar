@@ -3,7 +3,7 @@
 --===========================================================================--
 local DyzkModel 			= require 'src.model.DyzkModel'
 local Sparks 				= require 'src.object.Sparks'
-local DyzkImageAnalysis		= require 'src.graphics.DyzkImageAnalysis'
+local DyzkImageAnalysis		= require 'src.model.DyzkImageAnalysis'
 
 
 
@@ -144,7 +144,8 @@ function Dyzk:_GenerateClings()
 		clings[i] = love.audio.newSource( newSoundData );
 	end
 	
-	return clings;
+	--return clings;
+	return { love.audio.newSource( soundData ) };
 end
 
 
@@ -170,6 +171,21 @@ function Dyzk:_InitOneTime()
 		end
 	end
 	
+end
+
+
+-------------------------------------------------------------------------------
+--  Dyzk:SetupLights : Updates the Dyzk
+-------------------------------------------------------------------------------
+function Dyzk:SetupLights( lights, refW, refH )
+	self._sparkLight = lights:CreatePointLight(
+		{255,255,128}, 5, 0, 
+		{0.5, 0.5, 0.1},
+		0,10,100 
+	);
+	self._sparkLight:SetOn( false );
+	self._sparkLight._refW = refW;
+	self._sparkLight._refH = refH;
 end
 
 
@@ -221,6 +237,10 @@ function Dyzk:Draw()
 			
 			if self._sparks:IsAnimOver() then
 				self._sparks = nil;
+				
+				if self._sparkLight then
+					self._sparkLight:SetOn( false );
+				end
 			end
 		end
 	else
@@ -269,16 +289,22 @@ end
 --  Dyzk:OnDyzkCollision : React on dyzk collision
 -------------------------------------------------------------------------------
 function Dyzk:OnDyzkCollision( report )
-	
 	-- Draw some friction sparks
-	if report:IsPrimary() then
+	if report:IsPrimary() then		
 		local colX, colY 	= report:GetCollisionPoint();
 		local colNx, colNy	= report:GetCollisionNormal();
 		self._sparks = Sparks:new( 
 			colX, colY,
 			colNx, colNy
 		);
+		
 		self._sparks:SetAnimDuration( 0.1 );
+				
+		if not self._sparkLight:IsOn() then
+			local refW, refH = self._sparkLight._refW, self._sparkLight._refH;
+			self._sparkLight:SetPosition( colX/refW, colY/refH, 0.1 );
+			self._sparkLight:SetOn( true );
+		end
 		
 		if (not self._sfxClings.current) or self._sfxClings.current:isStopped() then
 			local clingIdx = math.random( #self._sfxClings ); 
