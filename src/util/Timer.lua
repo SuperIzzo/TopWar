@@ -25,7 +25,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Timer:new : Updates the timer reducing it's time counter
+--  Timer:new : Updates the timer reducing it's time counter by dt
 -------------------------------------------------------------------------------
 function Timer:Update( dt )
 	if self.timeLeft > 0 then
@@ -44,7 +44,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Timer:GetTimeLeft : Returns wheter the timer time is over
+--  Timer:GetTimeLeft : Returns the time left until the timer goes off
 -------------------------------------------------------------------------------
 function Timer:GetTimeLeft()
 	return self.timeLeft;
@@ -52,7 +52,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Timer:Reset : Returns wheter the timer time is over
+--  Timer:Reset : Resets the time, setting its countdown time
 -------------------------------------------------------------------------------
 function Timer:Reset( time )	
 	self.timeLeft = time;
@@ -60,7 +60,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Timer:IsRunning : Returns wheter the timer time is currently running
+--  Timer:IsRunning : Returns whether the timer time is currently running
 -------------------------------------------------------------------------------
 function Timer:IsRunning()
 	return self.timeLeft > 0;
@@ -68,7 +68,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Timer:IsStopped : Returns wheter the timer time is over
+--  Timer:IsStopped : Returns whether the timer time is over
 -------------------------------------------------------------------------------
 function Timer:IsStopped()
 	return self.timeLeft <= 0;
