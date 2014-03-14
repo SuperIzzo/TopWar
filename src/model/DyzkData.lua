@@ -85,7 +85,7 @@ end
 -------------------------------------------------------------------------------
 --  DyzkData:SetBalance : Sets the balance of the DyzkData
 -------------------------------------------------------------------------------
-function DyzkData:SetMaxRadius( rad )
+function DyzkData:SetRadius( rad )
 	assert( rad >= 0 )
 	
 	self._maxRadius = rad;
@@ -93,9 +93,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkData:GetMaxRadius : Returns the radius of the DyzkData
+--  DyzkData:GetRadius : Returns the radius of the DyzkData
 -------------------------------------------------------------------------------
-function DyzkData:GetMaxRadius()
+function DyzkData:GetRadius()
 	return self._maxRadius or 0;
 end
 
@@ -160,7 +160,7 @@ end
 function DyzkData:CopyFromDyzkData( dyzkData )
 	self:SetDyzkID( 				dyzkData:GetDyzkID() 				);
 	self:SetImageName(				dyzkData:GetImageName()				);
-	self:SetMaxRadius( 				dyzkData:GetMaxRadius() 			);
+	self:SetRadius( 				dyzkData:GetRadius() 			);
 	self:SetJaggedness( 			dyzkData:GetJaggedness() 			);
 	self:SetWeight( 				dyzkData:GetWeight() 				);
 	self:SetBalance( 				dyzkData:GetBalance()				);
