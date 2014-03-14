@@ -2,7 +2,7 @@
 --  Dependencies
 --===========================================================================--
 local Byter				= require 'src.util.Byter'
-local Array2D			= require 'src.util.Array2D'
+local Array2D			= require 'src.util.collection.Array2D'
 local MathUtils 		= require 'src.math.MathUtils'
 
 local clamp				= MathUtils.Clamp;
@@ -146,8 +146,8 @@ function HeightMap:LoadFromImageData( img )
 	for x=0, img:getWidth()-1 do
 		for y=0, img:getHeight()-1 do
 			-- use just the red channel
-			local depth = img:getPixel(x,y);
-			self:Set( x, y, depth );
+			local pointDepth = img:getPixel(x,y)/255;
+			self:Set( x, y, pointDepth );
 		end
 	end
 end
