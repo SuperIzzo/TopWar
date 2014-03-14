@@ -39,7 +39,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  NumberToBytes : A helper function that turns a number into a byte sequence
+--  Byter.UIntegerToBytes : Returns the uInt 'n' as a sequence of 'b' bytes
 -------------------------------------------------------------------------------
 function Byter.UIntegerToBytes( n, b )
 	if b<1 then
@@ -57,10 +57,11 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  Byter.IntegerToBytes : Returns the sInt 'n' as a sequence of 'b' bytes
 -------------------------------------------------------------------------------
 function Byter.IntegerToBytes( n, b )
-	-- Warp around negative numbers (as if we are setting the highest bit)
+	-- Warp negative numbers around the range
+	-- (as if we are setting the highest bit)
 	while n<0 do
 		n = Byter.IntegerRange(b)+n;
 	end
@@ -70,7 +71,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  Byter.FloatToBytes : Returns float 'n' as sequence of 4 bytes (IEEE)
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  Kudos to mniip for this.
 --  http://snippets.luacode.org/snippets/IEEE_float_conversion_144
@@ -104,7 +105,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  Byter.DoubleToBytes : Returns float 'n' as sequence of 8 bytes (IEEE)
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  Kudos to mniip for this.
 --  http://snippets.luacode.org/snippets/IEEE_float_conversion_144
@@ -143,7 +144,16 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  _GetBytesArgs : Utility function to convert vararg into a table of bytes
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+--  All functions that convert byte sequences into a primitive lua type accept
+-- a number of different input formats:
+--	* number sequence:   each function argument is treated as a single byte
+--			E.g.		Byter.BytesToUInteger( 1, 65, 70 );
+--	* table:   the table is treated as an array of bytes.
+--			E.g.		Byter.BytesToUInteger( {1, 65, 70} );
+--	* string:  each character represents a byte.
+--			E.g.		Byter.BytesToUInteger( "\1AF" );
 -------------------------------------------------------------------------------
 local function _GetBytesArgs( b, ... )
 	local bytes;
@@ -166,7 +176,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  Byter.BytesToUInteger : Converts a byte sequence to a unsigned integer
 -------------------------------------------------------------------------------
 function Byter.BytesToUInteger( ... )
 	local bytes = _GetBytesArgs( ... );
@@ -181,7 +191,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  Byter.BytesToInteger : Converts a byte sequence to a signed integer
 -------------------------------------------------------------------------------
 function Byter.BytesToInteger( ... )
 	local bytes = _GetBytesArgs( ... );
@@ -199,7 +209,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  Byter.BytesToFloat : Converts a byte sequence to a single (4 bytes) float
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  Kudos to mniip for this.
 --  http://snippets.luacode.org/snippets/IEEE_float_conversion_144
@@ -221,7 +231,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  Byter.IntegerToBytes : Returns the size of s bytes
+--  Byter.BytesToDouble : Converts a byte sequence to a double (8 bytes) float
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
 --  Kudos to mniip for this.
 --  http://snippets.luacode.org/snippets/IEEE_float_conversion_144
