@@ -46,8 +46,11 @@ function Dyzk:new( fname )
 		model:CopyFromDyzkData( analysis );
 		
 		obj.image = love.graphics.newImage( imageData );
+		obj._handleCol = {imageData:getPixel( 
+									imageData:getWidth()/2,
+									imageData:getHeight()/2)};
 	else
-		model:SetMaxRadius( 10 );
+		model:SetRadius( 10 );
 	end	
 	---------------------------
 	
@@ -56,23 +59,13 @@ function Dyzk:new( fname )
 	obj.model 			= model;
 	obj.dyzkAnalysis 	= analysis;
 	
+	obj._blurCanvas		= love.graphics.newCanvas( obj.image:getWidth(), obj.image:getHeight() );
+	obj._transfCanvas	= love.graphics.newCanvas( obj.image:getWidth(), obj.image:getHeight() );
+	obj._dyzkNormal		= { x=0, y=0, z=1};
+	
 	obj._sparks = nil;
 	
 	return setmetatable(obj, self);
-end
-
-
--------------------------------------------------------------------------------
---  Dyzk:_InitOneTime : Loads common resoources
--------------------------------------------------------------------------------
-local MathUtils = require "src.math.MathUtils"
-local clamp		= MathUtils.Clamp;
-local function changePitch( inSoundData, outSoundData, scale )
-	for i = 1, inSoundData:getSampleCount() do
-		local sample = inSoundData:getSample(i);
-		local newSample = clamp( sample * scale * math.random(), -1, 1 );
-		outSoundData:setSample( i, newSample );
-	end
 end
 
 
@@ -118,33 +111,8 @@ end
 -------------------------------------------------------------------------------
 --  Dyzk:_GenerateClings : Generates different cling sounds
 -------------------------------------------------------------------------------
-local BSpline = require 'src.math.BSpline'
 function Dyzk:_GenerateClings()
 	local soundData = love.sound.newSoundData("data/sfx/metallic-cling1.ogg");
-	local pointData = SoundPointData:new( soundData );
-	local bSpline = BSpline:new();
-	bSpline:SetPoints( pointData );
-	
-	local clings = {}
-	for i=1, 10 do
-		local scale = 0.2+math.random(10)/10;
-		local trim = 3000;
-		local numSamples = math.floor((soundData:getSampleCount()-trim)*scale);
-		local newSoundData = love.sound.newSoundData( 
-			numSamples, 
-			soundData:getSampleRate(), 
-			soundData:getBitDepth(), 
-			soundData:getChannels() );
-			
-		for s=1,numSamples do
-			local sample = bSpline:GetPoint( s/scale+trim/2,4 );
-			newSoundData:setSample( s, sample );
-		end
-		
-		clings[i] = love.audio.newSource( newSoundData );
-	end
-	
-	--return clings;
 	return { love.audio.newSource( soundData ) };
 end
 
@@ -193,16 +161,95 @@ end
 --  Dyzk:Update : Updates the Dyzk
 -------------------------------------------------------------------------------
 function Dyzk:Update( dt )
+
+	-- First off cache the control vector for later (or the model may reset it)
 	if DEBUG_GRAPHICS then
-		-- cache this for later
 		self._controlVecX, self._controlVecY = self.model:GetControlVector()
 	end
 	
+	-- Update our physical body...
 	self.model:Update( dt );
 	
+	-- Update the sparks animation
 	if self._sparks then
 		self._sparks:Update( dt );
 	end
+	
+	-- Update our orientation based on the position and location of the model
+	-- Grounded dyzx acquire the orientation of the ground, when in the air
+	-- they we turn up (to counteract to gravity)
+	local targetNormal;
+	if self.model:GetElevation() <= 0 then		
+		targetNormal = self.model._arenaNormal;
+	else
+		targetNormal = { x=0, y=0, z=1 };
+	end
+	
+	-- We interpolate slowly towards the desired orientation to avoid
+	-- sudden changes (which look silly)
+	local rate = math.min(1, 10*dt);
+	local invRate = (1-rate);
+	self._dyzkNormal.x = invRate*self._dyzkNormal.x + rate*targetNormal.x;
+	self._dyzkNormal.y = invRate*self._dyzkNormal.y + rate*targetNormal.y;
+	self._dyzkNormal.z = invRate*self._dyzkNormal.z + rate*targetNormal.z;
+end
+
+
+-------------------------------------------------------------------------------
+--  Dyzk:UpdateCanvases : Updates the canvases
+-------------------------------------------------------------------------------
+function Dyzk:UpdateCanvases()	
+
+	local g = love.graphics
+	local model = self.model;
+	
+	g.push();
+	g.origin();
+	
+	self._updateBlurCanv = self._updateBlurCanv or 0;
+	if self._updateBlurCanv>0 then
+		self._updateBlurCanv = self._updateBlurCanv-1;
+	else
+		self._updateBlurCanv = 400;
+		
+		self._blurCanvas:clear(255,255,255,0);
+		love.graphics.setCanvas( self._blurCanvas );
+		
+		-- Set spin blur
+		if self._spinBlurShader then
+			g.setShader( self._spinBlurShader );
+			self._spinBlurShader:send("angle", self.model:GetRadialVelocity()/60 );
+		end
+		
+		-- Draw the image
+		g.draw( self.image, 
+				self._blurCanvas:getWidth()/2,
+				self._blurCanvas:getHeight()/2,
+				0, 1, 1,			
+				self.image:getWidth()/2, self.image:getHeight()/2
+			  );
+			  
+		-- Unset spin blur
+		if self._spinBlurShader then
+			love.graphics.setShader( nil );
+		end
+	end
+	
+	self._transfCanvas:clear();
+	love.graphics.setCanvas( self._transfCanvas );
+	
+	g.draw( self._blurCanvas, 
+			self._transfCanvas:getWidth()/2, 
+			self._transfCanvas:getHeight()/2,
+			model:GetAngle(), 
+			1,1,			
+			self._blurCanvas:getWidth()/2, 
+			self._blurCanvas:getHeight()/2
+		  );
+		  
+	love.graphics.setCanvas();
+	
+	g.pop();
 end
 
 
@@ -213,39 +260,44 @@ function Dyzk:Draw()
 	local g = love.graphics
 	local model = self.model;
 	
-	if self.image then
-		-- Set spin blur
-		if self._spinBlurShader then
-			g.setShader( self._spinBlurShader );
-			self._spinBlurShader:send("angle", self.model:GetRadialVelocity()/60 );
-		end
+	self:UpdateCanvases();
+	
+	local zScale = DEFAULT_DYZK_SCALE*model:GetPerspScale();
+	
+	love.graphics.draw(	self._transfCanvas, 
+						model._position.x + self._dyzkNormal.x*100, 
+						model._position.y + self._dyzkNormal.y*100,
+						math.atan2(self._dyzkNormal.x,-self._dyzkNormal.y),
+						zScale, self._dyzkNormal.z * zScale,
+						self._transfCanvas:getWidth()/2,
+						self._transfCanvas:getHeight()/2 );
+	
+	-- Draw handle
+	local handleSize = model:GetRadius()*zScale*0.75;
+	love.graphics.setLineWidth(20);
+	love.graphics.setColor( unpack(self._handleCol) );
+	love.graphics.line( 
+						model._position.x + self._dyzkNormal.x*100, 
+						model._position.y + self._dyzkNormal.y*100,
+						model._position.x + self._dyzkNormal.x*(100+handleSize), 
+						model._position.y + self._dyzkNormal.y*(100+handleSize)
+					   );
+	love.graphics.setColor( 255,255,255,255 );
+	love.graphics.setLineWidth(1);
+	
+	-- Collision sparks
+	if self._sparks then
+		self._sparks:Draw();
 		
-		-- Draw the image
-		g.draw( self.image, model.x, model.y, model.ang,
-				DEFAULT_DYZK_SCALE, DEFAULT_DYZK_SCALE,
-				self.image:getWidth()/2, self.image:getHeight()/2
-			  );
-		
-		-- Unset spin blur
-		if self._spinBlurShader then
-			love.graphics.setShader( nil );
-		end
-		
-		-- Collision sparks
-		if self._sparks then
-			self._sparks:Draw();
+		if self._sparks:IsAnimOver() then
+			self._sparks = nil;
 			
-			if self._sparks:IsAnimOver() then
-				self._sparks = nil;
-				
-				if self._sparkLight then
-					self._sparkLight:SetOn( false );
-				end
+			if self._sparkLight then
+				self._sparkLight:SetOn( false );
 			end
 		end
-	else
-		g.circle( "fill", model.x, model.y, model:GetMaxRadius(), 20 );
-	end
+	end	
+	
 	
 	-- Debug graphics
 	if DEBUG_GRAPHICS then
@@ -260,7 +312,7 @@ function Dyzk:Draw()
 		love.graphics.setColor( 0, 130, 255, 200 );
 		
 		-- Collision circle
-		g.circle( "line", x, y, model:GetMaxRadius(), 20 );
+		g.circle( "line", x, y, model:GetRadius()*zScale, 20 );
 		
 		-- Velocity vector
 		g.line( x, y, x + vx, y + vy );
@@ -269,6 +321,16 @@ function Dyzk:Draw()
 		if cx then
 			love.graphics.setColor( 0, 255, 0, 200 );
 			g.line( x, y, x+cx*speed, y+cy*speed );
+		end
+		
+		-- Elevation circle (indicates how much we are above the ground)
+		local elevation = model:GetElevation();
+		if elevation>0 then
+			local	x,y, z = model:GetPosition();
+			local	rad	= model:GetRadius();
+					rad	= rad + elevation;
+					rad = rad * zScale;
+			g.circle( "line", x, y, rad, 20 );
 		end
 		
 		-- Restore the color as it was
@@ -301,8 +363,7 @@ function Dyzk:OnDyzkCollision( report )
 		self._sparks:SetAnimDuration( 0.1 );
 				
 		if not self._sparkLight:IsOn() then
-			local refW, refH = self._sparkLight._refW, self._sparkLight._refH;
-			self._sparkLight:SetPosition( colX/refW, colY/refH, 0.1 );
+			self._sparkLight:SetPosition( colX, colY, 0.1 );
 			self._sparkLight:SetOn( true );
 		end
 		
