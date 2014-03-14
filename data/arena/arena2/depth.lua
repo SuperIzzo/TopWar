@@ -4,7 +4,7 @@ local numBumps = 8;
 local bumpDistX = 0;
 local bumpDistY = 0;
 local bumpSize = 0.04;
-local bumpElevation = 0.4;
+local bumpElevation = 0.2;
 
 
 function arena:SetSize( w, h )

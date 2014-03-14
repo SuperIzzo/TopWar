@@ -6,6 +6,7 @@
         <Folder name="src">
             <File name="src\strict.lua" />
             <File name="src\Game.lua" />
+            <File name="src\System.lua" />
             <Folder name="lib">
                 <File name="src\lib\bintable.lua" />
                 <Folder name="loveframes">
@@ -133,19 +134,26 @@
             <Folder name="util">
                 <File name="src\util\Timer.lua" />
                 <File name="src\util\Announcer.lua" />
-                <File name="src\util\Array.lua" />
-                <File name="src\util\Array2D.lua" />
-                <File name="src\util\Set.lua" />
                 <File name="src\util\Byter.lua" />
+                <Folder name="logging">
+                    <File name="src\util\logging\Logger.lua" />
+                    <File name="src\util\logging\ConsoleAppender.lua" />
+                </Folder>
+                <Folder name="collection">
+                    <File name="src\util\collection\Array.lua" />
+                    <File name="src\util\collection\Array2D.lua" />
+                    <File name="src\util\collection\Set.lua" />
+                </Folder>
             </Folder>
             <Folder name="model">
                 <File name="src\model\Player.lua" />
                 <File name="src\model\DyzkCollection.lua" />
+                <File name="src\model\RigidBody.lua" />
                 <File name="src\model\DBDyzx.lua" />
                 <Folder name="dyzk">
+                    <File name="src\model\DyzkModel.lua" />
                     <File name="src\model\DyzkData.lua" />
                     <File name="src\model\DyzxCollisionReport.lua" />
-                    <File name="src\model\DyzkModel.lua" />
                     <File name="src\model\DyzkImageAnalysis.lua" />
                 </Folder>
                 <Folder name="arena">
@@ -214,9 +222,9 @@
             <Folder name="scenes">
                 <File name="src\scene\SceneManager.lua" />
                 <File name="src\scene\ScMainMenu.lua" />
+                <File name="src\scene\ScBattle.lua" />
                 <File name="src\scene\ScBattleSetup.lua" />
                 <File name="src\scene\ScCollection.lua" />
-                <File name="src\scene\ScBattle.lua" />
                 <Folder name="misc">
                     <File name="src\scene\ScSelection.lua" />
                     <File name="src\scene\ScPlayerSetup.lua" />
@@ -239,6 +247,11 @@
                     <File name="src\network\LobbyManager.lua" />
                     <File name="src\network\LbBattleSetup.lua" />
                 </Folder>
+            </Folder>
+            <Folder name="debug">
+                <File name="src\debug\FunctionRecord.lua" />
+                <File name="src\debug\Lufiler.lua" />
+                <File name="src\debug\Timer.lua" />
             </Folder>
         </Folder>
         <Folder name="docs">

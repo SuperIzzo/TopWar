@@ -179,7 +179,7 @@ end
 --  DyzkImageAnalysis:GetCenterOfMass : Returns the balance
 -------------------------------------------------------------------------------
 function DyzkImageAnalysis:GetBalance()	
-	local maxRad				= self:GetMaxRadius();
+	local maxRad				= self:GetRadius();
 	local centerOfRotation  	= self:GetImageSize()/2;
 	local centerOfMass			= self:GetCenterOfMass();
 	
@@ -201,9 +201,9 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkImageAnalysis:GetMaxRadius : Returns the maximal dyzk radius found
+--  DyzkImageAnalysis:GetRadius : Returns the maximal dyzk radius found
 -------------------------------------------------------------------------------
-function DyzkImageAnalysis:GetMaxRadius()
+function DyzkImageAnalysis:GetRadius()
 	return self._maxRadius;
 end
 
@@ -230,7 +230,7 @@ function DyzkImageAnalysis:GetJaggedness()
 	end
 	
 	local jag = 0;
-	local maxRad = self:GetMaxRadius();
+	local maxRad = self:GetRadius();
 		
 	-- Sum up jaggedness from all angles
 	-- Logarithms ensure that jaggedness is most effective at the contour		
@@ -266,7 +266,7 @@ end
 -------------------------------------------------------------------------------
 function DyzkImageAnalysis:GetMaxRadialVelocity()
 	local weightFactor = self:GetWeight();
-	local radiusFactor = self:GetMaxRadius()/64;
+	local radiusFactor = self:GetRadius()/64;
 	
 	return 10000/( weightFactor * radiusFactor);
 end

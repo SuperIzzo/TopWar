@@ -36,7 +36,8 @@ function AIChasing:Update( dt )
 	-- Find the closest dyzk to us
 	for dyzk in arena:Dyzx() do
 		if dyzk ~= myDyzk then
-			local dist = ((dyzk.x-myDyzk.x)^2 + (dyzk.y-myDyzk.y)^2)^0.5;
+			local dist = (	(dyzk._position.x-myDyzk._position.x)^2 + 
+							(dyzk._position.y-myDyzk._position.y)^2)^0.5;
 			
 			if closestDist > dist and dist>0 then 
 				closestDist = dist;
@@ -48,8 +49,8 @@ function AIChasing:Update( dt )
 	-- Go towards it
 	if closestDyzk then
 		self:SuggestDirection( 
-			(closestDyzk.x - myDyzk.x)/closestDist, 
-			(closestDyzk.y - myDyzk.y)/closestDist
+			(closestDyzk._position.x - myDyzk._position.x)/closestDist, 
+			(closestDyzk._position.y - myDyzk._position.y)/closestDist
 		);
 	end
 end
