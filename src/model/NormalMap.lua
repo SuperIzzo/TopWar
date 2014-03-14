@@ -1,7 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
-local Array2D			= require 'src.util.Array2D'
+local Array2D			= require 'src.util.collection.Array2D'
 local MathUtils 		= require 'src.math.MathUtils'
 local ImageData			= require 'src.graphics.ImageData'
 local ImageUtils		= require 'src.graphics.ImageUtils'
@@ -113,12 +113,12 @@ end
 -------------------------------------------------------------------------------
 --  NormalMap:GenerateFromHeightMap : Creates a new NormalMap
 -------------------------------------------------------------------------------
-function NormalMap:GenerateFromHeightMap( heightMap )
+function NormalMap:GenerateFromHeightMap( heightMap, depth )
 	local heightImage = ImageData:new( heightMap );
 	self.map = Array2D:new( heightImage:getDimensions() );
 	local normalImage = ImageData:new( self.map );
 	
-	ImageUtils.DepthToNormalMap( heightImage, normalImage )
+	ImageUtils.DepthToNormalMap( heightImage, normalImage, depth )
 end
 
 
