@@ -1,6 +1,7 @@
 --===========================================================================--
 --  Dependencies
 --===========================================================================--
+local System				= require 'src.System'
 local SceneManager			= require 'src.scene.SceneManager';
 local Client 				= require 'src.network.Client'
 local NetUtils 				= require 'src.network.NetworkUtils'
@@ -12,22 +13,16 @@ local DBDyzx				= require 'src.model.DBDyzx'
 
 
 ---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class Game: A central class for he game
+--	Class Game: A central class for the game
 ---=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local Game = {}
 Game.__index = Game;
 
 
 -------------------------------------------------------------------------------
---  Game Constants
--------------------------------------------------------------------------------
-Game.MAX_NUM_PLAYERS = 8;
-
-
--------------------------------------------------------------------------------
 --  Game:new : Creates a new Game
 -------------------------------------------------------------------------------
-local function Game_new()
+local function Game_new(self)
 	local obj = {}
 	
 	obj._players 		= {}
@@ -36,15 +31,15 @@ local function Game_new()
 	obj._mouseX			= 0; 
 	obj._mouseY			= 0;
 
-	return setmetatable(obj, Game);
+	return setmetatable(obj, self);
 end
 
 
 -------------------------------------------------------------------------------
---  Game:new : Creates a new Game
+--  Game:GetInstance : Returns the instance of the running game
 -------------------------------------------------------------------------------
 function Game:GetInstance()
-	self._instance = self._instance or Game_new();
+	self._instance = self._instance or Game_new(self);
 	return self._instance;
 end
 
@@ -54,15 +49,19 @@ end
 -------------------------------------------------------------------------------
 function Game:Run( arg )
 	
-	-- Randomise the the pseudorandom number generators
 	if love.math then
+		-- Randomise the the pseudorandom number generators
 		love.math.setRandomSeed(os.time())
+		
+		-- Replace the standard 'random' with the love one
+		math.random = love.math.random
     end
 	
 	if love.event then
         love.event.pump()
     end
 
+	-- Initialize ourself
     self:Init()
 	
     -- We don't want the first frame's dt to include time taken by love.load.
@@ -78,7 +77,7 @@ function Game:Run( arg )
             love.event.pump()
             for event ,arg1, arg2, arg3, arg4 in love.event.poll() do
                 if event == "quit" then
-                    running = self:Quit();
+                    running = self:OnQuit( arg1, arg2, arg3, arg4 );
 				else
 					local handler = self._eventHandlers[event];
 					
@@ -128,9 +127,10 @@ end
 --  Game:Init : Initialises the game
 -------------------------------------------------------------------------------
 function Game:Init()
+	System.Log( "Initialising game" );
+	
 	self:InitSelf();
 	self:InitDatabase();
-	self:InitPlayers();
 	self:InitControls();
 	self:InitGraphics();
 	self:InitScenes();
@@ -142,14 +142,14 @@ end
 -------------------------------------------------------------------------------
 function Game:InitSelf()
 	-- Initialise event handlers
-	self._eventHandlers[ "keypressed" ]			= self.KeyPressed;
-	self._eventHandlers[ "keyreleased" ]		= self.KeyReleased;
-	self._eventHandlers[ "mousepressed" ]		= self.MousePressed;
-	self._eventHandlers[ "mousereleased" ]		= self.MouseReleased;
-	self._eventHandlers[ "joystickpressed" ]	= self.JoystickPressed;
-	self._eventHandlers[ "joystickreleased" ]	= self.JoystickReleased;
-	self._eventHandlers[ "joystickhat" ]		= self.JoystickHat;
-	self._eventHandlers[ "joystickaxis" ]		= self.JoystickAxis;
+	self._eventHandlers[ "keypressed" ]			= self.OnKeyPressed;
+	self._eventHandlers[ "keyreleased" ]		= self.OnKeyReleased;
+	self._eventHandlers[ "mousepressed" ]		= self.OnMousePressed;
+	self._eventHandlers[ "mousereleased" ]		= self.OnMouseReleased;
+	self._eventHandlers[ "joystickpressed" ]	= self.OnJoystickPressed;
+	self._eventHandlers[ "joystickreleased" ]	= self.OnJoystickReleased;
+	self._eventHandlers[ "joystickhat" ]		= self.OnJoystickHat;
+	self._eventHandlers[ "joystickaxis" ]		= self.OnJoystickAxis;
 end
 
 
@@ -159,16 +159,6 @@ end
 function Game:InitDatabase()
 	self._database:SetFilePath( love.filesystem.getSaveDirectory() .. "/" );
 	self._database:Load();
-end
-
-
--------------------------------------------------------------------------------
---  Game:InitPlayers : Initialises the players
--------------------------------------------------------------------------------
-function Game:InitPlayers()
-	for i = 1, self.MAX_NUM_PLAYERS do
-		self._players[i] = Player:new();
-	end
 end
 
 
@@ -238,10 +228,12 @@ end
 
 
 -------------------------------------------------------------------------------
---  Game:ShutDown : Deinitialise the game
+--  Game:ShutDown : De-initialise the game
 -------------------------------------------------------------------------------
 function Game:ShutDown()
-	-- shutdown the audio
+	System.Log( "Shutting down game" );
+	
+	-- Stop any playing sounds before we quit
 	if love.audio then
 		love.audio.stop()
 	end
@@ -297,22 +289,27 @@ end
 
 
 -------------------------------------------------------------------------------
---  Game:Quit : Handle game quit events
+--  Game:OnQuit : Handle game quit events
 -------------------------------------------------------------------------------
-function Game:Quit()
+function Game:OnQuit()
 	local abort = false;
+	
+	-- Insert quit handling here
 	
 	return abort;
 end
 
 
 -------------------------------------------------------------------------------
---  Game:Keypressed : Receives keypressed events
+--  Game:OnKeyPressed : Receives key pressed events
 -------------------------------------------------------------------------------
-function Game:KeyPressed( key, unicode )	
+function Game:OnKeyPressed( key, rep )	
 	self.p1Box:Trigger( "Key", key, true );
 	self.p2Box:Trigger( "Key", key, true );
 	
+	-- Quit in ESC
+	-- TODO: This is inappropriate, 
+	--		 it has been added only so that android can quit
 	if key == "escape" then
 		love.event.push( "quit" );
 	end
@@ -320,74 +317,80 @@ end
 
 
 -------------------------------------------------------------------------------
---  Game:Keyreleased : Receives keyreleased events
+--  Game:OnKeyreleased : Receives key released events
 -------------------------------------------------------------------------------
-function Game:KeyReleased( key, unicode )
+function Game:OnKeyReleased( key, rep )
 	self.p1Box:Trigger( "Key", key, false );
 	self.p2Box:Trigger( "Key", key, false );
 end
 
 
 -------------------------------------------------------------------------------
---  Game:MousePressed : Receives mousepressed events
+--  Game:OnMousePressed : Receives mouse pressed events
 -------------------------------------------------------------------------------
-function Game:MousePressed( x, y, button )
+function Game:OnMousePressed( x, y, button )
 	self.p1Box:Trigger( "MouseBtn", button, true );
 	self.p2Box:Trigger( "MouseBtn", button, true );
 end
 
 
 -------------------------------------------------------------------------------
---  Game:MouseReleased : Receives mousereleased events
+--  Game:OnMouseReleased : Receives mouse released events
 -------------------------------------------------------------------------------
-function Game:MouseReleased( x, y, button )
+function Game:OnMouseReleased( x, y, button )
 	self.p1Box:Trigger( "MouseBtn", button, false );
 	self.p2Box:Trigger( "MouseBtn", button, false );
 end
 
 
 -------------------------------------------------------------------------------
---  Game:JoystickPressed : Receives joypressed events
+--  Game:OnJoystickPressed : Receives joystick button pressed events
 -------------------------------------------------------------------------------
-function Game:JoystickPressed( joystick, button )
+function Game:OnJoystickPressed( joystick, button )
 	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, true );
 	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, true );
 end
 
 
 -------------------------------------------------------------------------------
---  Game:JoystickPressed : Receives joystickreleased events
+--  Game:OnJoystickReleased : Receives joystick button released events
 -------------------------------------------------------------------------------
-function Game:JoystickReleased( joystick, button )
+function Game:OnJoystickReleased( joystick, button )
 	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, false );
 	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Button", button, false );
 end
 
 
 -------------------------------------------------------------------------------
---  Game:JoystickPressed : Receives joystickhat events
+--  Game:OnJoystickHat : Receives joystick hat events
 -------------------------------------------------------------------------------
-function Game:JoystickHat( joystick, hat, direction )
+function Game:OnJoystickHat( joystick, hat, direction )
 	local joystickID = joystick:getID();
 	
+	-- Get the previous position of the hat
+	-- TODO: Not a biggie but this will not be correct when hot-plugging
 	self._prevHatDir = self._prevHatDir or {}
 	local prevDir = self._prevHatDir[joystickID];
 	
+	-- Release the previous hat direction
 	if prevDir then
 		self.p1Box:Trigger( "Joy" .. joystickID .. "Hat", prevDir, false );
 		self.p2Box:Trigger( "Joy" .. joystickID .. "Hat", prevDir, false );
 	end
 	
+	-- And issue the new hat press
 	self.p1Box:Trigger( "Joy" .. joystickID .. "Hat", direction, true );
-	self.p2Box:Trigger( "Joy" .. joystickID .. "Hat", direction, true );	
+	self.p2Box:Trigger( "Joy" .. joystickID .. "Hat", direction, true );
+	
+	-- Update our cache
 	self._prevHatDir[joystickID] = direction;
 end
 
 
 -------------------------------------------------------------------------------
---  Game:JoystickAxis : Receives joystickaxis events
+--  Game:OnJoystickAxis : Receives joystickaxis events
 -------------------------------------------------------------------------------
-function Game:JoystickAxis( joystick, axis, value )
+function Game:OnJoystickAxis( joystick, axis, value )
 	self.p1Box:Trigger( "Joy" .. joystick:getID() .. "Axis", axis, value );
 	self.p2Box:Trigger( "Joy" .. joystick:getID() .. "Axis", axis, value );
 end
