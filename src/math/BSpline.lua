@@ -10,14 +10,14 @@ local clamp				= MathUtils.Clamp
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class TablePointData1D a brief... 
+--	Class TablePointData1D : Point data from 1D table
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local TablePointData1D = {}
 TablePointData1D.__index = TablePointData1D;
 
 
 -------------------------------------------------------------------------------
---  TablePointData1D:new  Creates a new TablePointData1D
+--  TablePointData1D:new : Creates a new TablePointData1D
 -------------------------------------------------------------------------------
 function TablePointData1D:new( tab )
 	local obj = {}
@@ -54,14 +54,14 @@ end
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class TablePointData2D a brief... 
+--	Class TablePointData2D : Point data from 2D table
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local TablePointData2D = {}
 TablePointData2D.__index = TablePointData2D;
 
 
 -------------------------------------------------------------------------------
---  TablePointData2D:new  Creates a new TablePointData2D
+--  TablePointData2D:new : Creates a new TablePointData2D
 -------------------------------------------------------------------------------
 function TablePointData2D:new( tab )
 	local obj = {}
@@ -103,7 +103,7 @@ end
 
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
---	Class BSpline a brief... 
+--	Class BSpline : A mathematical b-spline interpolator class
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 local BSpline = {}
 BSpline.__index = BSpline;
@@ -111,7 +111,7 @@ BSpline.__index = BSpline;
 
 
 -------------------------------------------------------------------------------
---  BSpline:new  Creates a new BSpline
+--  BSpline:new : Creates a new BSpline
 -------------------------------------------------------------------------------
 function BSpline:new()
 	local obj = {}
