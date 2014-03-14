@@ -309,7 +309,14 @@ function ScBattle:Draw()
 	self._camera:Draw();
 	self._arena:Draw();	
 	
-	for dyzk in self._arena:Dyzx() do
+	local dyzx = self._arena:GetDyzx();
+	table.sort(	dyzx, 
+					function (d1, d2) 
+						local _, _, z1 = d1:GetModel():GetPosition();
+						local _, _, z2 = d2:GetModel():GetPosition();
+						return z1 < z2
+					end );
+	for i, dyzk in ipairs(dyzx) do
 		dyzk:Draw();
 	end
 	
