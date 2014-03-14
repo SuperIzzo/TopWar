@@ -78,6 +78,7 @@ DyzkModel.__index = setmetatable(DyzkModel, DyzkData);
 -------------------------------------------------------------------------------
 DyzkModel.RPS_TO_RPM_SCALE			= 9.5493
 DyzkModel.MAX_NUM_ABILITIES			= 8
+DyzkModel.GRAVITY_VECTOR			= Vector:new( 0, 0, -18000 );
 
 
 
@@ -86,25 +87,27 @@ DyzkModel.MAX_NUM_ABILITIES			= 8
 -------------------------------------------------------------------------------
 function DyzkModel:new()
 	local obj = {}
-		
-	obj.x = 0;
-	obj.y = 0;
-	obj.vx = 0;
-	obj.vy = 0;
-	obj.ax = 0;
-	obj.ay = 0;
 	
-	obj.ang 	= 0;
-	obj.angVel 	= 0;
-	obj._spin	= 0;
+	-- Physical quantities
+	obj._position	= Vector:new();
+	obj._velocity	= Vector:new();
+	obj._accel		= Vector:new();
+	obj._normal		= Vector:new(0,0,1);
+	obj._friction	= 0.1;
+	obj._angle	 	= 0;
+	obj._rotation	= 0;
 	
-	obj._arenaOut	= false;
-	obj._friction	= 0.01;	
+	-- Control values
+	obj._control	= Vector:new();
+	obj._spin		= 0; -- accumulated spin 	
+	
+	-- Arena related
+	obj._arenaOut		= false;
+	obj._arenaDepth		= 0;
+	obj._arenaNormal	= Vector:new()
+	
+	-- Listeners
 	obj._collisionAnnouncer = Announcer:new()
-	
-	-- Control vector
-	obj._controlVecX = 0;
-	obj._controlVecY = 0;
 	
 	-- Abilities
 	obj._abilities = {};
@@ -124,7 +127,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkModel:AddCollisionListener : Updates the DyzkModel
+--  DyzkModel:AddCollisionListener : Adds a collision listener to the dyzk
 -------------------------------------------------------------------------------
 function DyzkModel:AddCollisionListener( func, obj )
 	self._collisionAnnouncer:AddListener( obj, func );
@@ -134,9 +137,10 @@ end
 -------------------------------------------------------------------------------
 --  DyzkModel:SetPosition : Sets the location of the DyzkModel
 -------------------------------------------------------------------------------
-function DyzkModel:SetPosition( x, y )
-	self.x = x;
-	self.y = y;
+function DyzkModel:SetPosition( x, y, z )
+	self._position.x = x;
+	self._position.y = y;
+	self._position.z = z or self._position.z;
 end
 
 
@@ -144,16 +148,19 @@ end
 --  DyzkModel:GetPosition : Returns the location of the DyzkModel
 -------------------------------------------------------------------------------
 function DyzkModel:GetPosition()
-	return self.x, self.y;
+	return	self._position.x, 
+			self._position.y,
+			self._position.z;
 end
 
 
 -------------------------------------------------------------------------------
 --  DyzkModel:SetVelocity : Sets the velocity of the DyzkModel
 -------------------------------------------------------------------------------
-function DyzkModel:SetVelocity( vx, vy )
-	self.vx = vx;
-	self.vy = vy;
+function DyzkModel:SetVelocity( vx, vy, vz )
+	self._velocity.x = vx;
+	self._velocity.y = vy;
+	self._velocity.z = vz or self._velocity.z;
 end
 
 
@@ -161,16 +168,19 @@ end
 --  DyzkModel:GetVelocity : Returns the velocity of the DyzkModel
 -------------------------------------------------------------------------------
 function DyzkModel:GetVelocity()
-	return self.vx, self.vy;
+	return	self._velocity.x,
+			self._velocity.y,
+			self._velocity.z;
 end
 
 
 -------------------------------------------------------------------------------
 --  DyzkModel:SetAcceleration : Sets the acceleration of the DyzkModel
 -------------------------------------------------------------------------------
-function DyzkModel:SetAcceleration( ax, ay )
-	self.ax = ax;
-	self.ay = ay;
+function DyzkModel:SetAcceleration( ax, ay, az )
+	self._accel.x = ax;
+	self._accel.y = ay;
+	self._accel.z = az or self._accel.z;
 end
 
 
@@ -178,25 +188,24 @@ end
 --  DyzkModel:GetRadialVelocity : Returns the angular velocity
 -------------------------------------------------------------------------------
 function DyzkModel:GetRadialVelocity()
-	return self.angVel;
+	return self._rotation;
 end
 
 
 -------------------------------------------------------------------------------
---  DyzkModel:SetControlVector : Sets the control vector (forced velocity)
+--  DyzkModel:GetAngle : Returns the angle
+-------------------------------------------------------------------------------
+function DyzkModel:GetAngle()
+	return self._angle;
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:SetControlVector : Sets the control vector
 -------------------------------------------------------------------------------
 function DyzkModel:SetControlVector( x, y )
 	-- Cap the control vector to a magnitude of 1
-	local controlVec 			= Vector:new( x, y );
-	local controlVecMagnitude 	= controlVec:Length()
-	
-	if controlVecMagnitude > 1 then
-		controlVec.x = controlVec.x/controlVecMagnitude;
-		controlVec.y = controlVec.y/controlVecMagnitude;
-	end;
-
-	self._controlVecX = controlVec.x;
-	self._controlVecY = controlVec.y;
+	self._control	= Vector.Unit{ x, y };	
 end
 
 
@@ -204,7 +213,7 @@ end
 --  DyzkModel:GetControlVector : Returns the control vector
 -------------------------------------------------------------------------------
 function DyzkModel:GetControlVector()
-	return self._controlVecX,	self._controlVecY;
+	return self._control.x,	self._control.y;
 end
 
 
@@ -247,8 +256,8 @@ end
 --  DyzkModel:Spin : Spins the top 
 -------------------------------------------------------------------------------
 function DyzkModel:Spin( spin )
-	self._spin = self._spin + spin;	
-	self.angVel = self.angVel + spin * self:GetMaxRadialVelocity()
+	self._spin		= self._spin + spin;	
+	self._rotation	= self._rotation + spin*self:GetMaxRadialVelocity();
 end
 
 
@@ -268,8 +277,59 @@ end
 --	we will consider it to be "dead" and not spinning anymore.
 -------------------------------------------------------------------------------
 function DyzkModel:IsSpinning()
-	return 	sign(self._spin) == sign(self.angVel) and 
+	return 	sign(self._spin) == sign(self._rotation) and 
 			sign(self._spin) ~= 0;
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:SetSurface : Updates the DyzkModel (called by the arena)
+-------------------------------------------------------------------------------
+function DyzkModel:SetArenaNormal( normX, normY, normZ )
+	self._arenaNormal.x = normX;
+	self._arenaNormal.y = normY;
+	self._arenaNormal.z = normZ;
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:SetSurface : Updates the DyzkModel (called by the arena)
+-------------------------------------------------------------------------------
+function DyzkModel:SetArenaDepth( depth )
+	self._arenaDepth = depth;
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:GetElevation : Returns the elevation of the Dyzk above the ground
+-------------------------------------------------------------------------------
+function DyzkModel:GetElevation()
+	-- 16 units above the ground is still treated as "grounded"
+	local Z_TOLLERANCE = 16;
+		
+	local elevation = self._position.z - self._arenaDepth - Z_TOLLERANCE;
+	
+	-- Elevation cannot be negative (for now)
+	if elevation > 0 then
+		return elevation;
+	else 
+		return 0;
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:GetPerspScale : Returns the perspective scale of the Dyzk
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+-- The higher the dyzk goes the larger it appears, Normally this would be a
+-- visualization thing and only ever be used when displaying the dyzx, however
+-- we are faking 3D in the mechanics of the game too and instead of doing the
+-- expensive operations required to fix the terrain's perspective and then 
+-- applying the correct transformations to the objects, we settle for a much
+-- cheaper solution which fakes it - physically scaling the dyzx.
+-------------------------------------------------------------------------------
+function DyzkModel:GetPerspScale()
+	return (0.9+self._position.z/255 * 1.1);
 end
 
 
@@ -284,28 +344,102 @@ function DyzkModel:Update( dt )
 	-- Update abilities		
 	self:UpdateAbilities( dt );	
 	
-	-- Update velocity based on acceleration and velocity decay 
-	local velWeight = 1 - self._friction*dt;
-	self.vx = self.vx*velWeight + self.ax*dt;
-	self.vy = self.vy*velWeight + self.ay*dt;
+	-- Update the dyzk physics
+	self:UpdatePhysics( dt );	
+end
+
+
+-------------------------------------------------------------------------------
+--  DyzkModel:UpdatePhysics : Updates the DyzkModel's physics
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - --
+-- Dyzx use naive Euler integration
+-------------------------------------------------------------------------------
+function DyzkModel:UpdatePhysics( dt )
+	local USE_3D_CONTROL	= true
+	local g					= self.GRAVITY_VECTOR
+	local accel 			= self._accel
 	
-	-- Update velocity based on eternal control vector
-	local speed = self:GetSpeed() * dt;
-	self.vx = self.vx + self._controlVecX*speed;
-	self.vy = self.vy + self._controlVecY*speed;
+	-- If we are on the ground...
+	if self:GetElevation() == 0 then
+				
+		-- Reset the acceleration to g
+		accel.x = g.x;
+		accel.y = g.y;
+		accel.z = g.z;
+		
+		if not USE_3D_CONTROL then
+			-- Update velocity based on external control vector
+			local speed = self:GetSpeed();
+			accel.x = accel.x + self._control.x*speed;
+			accel.y = accel.y + self._control.y*speed;
+		else		
+			-- The following bit comes from the expression: N x ( C x N )
+			-- Where N is the arena normal and C is the control vector
+			-- This gives us the projection of C onto the plane with normal N
+			-- We take advantage of the double cross product involving N
+			-- and the fact that the control vector does not have a z component
+			-- to reduce the number of operations (it is called every frame)
+			local c = self._control;
+			local n = self._arenaNormal;
+			local cnx = c.x*n.x;
+			local cny = c.y*n.y;
+			local control3D_x = c.x*(n.y^2 + n.z^2) - n.x*cny;
+			local control3D_y = c.y*(n.x^2 + n.z^2) - n.y*cnx;
+			local control3D_z = -n.z*(cnx + cny);
+			
+			-- Now we apply dot product ( C . C3D ), and scale by speed
+			local speed = self:GetSpeed();
+			local control3D_len = (control3D_x*c.x + control3D_y*c.y) * speed;
+			
+			-- Finally we apply the force
+			accel.x = accel.x + control3D_x*control3D_len;
+			accel.y = accel.y + control3D_y*control3D_len;
+			accel.z = accel.z + control3D_z*control3D_len;
+		end
+				
+		-- Normal force is the force with which the surface counteracts to
+		-- forces trying to push solid objects through it. It cancels out a bit
+		-- of the gravity and the other forces that act in the direction
+		-- opposite to the surface normal. This would usually leave the forces
+		-- unbalanced and make the dyzk slide down the slope.
+		-- The 0.9 term is a HACK that makes sure we are not applying more
+		-- force than necessary (resulting in force loss) and is necessity
+		-- because the physics model is imperfect (and a little faulty). 
+		local normalForce = self._arenaNormal
+							* self._arenaNormal:Dot( accel )*0.9;
+							
+		accel:Sub( normalForce );		
+		
+		-- After all said and done, make sure we are firmly on the ground
+		if self._position.z<self._arenaDepth then 
+			self._position.z = self._arenaDepth;
+			self._velocity.z = 0;
+		end
+		
+	-- Else if we are in the air...
+	else
+		local luft = (1 - self:GetJaggedness()) * self:GetRadialVelocity()/2;
+		local airResistance = 1/self:GetRadius();
+		accel.x = g.x;
+		accel.y = g.y;
+		accel.z = g.z * 1--airResistance + luft;
+	end	
+	
+	-- Update velocity based on acceleration and velocity decay
+	local velWeight = 1 - self._friction*dt;
+	self._velocity.x = self._velocity.x*velWeight + accel.x*dt;
+	self._velocity.y = self._velocity.y*velWeight + accel.y*dt;
+	self._velocity.z = self._velocity.z*velWeight + accel.z*dt;
 	
 	-- Update position based on velocity
-	self.x = self.x + self.vx*dt;
-	self.y = self.y + self.vy*dt;
+	self._position.x = self._position.x + self._velocity.x*dt;
+	self._position.y = self._position.y + self._velocity.y*dt;
+	self._position.z = self._position.z + self._velocity.z*dt;
 	
 	-- Update angular velocity and angle
-	local angDecay = dt*(1.1 - self:GetBalance()^4) / ((self:GetMaxRadius()/128)^2);
-	self.angVel = self.angVel - sign(self._spin)*angDecay;
-	self.ang = self.ang + self.angVel*dt;	
-	
-	-- Reset the control vector
-	--self._controlVecX = 0;
-	--self._controlVecY = 0;
+	local angDecay	= dt*(1.1 - self:GetBalance()^4) / ((self:GetRadius()/128)^2);
+	self._rotation	= self._rotation - sign(self._spin)*angDecay;
+	self._angle		= self._angle + self._rotation*dt;
 end
 
 
@@ -313,6 +447,8 @@ end
 --  DyzkModel:OnDyzkCollision : Handles dyzk-dyzk collision
 -------------------------------------------------------------------------------
 function DyzkModel:OnDyzkCollision( other, primary )
+	-- TODO: Refactor this monster
+	
 	-- Ignore if the collision is being handled by the other
 	if not primary then return end;
 	
@@ -321,7 +457,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	--------------
 	local pos1					= Vector:new( self:GetPosition() );
 	local pos2					= Vector:new( other:GetPosition() );
-	local rad1, rad2			= self:GetMaxRadius(),	other:GetMaxRadius();
+	local rad1, rad2			= self:GetRadius(),	other:GetRadius();
 	local weight1, weight2 		= self:GetWeight(),		other:GetWeight();
 	local jag1, jag2	 		= self:GetJaggedness(), other:GetJaggedness();
 	local bal1, bal2	 		= self:GetBalance(), 	other:GetBalance();
@@ -454,7 +590,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	other:SetVelocity(	resultForce2.x,	resultForce2.y );
 	
 	-- Deal with intersections and make sure dyzx don't overlap
-	local intersectionAmount = (radDistance+6-distance);	
+	local intersectionAmount = (radDistance*self:GetPerspScale()+6-distance);	
 	if intersectionAmount > 0 then
 		self:SetPosition( 	pos1.x - collisionNormal.x * intersectionAmount * (1-weightRatio),
 							pos1.y - collisionNormal.y * intersectionAmount * (1-weightRatio) )
@@ -507,7 +643,7 @@ function DyzkModel:OnDyzkCollision( other, primary )
 			weight1^2 * (2 - bal1)
 			* rad1 * (jag1*0.7 + jag2*0.3)
 			/ (weight2 * rad2 * 25);
-		--(self.angVel + other.angVel) * jagFactor * self:GetMaxRadius()/32 * weight1/(weight2^2);
+		--(self.angVel + other.angVel) * jagFactor * self:GetRadius()/32 * weight1/(weight2^2);
 		
 		--jagFactor * (speed1/8)^2 * force2 * weight1/(weight2^2) * sign(other.angVel);
 		local knockDamage = 
@@ -539,8 +675,8 @@ function DyzkModel:OnDyzkCollision( other, primary )
 	rpmDmg2 = rpmDmg2;
 	
 	-- Apply the damage
-	self.angVel = self.angVel 	- rpmDmg1;
-	other.angVel = other.angVel - rpmDmg2;	
+	self._rotation	= self._rotation  - rpmDmg1;
+	other._rotation = other._rotation - rpmDmg2;	
 
 	-- All that is left now is to report the collisions to the collision listeners,
 	-- two reports are generated one for the listeners of each of the two dyzx
@@ -568,11 +704,11 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkModel:OnArenaOut : Handles arena out events
+--  DyzkModel:OnArenaCollision : Handles arena out events
 -------------------------------------------------------------------------------
 function DyzkModel:OnArenaCollision( colX, colY, colZ )
 	local x,y 			= self:GetPosition();
-	local rad			= self:GetMaxRadius();
+	local rad			= self:GetRadius() * self:GetPerspScale();
 	local colVec		= Vector:new( colX-x, colY-y );
 	local velocity		= Vector:new( self:GetVelocity() );
 	local dir			= velocity:Unit();
@@ -581,6 +717,8 @@ function DyzkModel:OnArenaCollision( colX, colY, colZ )
 	local projCol		= dir * colVec:Dot( dir );	
 	local contactVec = invRadVec + projCol;
 	
+	-- For the time being just stop and go back to the contact point
+	-- TODO: Make the effect more dramatic
 	self:SetPosition( x+contactVec.x, y+contactVec.y );	
 	self:SetVelocity( 0, 0 );
 end
@@ -595,7 +733,7 @@ end
 
 
 -------------------------------------------------------------------------------
---  DyzkModel:IsOutOfArena : Returns true if the dyzk is still in the arena
+--  DyzkModel:IsOutOfArena : Returns true if the dyzk is has come out of arena
 -------------------------------------------------------------------------------
 function DyzkModel:IsOutOfArena()
 	return self._arenaOut;
