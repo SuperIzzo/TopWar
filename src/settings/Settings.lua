@@ -163,12 +163,12 @@ function Settings:LoadDefaultControls( box )
 		
 		local X					= box:CreateControl( "X" )
 		X:SetValue( false );
-		X:Bind'Key'( 'u',				binButtonTrigger:Trigger()	);
+		X:Bind'Key'( 'l',				binButtonTrigger:Trigger()	);
 		X:Bind'Joy1Button'( 4,			binButtonTrigger:Trigger()	);
 		
 		local Y					= box:CreateControl( "Y" )
 		Y:SetValue( false );
-		Y:Bind'Key'( 'i',				binButtonTrigger:Trigger()	);
+		Y:Bind'Key'( 'u',				binButtonTrigger:Trigger()	);
 		Y:Bind'Joy1Button'( 1,			binButtonTrigger:Trigger()	);
 
 	elseif box.player and box.player==2 then
