@@ -155,10 +155,62 @@ function Vector:__tostring()
 	local str = "Vector(" .. self[1];
 	
 	for i=2, #self do
-		str = str .. "," .. self[i];
+		str = str .. ", " .. self[i];
 	end
 	
 	return str..")";
+end
+
+
+-------------------------------------------------------------------------------
+--  Vector:Add : In-place vector addition
+-------------------------------------------------------------------------------
+function Vector:Add( other )
+	local len = max( #self, #other );
+	
+	for i=1, len do
+		self[i] = self[i] + other[i];
+	end
+	
+	return self;
+end
+
+
+-------------------------------------------------------------------------------
+--  Vector:Sub : In-place vector subtraction
+-------------------------------------------------------------------------------
+function Vector:Sub( other )
+	local len = max( #self, #other );
+	
+	for i=1, len do
+		self[i] = self[i] - other[i];
+	end
+	
+	return self;
+end
+
+
+-------------------------------------------------------------------------------
+--  Vector:Mul : In-place vector scalar multiplication
+-------------------------------------------------------------------------------
+function Vector:Mul( scalar )
+	for i=1, #self do
+		self[i] = self[i]*scalar;
+	end
+	
+	return self;
+end
+
+
+-------------------------------------------------------------------------------
+--  Vector:Div : In-place vector scalar division
+-------------------------------------------------------------------------------
+function Vector:Div( scalar )
+	for i=1, #self do
+		self[i] = self[i]/scalar;
+	end
+	
+	return self;
 end
 
 
@@ -192,11 +244,25 @@ end
 
 
 -------------------------------------------------------------------------------
+--  Vector:Cross : vector cross product
+-------------------------------------------------------------------------------
+function Vector:Cross( other )
+	local result = Vector:new();
+	
+	result[1] = self[2]*other[3] - self[3]*other[2];
+	result[2] = self[3]*other[1] - self[1]*other[3];
+	result[3] = self[1]*other[2] - self[2]*other[1];
+	
+	return result;
+end
+
+
+-------------------------------------------------------------------------------
 --  Vector:Unit : turns the vector into a unit vector
 -------------------------------------------------------------------------------
 function Vector:Unit()
 	local result = Vector:new();
-	local len = self:Length();
+	local len = Vector.Length( self );
 	
 	if len>0 then
 		for i=1, #self do
@@ -205,6 +271,22 @@ function Vector:Unit()
 	end
 	
 	return result, len;
+end
+
+
+-------------------------------------------------------------------------------
+--  Vector:Normalize : turns the vector into a unit vector (in-place)
+-------------------------------------------------------------------------------
+function Vector:Normalize()
+	local len = Vector.Length( self );
+	
+	if len>0 then
+		for i=1, #self do
+			self[i] = self[i]/len;
+		end
+	end
+	
+	return self, len;
 end
 
 
