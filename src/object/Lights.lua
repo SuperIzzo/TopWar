@@ -2,7 +2,7 @@
 --  Dependencies
 --===========================================================================--
 local LightSource			= require 'src.object.LightSource'
-local Array					= require 'src.util.Array'
+local Array					= require 'src.util.collection.Array'
 
 
 
@@ -80,13 +80,25 @@ local offPointLight = LightSource:new( "point", {0,0,0,0} );
 -------------------------------------------------------------------------------
 --  Lights:Send : Sends the light sources to the shader
 -------------------------------------------------------------------------------
-function Lights:SendLights( shader )
+function Lights:SendLights( shader, refWidth, refHeight )
 	local MAX_DIR_LIGHTS = 3;
 	local MAX_POINT_LIGHTS = 3;
 	
-	local shader = shader or self._lightingShader;
+	-- Re-order arguments
+	if type(shader) == "number" then
+		refHeight = refWidth;
+		refWidth = shader;
+		shader = nil;
+	end
+	
+	-- Set default values
+	local shader	= shader	or self._lightingShader;
+	local refWidth	= refWidth	or 1;
+	local refHeight	= refHeight	or 1;
+	
+	-- 
 	if not shader then
-		return;
+		return false, "No lighting shader has been loaded.";
 	end
 	
 	local numDirLights = 0;
@@ -101,14 +113,10 @@ function Lights:SendLights( shader )
 		end
 	end
 	
-	for i = numDirLights, MAX_DIR_LIGHTS-1 do
-		offDirLight:Send( shader, i );
-	end
-	
 	local numPointLights = 0;
 	for pointLight in self._pointLights:Items() do
 		if pointLight and pointLight:IsOn() then 
-			pointLight:Send( shader, numPointLights );
+			pointLight:Send( shader, numPointLights, refWidth, refHeight );
 			
 			numPointLights = numPointLights+1;			
 			if numPointLights>= MAX_POINT_LIGHTS then
@@ -116,9 +124,15 @@ function Lights:SendLights( shader )
 			end
 		end
 	end
+
+	-- Explicitly turn off the lights that have not been set
+	-- during this call...
+	for i = numDirLights, MAX_DIR_LIGHTS-1 do
+		offDirLight:Send( shader, i );
+	end
 	
 	for i = numPointLights, MAX_POINT_LIGHTS-1 do
-		offPointLight:Send( shader, i );
+		offPointLight:Send( shader, i, 1, 1 );
 	end
 end
 
@@ -126,12 +140,16 @@ end
 -------------------------------------------------------------------------------
 --  Lights:Use : Sends the light sources to the shader
 -------------------------------------------------------------------------------
-function Lights:Use( normalMap )
+function Lights:Use( normalMap, refWidth, refHeight )
+	
 	if self._lightingShader then
 		if normalMap then
+			local refWidth	= refWidth or normalMap:getWidth();
+			local refHeight	= refHeight or normalMap:getHeight();
+	
 			love.graphics.setShader( self._lightingShader );
 			self._lightingShader:send( "normalMap", normalMap );
-			self:SendLights();
+			self:SendLights( refWidth, refHeight );
 		else
 			love.graphics.setShader( nil );
 		end

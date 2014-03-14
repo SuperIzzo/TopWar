@@ -46,7 +46,7 @@ end
 -------------------------------------------------------------------------------
 --  LightSource:Send : Sends the light to the given shader
 -------------------------------------------------------------------------------
-function LightSource:Send( shader, idx )
+function LightSource:Send( shader, idx, refW, refH )
 	local lightPrefix = self._type .. "Lights[" .. idx .. "].";
 	shader:send( lightPrefix .. "base.color",
 		{ 
@@ -63,7 +63,11 @@ function LightSource:Send( shader, idx )
 	if self._type == "directional" then
 		shader:send( lightPrefix .. "direction", self._dir );
 	elseif self._type == "point" then
-		shader:send( lightPrefix .. "position", self._pos );
+		-- Normalize the position
+		local pos = { 	self._pos[1]/refW,
+						self._pos[2]/refH, 
+						self._pos[3] 		};
+		shader:send( lightPrefix .. "position", pos );
 		shader:send( lightPrefix .. "attenConst", self._atten.const );
 		shader:send( lightPrefix .. "attenLinear", self._atten.linear );
 		shader:send( lightPrefix .. "attenExp", self._atten.exp );
