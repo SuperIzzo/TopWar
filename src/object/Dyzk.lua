@@ -60,7 +60,6 @@ function Dyzk:new( fname )
 	obj.dyzkAnalysis 	= analysis;
 	
 	obj._blurCanvas		= love.graphics.newCanvas( obj.image:getWidth(), obj.image:getHeight() );
-	obj._transfCanvas	= love.graphics.newCanvas( obj.image:getWidth(), obj.image:getHeight() );
 	obj._dyzkNormal		= { x=0, y=0, z=1};
 	
 	obj._sparks = nil;
@@ -233,21 +232,10 @@ function Dyzk:UpdateCanvases()
 		if self._spinBlurShader then
 			love.graphics.setShader( nil );
 		end
+		
+		-- Unset canvas
+		love.graphics.setCanvas();
 	end
-	
-	self._transfCanvas:clear();
-	love.graphics.setCanvas( self._transfCanvas );
-	
-	g.draw( self._blurCanvas, 
-			self._transfCanvas:getWidth()/2, 
-			self._transfCanvas:getHeight()/2,
-			model:GetAngle(), 
-			1,1,			
-			self._blurCanvas:getWidth()/2, 
-			self._blurCanvas:getHeight()/2
-		  );
-		  
-	love.graphics.setCanvas();
 	
 	g.pop();
 end
@@ -264,13 +252,37 @@ function Dyzk:Draw()
 	
 	local zScale = DEFAULT_DYZK_SCALE*model:GetPerspScale();
 	
-	love.graphics.draw(	self._transfCanvas, 
-						model._position.x + self._dyzkNormal.x*100, 
-						model._position.y + self._dyzkNormal.y*100,
-						math.atan2(self._dyzkNormal.x,-self._dyzkNormal.y),
-						zScale, self._dyzkNormal.z * zScale,
-						self._transfCanvas:getWidth()/2,
-						self._transfCanvas:getHeight()/2 );
+	
+	
+	love.graphics.push();
+	
+	
+	-- Hint: matrix multiplication applies the transformations in reverse order
+	-- To understand what's going on you should read the transformation code
+	-- bottom-up. Also note that by this point there is also camera transform.
+	
+	-- Translate the dyzk to its position
+	love.graphics.translate(	model._position.x + self._dyzkNormal.x*100,
+								model._position.y + self._dyzkNormal.y*100 );
+	
+	-- Rotate the image to get the correct tilt
+	love.graphics.rotate( math.atan2(self._dyzkNormal.x,-self._dyzkNormal.y) );
+	
+	-- Scale according to the perspective scale and the tilt
+	love.graphics.scale( zScale, self._dyzkNormal.z * zScale );
+	
+	-- Rotate the image based on the dyzk angle
+	love.graphics.rotate( model:GetAngle() );
+	
+	-- Move the origin to the center of the image
+	love.graphics.translate(	-self._blurCanvas:getWidth()/2,
+								-self._blurCanvas:getHeight()/2 );
+						
+	-- Draw the dyzk
+	love.graphics.draw(	self._blurCanvas );
+	
+	love.graphics.pop()			
+
 	
 	-- Draw handle
 	local handleSize = model:GetRadius()*zScale*0.75;
