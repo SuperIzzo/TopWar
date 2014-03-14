@@ -48,7 +48,7 @@ function ScBattle:new()
 	local obj = setmetatable( {}, self );	
 	
 	obj._lights	= Lights:new();
-	obj._arena	= Arena:new(	"data/arena/arena3", 4000, 4000, 4000 );
+	obj._arena	= Arena:new(	"data/arena/arena2", 10000, 10000, 256 );
 	obj._arena:SetupLights( obj._lights );
 	
 	obj._camera = Camera:new();
@@ -60,7 +60,7 @@ function ScBattle:new()
 	-- Create a directional light to lit the scene
 	obj._lights:CreateDirectionalLight(
 		{255,255,255}, 1, 0, 
-		Vector:new( -10, 5, -5):Unit()
+		Vector:new( -15, -5, -10):Unit()
 	);
 	
 	obj:_Renew();
@@ -105,38 +105,35 @@ function ScBattle:Init()
 	-- Do some defaiult initialisation in case we have not been setup
 	if #self._dyzx==0 then
 		local dyzkID = dyzx[ math.random(#dyzx) ];
-		local dyzk1 = Dyzk:new( dyzkID );
-		local model1 = dyzk1:GetModel();		
-		model1.x = 1048;
-		model1.y = 1048;
-		model1.vx = 10;
-		model1.vy = 10;
-		model1:SetAbility( 1, SARedirect:new( model1 ) 		);
-		model1:SetAbility( 2, SADash:new( model1 ) 		);
-		model1:SetAbility( 3, SAReverseLeap:new( model1 )	);
-		model1:SetAbility( 4, SAStone:new( model1 ) 		);
-		model1:Spin(1);
-		self._dyzx[1] = dyzk1;
-		
-		dyzkID = dyzx[ math.random(#dyzx) ];
-		local dyzk2 = Dyzk:new( dyzkID );
-		local model2 = dyzk2:GetModel();
-		model2.x = 3048;
-		model2.y = 3048;
-		model2.vx = -10;
-		model2.vy = -10;
-		model2:SetAbility( 1, SARedirect:new( model2 ) );
-		model2:SetAbility( 2, SADash:new( model2 ) );
-		model2:SetAbility( 3, SAReverseLeap:new( model2 ) );
-		model2:SetAbility( 4, SAStone:new( model2 ) );
-		model2:Spin(1);
-		self._dyzx[2] = dyzk2;
-		
-		dyzkID = dyzx[ math.random(#dyzx) ];
 		local dyzk = Dyzk:new( dyzkID );
-		local model = dyzk:GetModel();
-		model.x = 2048;
-		model.y = 2048;
+		local model = dyzk:GetModel();		
+		model:SetPosition( 2448, 2448, 1000 )
+		model.vx = 10;
+		model.vy = 10;
+		model:SetAbility( 1, SARedirect:new( model ) 		);
+		model:SetAbility( 2, SADash:new( model ) 		);
+		model:SetAbility( 3, SAReverseLeap:new( model )	);
+		model:SetAbility( 4, SAStone:new( model ) 		);
+		model:Spin(1);
+		self._dyzx[1] = dyzk;
+		
+		dyzkID = dyzx[ math.random(#dyzx) ];
+		dyzk = Dyzk:new( dyzkID );
+		model = dyzk:GetModel();
+		model:SetPosition( 5048, 5048, 1000 );		
+		model.vx = -10;
+		model.vy = -10;
+		model:SetAbility( 1, SARedirect:new( model ) );
+		model:SetAbility( 2, SADash:new( model ) );
+		model:SetAbility( 3, SAReverseLeap:new( model ) );
+		model:SetAbility( 4, SAStone:new( model ) );
+		model:Spin(1);
+		self._dyzx[2] = dyzk;
+		
+		dyzkID = dyzx[ math.random(#dyzx) ];
+		dyzk = Dyzk:new( dyzkID );
+		model = dyzk:GetModel();
+		model:SetPosition( 8048, 8048, 1000 );
 		model.vx = -10;
 		model.vy = -10;
 		model:SetAbility( 1, SARedirect:new( model ) );
@@ -151,6 +148,7 @@ function ScBattle:Init()
 		model = dyzk:GetModel();
 		model.x = 1048;
 		model.y = 3048;
+		model.z = 1000;
 		model.vx = 10;
 		model.vy = -10;
 		model:SetAbility( 1, SARedirect:new( model ) );
@@ -165,6 +163,7 @@ function ScBattle:Init()
 		model = dyzk:GetModel();
 		model.x = 3048;
 		model.y = 1048;
+		model.z = 1000;
 		model.vx = -10;
 		model.vy = 10;
 		model:SetAbility( 1, SARedirect:new( model ) );
@@ -185,7 +184,7 @@ function ScBattle:Init()
 		local w, h = self._arena:GetSize();
 		dyzk:SetupLights( self._lights, w, h );
 		
-		if i<3 then
+		if i<2 then
 			self._controllers[i] = DBC:new(i, dyzk:GetModel(), self._camera );		
 		else			
 			self._controllers[i] = self:ConstructAIController( dyzk )
