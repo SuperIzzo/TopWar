@@ -7,7 +7,7 @@ local NormalMap				= require 'src.model.NormalMap'
 local ImageUtils 			= require 'src.graphics.ImageUtils'
 local ImageData 			= require 'src.graphics.ImageData'
 
-local Array					= require 'src.util.Array'
+local Array					= require 'src.util.collection.Array'
 local Vector				= require 'src.math.Vector'
 
 
@@ -34,8 +34,8 @@ function Arena:new( arenaPath, width, height, depth )
 	---------------------------
 	local model = obj.model;
 	
-	local heightMap = self:LoadHeightMap( arenaPath, 1024, 1024 );
-	local normalMap = self:LoadNormalMap( arenaPath, 1024, 1024, heightMap );
+	local heightMap = self:LoadHeightMap( arenaPath, 1024, 1024, depth );
+	local normalMap = self:LoadNormalMap( arenaPath, 1024, 1024, depth, heightMap );
 	obj.image = love.graphics.newImage( arenaPath .. "/image.png" );
 	
 	model:SetDepthMask( heightMap );
@@ -73,7 +73,7 @@ end
 -------------------------------------------------------------------------------
 --  Arena:LoadHeightMap : Loads the height map of the arena
 -------------------------------------------------------------------------------
-function Arena:LoadHeightMap( arenaPath, width, height )
+function Arena:LoadHeightMap( arenaPath, width, height, depth )
 	local heightMap = nil
 	local fidPath = arenaPath .. "/depth.fid";	
 		
@@ -124,12 +124,12 @@ function Arena:LoadHeightMap( arenaPath, width, height )
 						
 			for x=0, heightMap:GetWidth()-1 do
 				for y=0, heightMap:GetWidth()-1 do
-					local depth;
-					ok, depth = pcall( Get, generator, x, y );
-					ok = ok and (type(depth)=="number");
+					local pointDepth;
+					ok, pointDepth = pcall( Get, generator, x, y );
+					ok = ok and (type(pointDepth)=="number");
 					
 					if ok then
-						heightMap:Set( x, y, depth*255 );
+						heightMap:Set( x, y, pointDepth );
 					else
 						break;
 					end
@@ -174,7 +174,7 @@ end
 -------------------------------------------------------------------------------
 --  Arena:LoadHeightMap : Loads the height map of the arena
 -------------------------------------------------------------------------------
-function Arena:LoadNormalMap( arenaPath, height, width, heightMap )
+function Arena:LoadNormalMap( arenaPath, height, width, depth, heightMap )
 	local normalMap = nil
 	
 	-- If failed, try loading from a png
@@ -190,7 +190,7 @@ function Arena:LoadNormalMap( arenaPath, height, width, heightMap )
 	if not normalMap then
 		if heightMap then
 			normalMap = NormalMap:new();
-			normalMap:GenerateFromHeightMap( heightMap );
+			normalMap:GenerateFromHeightMap( heightMap, depth );
 		end
 	end
 	
@@ -232,8 +232,8 @@ function Arena:Draw()
 	local xScale, yScale = modelW/imageW, modelH/imageH;
 	
 	-- Setup lights
-	if self._lights then
-		self._lights:Use( self.normalMap );
+	if self._lights then		
+		self._lights:Use( self.normalMap, modelW, modelH );
 	end
 	
 	love.graphics.draw( self.image, 0, 0, 0, xScale, yScale );
@@ -277,6 +277,14 @@ end
 function Arena:RemoveAllDyzx()
 	self.dyzx = {};	
 	self.model:RemoveAllDyzx();
+end
+
+
+-------------------------------------------------------------------------------
+--  Arena:GetDyzx : Returns a table of all dyzx
+-------------------------------------------------------------------------------
+function Arena:GetDyzx()
+	return self.dyzx;
 end
 
 
