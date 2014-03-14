@@ -89,8 +89,9 @@ ImageUtils.__index = ImageUtils;
 --   and 128-255 (for positive); Z can only ever be positive and is mapped to 
 --   the full 0-255 range.
 -------------------------------------------------------------------------------
-function ImageUtils.DepthToNormalMap( inDepthData, outNormData )
+function ImageUtils.DepthToNormalMap( inDepthData, outNormData, depthScale )	
 	local width, height = inDepthData:getWidth(), inDepthData:getHeight();
+	local depthScale = depthScale or 1;
 
 	-- We need to store 2 columns of the original image
 	local columnA = {}
@@ -98,7 +99,7 @@ function ImageUtils.DepthToNormalMap( inDepthData, outNormData )
 
 	-- Get the first column in advance
 	for y = 0, height-1 do
-		columnA[y] = inDepthData:getPixel( 0, y );
+		columnA[y] = inDepthData:getPixel( 0, y )*depthScale;
 		columnB[y] = columnA[y];
 	end	
 	columnA[-1] = columnA[0]
@@ -113,12 +114,12 @@ function ImageUtils.DepthToNormalMap( inDepthData, outNormData )
 	-- Process every pixel from the input image
 	-- We poduce an image that is 4 rows and 4 colums smaller
 	for x = 0, width-2 do	
-		local C1 = inDepthData:getPixel( x, 0 );
+		local C1 = inDepthData:getPixel( x, 0 )*depthScale;
 		local C0 = C1;
 		columnB[-1] = columnB[0];
 
 		for y = 0, height-2 do
-			local C2 = inDepthData:getPixel( x+1, y+1 );
+			local C2 = inDepthData:getPixel( x+1, y+1 )*depthScale;
 
 			-- Diagonals have less weight
 			local dg1 = ( columnA[y-1] - C2 ) * diagonalWeight;
