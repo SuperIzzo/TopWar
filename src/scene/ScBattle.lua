@@ -18,6 +18,7 @@ local SARedirect		= require 'src.abilities.SARedirect'
 local SAReverseLeap		= require 'src.abilities.SAReverseLeap'
 local SAStone			= require 'src.abilities.SAStone'
 local SADash			= require 'src.abilities.SADash'
+local SAJump			= require 'src.abilities.SAJump'
 
 local sign				= MathUtils.Sign
 
@@ -113,7 +114,7 @@ function ScBattle:Init()
 		model:SetAbility( 1, SARedirect:new( model ) 		);
 		model:SetAbility( 2, SADash:new( model ) 		);
 		model:SetAbility( 3, SAReverseLeap:new( model )	);
-		model:SetAbility( 4, SAStone:new( model ) 		);
+		model:SetAbility( 4, SAJump:new( model ) 		);
 		model:Spin(1);
 		self._dyzx[1] = dyzk;
 		
@@ -126,7 +127,7 @@ function ScBattle:Init()
 		model:SetAbility( 1, SARedirect:new( model ) );
 		model:SetAbility( 2, SADash:new( model ) );
 		model:SetAbility( 3, SAReverseLeap:new( model ) );
-		model:SetAbility( 4, SAStone:new( model ) );
+		model:SetAbility( 4, SAJump:new( model ) );
 		model:Spin(1);
 		self._dyzx[2] = dyzk;
 		
