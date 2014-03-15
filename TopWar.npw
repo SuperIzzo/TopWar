@@ -169,6 +169,7 @@
                     <File name="src\abilities\SAReverseLeap.lua" />
                     <File name="src\abilities\SAStone.lua" />
                     <File name="src\abilities\SADash.lua" />
+                    <File name="src\abilities\SAJump.lua" />
                 </Folder>
             </Folder>
             <Folder name="graphics">
