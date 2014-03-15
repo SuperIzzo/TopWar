@@ -58,9 +58,12 @@ function Dyzk:new( fname )
 	
 	obj.model 			= model;
 	obj.dyzkAnalysis 	= analysis;
-	
-	obj._blurCanvas		= love.graphics.newCanvas( obj.image:getWidth(), obj.image:getHeight() );
 	obj._dyzkNormal		= { x=0, y=0, z=1};
+	
+	if false and love.graphics.isSupported( "canvas" ) then
+		obj._blurCanvas = love.graphics.newCanvas(  obj.image:getWidth(), 
+													obj.image:getHeight() );
+	end
 	
 	obj._sparks = nil;
 	
@@ -195,10 +198,65 @@ end
 
 
 -------------------------------------------------------------------------------
+--  PoorMansSpinBlur : Spin blur effect for those who cannot afford a real PC
+-------------------------------------------------------------------------------
+local function PoorMansSpinBlur( image, blurAmount, numRotations )
+	local g = love.graphics
+	local numRotations = numRotations or 30;
+	local pow = numRotations/4;
+	
+	for i=1, numRotations do
+		-- We set the alpha based on which shadow we are drawing
+		-- there is a proper way to calculate shadow alpha in blur, but this
+		-- is not it. This formula is completely made-up
+		--g.setColor( 255,255,255, ((1-(i-1)/numRotations)^pow)*255 );
+		--g.setColor( 255,255,255, ((1/numRotations)^((i-1)/numRotations))*255 );
+		g.setColor( 255,255,255, ((1/numRotations)^((i-1)/numRotations))*255 );
+		
+		-- We move to the center of the image and rotate then move it
+		-- back to where it was
+		g.push();		
+			g.translate(  image:getWidth()/2,  image:getHeight()/2 );
+			g.rotate( -blurAmount * i/numRotations );
+			g.translate( -image:getWidth()/2, -image:getHeight()/2 );	
+			g.draw(	image );
+		g.pop();
+	end
+end
+
+
+-------------------------------------------------------------------------------
+--  ShaderSpinBlur : Spin blur effect using shaders
+-------------------------------------------------------------------------------
+local function ShaderSpinBlur( image, blurAmount, numRotations )
+	local g = love.graphics;
+	local shader = Dyzk._spinBlurShader;
+	
+	-- Set spin blur
+	if shader then
+		g.setShader( shader );
+		shader:send("angle", blurAmount );
+	end
+		
+	-- Draw the image
+	g.draw( image, 
+			image:getWidth()/2,
+			image:getHeight()/2,
+			0, 1, 1,			
+			image:getWidth()/2, image:getHeight()/2
+		  );
+			  
+	-- Unset spin blur
+	if shader then
+		g.setShader( nil );
+	end
+end
+
+
+-------------------------------------------------------------------------------
 --  Dyzk:UpdateCanvases : Updates the canvases
 -------------------------------------------------------------------------------
-function Dyzk:UpdateCanvases()	
-
+function Dyzk:UpdateCanvases()
 	local g = love.graphics
 	local model = self.model;
 	
@@ -214,23 +272,10 @@ function Dyzk:UpdateCanvases()
 		self._blurCanvas:clear(255,255,255,0);
 		love.graphics.setCanvas( self._blurCanvas );
 		
-		-- Set spin blur
 		if self._spinBlurShader then
-			g.setShader( self._spinBlurShader );
-			self._spinBlurShader:send("angle", self.model:GetRadialVelocity()/60 );
-		end
-		
-		-- Draw the image
-		g.draw( self.image, 
-				self._blurCanvas:getWidth()/2,
-				self._blurCanvas:getHeight()/2,
-				0, 1, 1,			
-				self.image:getWidth()/2, self.image:getHeight()/2
-			  );
-			  
-		-- Unset spin blur
-		if self._spinBlurShader then
-			love.graphics.setShader( nil );
+			ShaderSpinBlur( self.image, self.model:GetRadialVelocity()/60, 30 );
+		else
+			PoorMansSpinBlur( self.image, self.model:GetRadialVelocity()/60, 30 );
 		end
 		
 		-- Unset canvas
@@ -242,47 +287,74 @@ end
 
 
 -------------------------------------------------------------------------------
---  Dyzk:Draw : Updates the Dyzk
+--  Dyzk:ApplyTransform : Transforms the coordinate system before drawing
 -------------------------------------------------------------------------------
-function Dyzk:Draw()
+function Dyzk:ApplyTransform( imageW, imageH )
 	local g = love.graphics
-	local model = self.model;
-	
-	self:UpdateCanvases();
-	
+	local model = self.model;	
 	local zScale = DEFAULT_DYZK_SCALE*model:GetPerspScale();
-	
-	
-	
-	love.graphics.push();
-	
 	
 	-- Hint: matrix multiplication applies the transformations in reverse order
 	-- To understand what's going on you should read the transformation code
 	-- bottom-up. Also note that by this point there is also camera transform.
 	
 	-- Translate the dyzk to its position
-	love.graphics.translate(	model._position.x + self._dyzkNormal.x*100,
-								model._position.y + self._dyzkNormal.y*100 );
+	g.translate(	model._position.x + self._dyzkNormal.x*100,
+					model._position.y + self._dyzkNormal.y*100 );
 	
 	-- Rotate the image to get the correct tilt
-	love.graphics.rotate( math.atan2(self._dyzkNormal.x,-self._dyzkNormal.y) );
+	g.rotate( math.atan2(self._dyzkNormal.x,-self._dyzkNormal.y) );
 	
 	-- Scale according to the perspective scale and the tilt
-	love.graphics.scale( zScale, self._dyzkNormal.z * zScale );
+	g.scale( zScale, self._dyzkNormal.z * zScale );
 	
 	-- Rotate the image based on the dyzk angle
-	love.graphics.rotate( model:GetAngle() );
-	
+	g.rotate( model:GetAngle() );
+
 	-- Move the origin to the center of the image
-	love.graphics.translate(	-self._blurCanvas:getWidth()/2,
-								-self._blurCanvas:getHeight()/2 );
-						
+	g.translate( -imageW/2, -imageH/2 );
+end
+
+
+-------------------------------------------------------------------------------
+--  Dyzk:Draw : Updates the Dyzk
+-------------------------------------------------------------------------------
+function Dyzk:DrawDyzk()
+	local model = self.model;
+	local zScale = DEFAULT_DYZK_SCALE*model:GetPerspScale();
+	
+	love.graphics.push();
+	
+	-- Scales, rotates and translates whatever is drawn next
+	self:ApplyTransform( self.image:getWidth(), self.image:getHeight() );	
+	
+	if self._blurCanvas then
+		self:UpdateCanvases();
+		love.graphics.draw( self._blurCanvas );
+	else
+		if self._spinBlurShader then
+			ShaderSpinBlur( self.image, self.model:GetRadialVelocity()/60, 30 );
+		else
+			PoorMansSpinBlur( self.image, self.model:GetRadialVelocity()/60, 30 );
+		end
+	end
 	-- Draw the dyzk
-	love.graphics.draw(	self._blurCanvas );
+	--love.graphics.draw(	self._blurCanvas );
 	
 	love.graphics.pop()			
+end
 
+
+-------------------------------------------------------------------------------
+--  Dyzk:Draw : Updates the Dyzk
+-------------------------------------------------------------------------------
+function Dyzk:Draw()
+	local g = love.graphics
+	local model = self.model;
+	
+	self:DrawDyzk();
+	
+	local zScale = DEFAULT_DYZK_SCALE*model:GetPerspScale();
 	
 	-- Draw handle
 	local handleSize = model:GetRadius()*zScale*0.75;
