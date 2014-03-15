@@ -6,10 +6,16 @@
 	+ Implement point light
 	+ Sparks generate point lights
 + Dyzx should collide with the arena, based on slope steepness
-- Logger class (debug, info, warn, error, fatal) (console, file)
-- (optional) Separate the game model into a different thread to make its execution FPS independent
++ Z coordinate in dyzx 
++ Logger class (debug, info, warn, error, fatal) (console, file)
++ (optional) scale should affect graphics (normals are re-oriented properly in lighting shader, point lights are affected by depth)
++ Remove hacks from Light and Dyzk (_refW)
+- Separate the game model into a different thread to make its execution FPS independent
+- Networked play
+	- The separate threat is a prerequisite
+	- 
+- Lights work on low-end machine
 - ArenaLoader-s that loads an arena from multiple locations and feedback the progress
-- (optional) scale should affect graphics (normals are re-oriented properly in lighting shader, point lights are affected by depth)
 - Arena and Dyzk need a little cleaning up and re-factoring
-- Remove hacks from Light and Dyzk (_refW)
 - Dyzk abilities
+- GUI
