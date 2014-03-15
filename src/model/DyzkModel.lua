@@ -413,7 +413,10 @@ function DyzkModel:UpdatePhysics( dt )
 		-- After all said and done, make sure we are firmly on the ground
 		if self._position.z<self._arenaDepth then 
 			self._position.z = self._arenaDepth;
-			self._velocity.z = 0;
+			
+			if self._velocity.z <0 then
+				self._velocity.z = 0;
+			end
 		end
 		
 	-- Else if we are in the air...
