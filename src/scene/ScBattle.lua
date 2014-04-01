@@ -22,18 +22,7 @@ local SAJump			= require 'src.abilities.SAJump'
 
 local sign				= MathUtils.Sign
 
-local RPMCoords = 
-{
-	[1] = { x=0,	y=0  },
-	[2] = { x=600,	y=0  }
-}
 
-
-local AbilityCoords = 
-{
-	[1] = { x=0,	y=25  },
-	[2] = { x=600,	y=25  }
-}
 
 --=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--
 --	Class ScBattle : Battle scene 
@@ -175,6 +164,23 @@ function ScBattle:Init()
 		--self._dyzx[5] = dyzk;
 	end
 
+	
+	local width = love.graphics.getWidth();
+	local height = love.graphics.getHeight();
+	local RPMCoords = 
+	{
+		[1] = { x=50,			y=0  },
+		[2] = { x=width-200,	y=0  },
+		[3] = { x=50,			y=height-20 - height/20  }
+	}
+
+
+	local AbilityCoords = 
+	{
+		[1] = { x=50,			y=height/20  },
+		[2] = { x=width-200,	y=height/20  },
+		[3] = { x=50,			y=height-20 }
+	}
 
 	for i=1, #self._dyzx do
 		local dyzk = self._dyzx[i];
@@ -185,11 +191,13 @@ function ScBattle:Init()
 		local w, h = self._arena:GetSize();
 		dyzk:SetupLights( self._lights, w, h );
 		
+		
 		if i<2 then
 			self._controllers[i] = DBC:new(i, dyzk:GetModel(), self._camera );		
 		else			
 			self._controllers[i] = self:ConstructAIController( dyzk )
 		end
+		
 		
 		local rpmCoord = RPMCoords[i]
 		if rpmCoord then
@@ -356,9 +364,9 @@ function ScBattle:ConstructAIController( dyzk )
 	local rand		= AIRandom:new();
 	local avoid		= AIArenaAvoidance:new();
 	
-	chase:SetWeight( math.random()*40 - 10 );
-	rand:SetWeight( math.random()*10 );
-	avoid:SetWeight( math.random()*40 );
+	chase:SetWeight( math.random()*60 );
+	rand:SetWeight( math.random()*20 );
+	avoid:SetWeight( math.random()*20 );
 	ai:AddBehaviour( chase );
 	ai:AddBehaviour( rand  );
 	ai:AddBehaviour( avoid  );
